@@ -1,0 +1,53 @@
+# ============================================
+# 静态博客 Docker Compose 配置
+# 
+# 特性：
+# - 开箱即用：首次启动自动使用默认演示站点
+# - 可自定义：挂载目录有内容时使用用户数据
+# 
+# 使用方法（新版 Docker）：
+#   docker compose up -d --build
+#
+# 旧版 Docker：
+#   docker-compose up -d --build
+# ============================================
+
+services:
+  blog:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: static-blog:latest
+    container_name: static-blog
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      # 配置目录（空则使用默认配置）
+      - ./data/conf:/app/conf
+      # 文章目录（空则使用默认文章）
+      - ./data/posts:/app/posts
+      # 自定义页面（空则使用默认页面）
+      - ./data/pages:/app/pages
+      # 静态资源（可选）
+      - ./data/assets:/app/assets
+      # 主题目录（空则使用内置主题）
+      - ./data/usr/themes:/app/usr/themes
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+    # 安全配置
+    security_opt:
+      - no-new-privileges:true
+    # 注意：不使用 read_only，因为需要写入索引文件
+    tmpfs:
+      - /tmp
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 32M

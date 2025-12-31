@@ -9,7 +9,7 @@
     "logo": "assets/favicon-light.ico"
   },
   "theme": {
-    "active": "medium",
+    "active": "default",
     "available": [
       {
         "id": "dark-pro",

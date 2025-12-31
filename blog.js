@@ -362,25 +362,45 @@ const Blog = {
     let html = '';
     
     if (typeof marked !== 'undefined') {
-      marked.setOptions({ breaks: true, gfm: true });
+      // marked v12+ 使用新 API
+      const renderer = new marked.Renderer();
       
-      if (typeof hljs !== 'undefined') {
-        marked.setOptions({
-          highlight: (code, lang) => {
-            if (lang && hljs.getLanguage(lang)) {
-              try { return hljs.highlight(code, { language: lang }).value; } catch (e) {}
-            }
-            return Blog.escapeHtml(code);
+      // 自定义代码块渲染
+      renderer.code = function(codeBlock) {
+        // v12 传入对象 { text, lang, escaped }
+        const code = typeof codeBlock === 'object' ? codeBlock.text : codeBlock;
+        const lang = typeof codeBlock === 'object' ? codeBlock.lang : arguments[1];
+        
+        let highlighted;
+        if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+          try {
+            highlighted = hljs.highlight(code, { language: lang }).value;
+          } catch (e) {
+            highlighted = Blog.escapeHtml(code);
           }
-        });
-      }
+        } else {
+          highlighted = Blog.escapeHtml(code);
+        }
+        return `<pre><code class="hljs${lang ? ` language-${lang}` : ''}">${highlighted}</code></pre>`;
+      };
+      
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        renderer: renderer
+      });
       
       html = marked.parse(content);
     } else {
+      // 无 marked 库时的简单回退
       html = this.escapeHtml(content)
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
         .replace(/^### (.*$)/gm, '<h3>$1</h3>')
         .replace(/^## (.*$)/gm, '<h2>$1</h2>')
         .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
         .replace(/\n/g, '<br>');
     }
     

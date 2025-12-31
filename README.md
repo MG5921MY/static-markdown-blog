@@ -5,10 +5,11 @@
 ## ✨ 特性
 
 - 📝 **Markdown 支持** - 使用 Markdown 编写文章，支持 Front Matter
-- 🎨 **多主题系统** - 内置 3 套主题，支持自定义主题
+- 🎨 **多主题系统** - 内置 8 套主题（default、minimal、dark-pro、github、notion、vercel、stripe、medium）
 - 📂 **灵活分类** - 支持平铺(flat)和层级(tree)两种显示模式
 - 🔒 **安全加固** - XSS 防护、路径遍历防护、URL 验证
 - ⚡ **纯静态** - 无需数据库和后端，可部署到任意静态托管服务
+- 🐳 **Docker 开箱即用** - 一条命令启动，自动初始化演示站点
 - 🌐 **GitHub Pages 友好** - 完美支持 GitHub Pages 自动部署
 
 ## 📁 项目结构
@@ -201,6 +202,10 @@ pages:
 # 构建索引
 node build.js
 
+# 本地开发（构建 + 启动服务器）
+node serve.js
+node serve.js 3000  # 指定端口
+
 # 备份（默认版本号命名）
 node backup.js
 
@@ -213,6 +218,81 @@ node backup.js --mode=date
 # 备份（自定义名称）
 node backup.js --name=my-backup
 ```
+
+## 🐳 Docker 部署
+
+### 开箱即用
+
+Docker 镜像内置默认演示站点，首次启动时：
+- 挂载目录为空 → 自动复制默认内容（配置、文章、主题）
+- 挂载目录非空 → 使用您的自定义内容
+
+### 快速启动
+
+```bash
+cd docker
+chmod +x entrypoint.sh
+
+# 新版 Docker（推荐）
+docker compose up -d --build
+
+# 旧版 Docker
+docker-compose up -d --build
+```
+
+访问 `http://localhost:8080` 即可看到演示站点。
+
+### 自定义内容
+
+启动后在 `docker/data/` 目录编辑：
+
+```
+docker/data/
+├── conf/config.yml      # 站点配置
+├── posts/               # 文章目录
+├── pages/               # 自定义页面
+├── assets/              # 静态资源
+└── usr/themes/          # 主题目录
+```
+
+修改后重启容器生效：
+
+```bash
+docker compose restart
+```
+
+### 使用部署脚本
+
+```bash
+cd docker
+chmod +x deploy.sh
+
+./deploy.sh start    # 启动
+./deploy.sh stop     # 停止
+./deploy.sh restart  # 重启
+./deploy.sh logs     # 查看日志
+./deploy.sh clean    # 清理
+
+# 指定端口
+PORT=3000 ./deploy.sh start
+```
+
+### 常用 Docker Compose 命令
+
+```bash
+docker compose up -d --build    # 构建并启动
+docker compose logs -f          # 查看日志
+docker compose restart          # 重启
+docker compose down             # 停止
+docker compose down -v          # 停止并删除数据卷
+```
+
+### 安全特性
+
+- Node.js 22 LTS Alpine 官方镜像（轻量、安全）
+- 非 root 用户运行
+- 资源限制（128MB 内存、0.5 CPU）
+- 无额外 npm 依赖，避免供应链攻击
 
 ## 📄 License
 
