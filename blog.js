@@ -33,10 +33,10 @@ const Blog = {
       // 渲染备案信息
       this.renderBeian();
       
-      // 设置网站图标
+      // 设置网站图标（异步检查文件存在性）
       this.setFavicon();
       
-      // 设置导航栏 Logo
+      // 设置导航栏 Logo（异步检查文件存在性）
       this.setNavLogo();
       
       return true;
@@ -96,9 +96,21 @@ const Blog = {
   /**
    * 设置网站图标
    */
-  setFavicon() {
+  async setFavicon() {
     const favicon = this.config?.site?.favicon;
     if (!favicon) return;
+    
+    // 检查文件是否存在
+    try {
+      const response = await fetch(favicon, { method: 'HEAD' });
+      if (!response.ok) {
+        console.warn(`Favicon not found: ${favicon}`);
+        return;
+      }
+    } catch (e) {
+      console.warn(`Favicon check failed: ${favicon}`);
+      return;
+    }
     
     let link = document.querySelector("link[rel*='icon']");
     if (!link) {
@@ -112,18 +124,35 @@ const Blog = {
   /**
    * 设置导航栏 Logo
    */
-  setNavLogo() {
+  async setNavLogo() {
     const logo = this.config?.site?.logo;
-    if (!logo) return;
-    
     const navLogo = document.querySelector('.nav-logo');
     if (!navLogo) return;
+    
+    // 如果没有配置 logo，保持默认的 div 样式
+    if (!logo) return;
+    
+    // 检查文件是否存在
+    try {
+      const response = await fetch(logo, { method: 'HEAD' });
+      if (!response.ok) {
+        console.warn(`Logo not found: ${logo}`);
+        return;
+      }
+    } catch (e) {
+      console.warn(`Logo check failed: ${logo}`);
+      return;
+    }
     
     // 将 div 替换为 img
     const img = document.createElement('img');
     img.src = logo;
     img.alt = this.config?.site?.name || 'Logo';
     img.className = 'nav-logo';
+    img.onerror = () => {
+      // 加载失败时恢复默认样式
+      img.style.display = 'none';
+    };
     navLogo.parentNode.replaceChild(img, navLogo);
   },
 
