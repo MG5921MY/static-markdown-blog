@@ -144,3 +144,21 @@ display:
   siteType: "个人博客"
   # 内容方向
   contentDirection: "技术 / 工具 / 随记"
+
+# ---------- 功能模块 ----------
+# 瞬间和友链使用独立配置文件，便于管理大量数据
+# 启用后可在导航栏添加入口：
+#   nav:
+#     - name: 瞬间
+#       url: ./moments.html
+#     - name: 友链
+#       url: ./links.html
+features:
+  # 瞬间/说说
+  moments:
+    enabled: false
+    source: conf/moments.yml
+  # 友情链接
+  links:
+    enabled: false
+    source: conf/links.yml

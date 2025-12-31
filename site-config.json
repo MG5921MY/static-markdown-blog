@@ -113,6 +113,14 @@
       "url": "./page.html?id=tools"
     },
     {
+      "name": "瞬间",
+      "url": "./moments.html"
+    },
+    {
+      "name": "友情链接",
+      "url": "./links.html"
+    },
+    {
       "name": "关于",
       "url": "./page.html?id=about"
     },
@@ -166,6 +174,71 @@
       "description": "",
       "type": "category",
       "categoryId": "tools"
+    }
+  },
+  "features": {
+    "moments": {
+      "enabled": true,
+      "moments": [
+        {
+          "content": "博客系统上线了！欢迎大家来访问 🎉",
+          "date": "2025-01-01",
+          "mood": "🎉"
+        },
+        {
+          "content": "新年新气象，希望今年能写更多技术文章。",
+          "date": "2025-01-01",
+          "mood": "✨"
+        },
+        {
+          "content": "|",
+          "date": "2025-01-01",
+          "mood": "🐳"
+        }
+      ]
+    },
+    "links": {
+      "enabled": true,
+      "groups": [
+        {
+          "id": "friends",
+          "name": "好友博客",
+          "icon": "👥"
+        },
+        {
+          "id": "tools",
+          "name": "常用工具",
+          "icon": "🔧"
+        },
+        {
+          "id": "resources",
+          "name": "学习资源",
+          "icon": "📚"
+        }
+      ],
+      "links": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com",
+          "icon": "🐙",
+          "description": "全球最大的代码托管平台",
+          "group": "tools"
+        },
+        {
+          "name": "Stack Overflow",
+          "url": "https://stackoverflow.com",
+          "icon": "📝",
+          "description": "程序员问答社区",
+          "group": "tools"
+        },
+        {
+          "name": "MDN Web Docs",
+          "url": "https://developer.mozilla.org",
+          "icon": "📖",
+          "description": "Web 技术权威文档",
+          "group": "resources"
+        }
+      ]
     }
   }
 }

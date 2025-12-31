@@ -29,9 +29,9 @@ function generateId(str) {
 function parseYaml(content) {
   const result = {};
   const lines = content.split('\n');
-  const stack = [{ obj: result, indent: -1 }];
+  const stack = [{ obj: result, indent: -1, key: null }];
   let currentArray = null;
-  let currentArrayKey = null;
+  let currentArrayIndent = -1;
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -41,9 +41,11 @@ function parseYaml(content) {
     
     const indent = line.search(/\S/);
     
+    // 处理数组项
     if (trimmed.startsWith('- ')) {
       const value = trimmed.slice(2).trim();
       
+      // 检查是否是对象数组项（如 - name: xxx）
       if (value.includes(':')) {
         const obj = {};
         const colonIdx = value.indexOf(':');
@@ -51,6 +53,7 @@ function parseYaml(content) {
         const val = value.slice(colonIdx + 1).trim();
         obj[key] = parseValue(val);
         
+        // 继续读取该对象的其他属性
         let j = i + 1;
         while (j < lines.length) {
           const nextLine = lines[j];
@@ -58,9 +61,10 @@ function parseYaml(content) {
           const nextIndent = nextLine.search(/\S/);
           
           if (!nextTrimmed || nextTrimmed.startsWith('#')) { j++; continue; }
-          if (nextIndent <= indent || nextTrimmed.startsWith('- ')) break;
+          // 遇到同级或更低缩进的数组项，或者缩进更小的行，停止
+          if (nextIndent <= indent) break;
           
-          if (nextTrimmed.includes(':')) {
+          if (nextTrimmed.includes(':') && !nextTrimmed.startsWith('- ')) {
             const ci = nextTrimmed.indexOf(':');
             const k = nextTrimmed.slice(0, ci).trim();
             const v = nextTrimmed.slice(ci + 1).trim();
@@ -72,16 +76,19 @@ function parseYaml(content) {
         
         if (currentArray) currentArray.push(obj);
       } else {
+        // 简单值数组项
         if (currentArray) currentArray.push(parseValue(value));
       }
       continue;
     }
     
+    // 处理键值对
     if (trimmed.includes(':')) {
       const colonIndex = trimmed.indexOf(':');
       const key = trimmed.slice(0, colonIndex).trim();
       const value = trimmed.slice(colonIndex + 1).trim();
       
+      // 回退栈到正确的层级
       while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
         stack.pop();
       }
@@ -89,14 +96,21 @@ function parseYaml(content) {
       const current = stack[stack.length - 1].obj;
       
       if (value === '' || value === '|' || value === '>') {
-        const nextLine = lines[i + 1];
-        if (nextLine && nextLine.trim().startsWith('-')) {
+        // 检查下一行是否是数组
+        let nextNonEmpty = i + 1;
+        while (nextNonEmpty < lines.length) {
+          const nl = lines[nextNonEmpty].trim();
+          if (nl && !nl.startsWith('#')) break;
+          nextNonEmpty++;
+        }
+        
+        if (nextNonEmpty < lines.length && lines[nextNonEmpty].trim().startsWith('-')) {
           current[key] = [];
           currentArray = current[key];
-          currentArrayKey = key;
+          currentArrayIndent = indent;
         } else {
           current[key] = {};
-          stack.push({ obj: current[key], indent });
+          stack.push({ obj: current[key], indent, key });
           currentArray = null;
         }
       } else {
@@ -511,6 +525,52 @@ function build() {
   }
   
   siteConfig.pages = pagesData;
+  
+  // 处理功能模块（瞬间、友链）
+  console.log('\n🔧 处理功能模块...');
+  const features = config.features || {};
+  siteConfig.features = {};
+  
+  // 瞬间
+  if (features.moments?.enabled && features.moments?.source) {
+    const momentsPath = features.moments.source;
+    if (fs.existsSync(momentsPath)) {
+      try {
+        const momentsContent = fs.readFileSync(momentsPath, 'utf8');
+        const momentsData = parseYaml(momentsContent);
+        siteConfig.features.moments = {
+          enabled: true,
+          moments: momentsData.moments || []
+        };
+        console.log(`   ✅ 瞬间 (${(momentsData.moments || []).length} 条)`);
+      } catch (e) {
+        console.warn(`   ⚠️ 瞬间配置读取失败: ${momentsPath}`);
+      }
+    } else {
+      console.warn(`   ⚠️ 瞬间配置不存在: ${momentsPath}`);
+    }
+  }
+  
+  // 友链
+  if (features.links?.enabled && features.links?.source) {
+    const linksPath = features.links.source;
+    if (fs.existsSync(linksPath)) {
+      try {
+        const linksContent = fs.readFileSync(linksPath, 'utf8');
+        const linksData = parseYaml(linksContent);
+        siteConfig.features.links = {
+          enabled: true,
+          groups: linksData.groups || [],
+          links: linksData.links || []
+        };
+        console.log(`   ✅ 友链 (${(linksData.links || []).length} 个)`);
+      } catch (e) {
+        console.warn(`   ⚠️ 友链配置读取失败: ${linksPath}`);
+      }
+    } else {
+      console.warn(`   ⚠️ 友链配置不存在: ${linksPath}`);
+    }
+  }
   
   // 确保输出目录存在
   if (!fs.existsSync(OUTPUT_DIR)) {

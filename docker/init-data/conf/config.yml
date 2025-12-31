@@ -71,6 +71,10 @@ nav:
     url: ./page.html?id=guide
   - name: 功能介绍
     url: ./page.html?id=features
+  - name: 瞬间
+    url: ./moments.html
+  - name: 友链
+    url: ./links.html
   - name: 关于
     url: ./page.html?id=about
 
@@ -103,3 +107,12 @@ display:
   showSiteInfo: true
   siteType: "静态博客系统"
   contentDirection: "文档 / 教程 / 示例"
+
+# ---------- 功能模块 ----------
+features:
+  moments:
+    enabled: true
+    source: conf/moments.yml
+  links:
+    enabled: true
+    source: conf/links.yml

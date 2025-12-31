@@ -189,6 +189,52 @@ pages:
     source: pages/about.md
 ```
 
+### 功能模块（瞬间/友链）
+
+瞬间和友链使用独立 YAML 文件配置：
+
+```yaml
+# config.yml 中启用
+features:
+  moments:
+    enabled: true
+    source: conf/moments.yml
+  links:
+    enabled: true
+    source: conf/links.yml
+
+# 在导航栏添加入口
+nav:
+  - name: 瞬间
+    url: ./moments.html
+  - name: 友链
+    url: ./links.html
+```
+
+瞬间配置示例 (`conf/moments.yml`)：
+```yaml
+moments:
+  - content: 今天天气不错
+    date: 2025-01-01
+    mood: 🌤️
+    tags: [生活]
+```
+
+友链配置示例 (`conf/links.yml`)：
+```yaml
+groups:
+  - id: friends
+    name: 好友博客
+    icon: 👥
+
+links:
+  - name: GitHub
+    url: https://github.com
+    icon: 🐙
+    description: 代码托管平台
+    group: friends
+```
+
 ## 🎨 自定义主题
 
 1. 在 `usr/themes/` 下创建新目录
