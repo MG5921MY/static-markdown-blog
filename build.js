@@ -221,12 +221,35 @@ function scanDirectory(dirPath, basePath, currentDepth, maxDepth, excludePattern
         let summary = meta.summary || '';
         if (!summary && body) {
           const plainText = body
+            // 移除标题
             .replace(/^#+\s+.*/gm, '')
+            // 移除代码块
             .replace(/```[\s\S]*?```/g, '')
+            // 移除行内代码
             .replace(/`[^`]+`/g, '')
+            // 移除链接，保留文字
             .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-            .replace(/[*_~]/g, '')
+            // 移除图片
+            .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
+            // 移除粗体/斜体/删除线
+            .replace(/\*\*([^*]+)\*\*/g, '$1')
+            .replace(/\*([^*]+)\*/g, '$1')
+            .replace(/__([^_]+)__/g, '$1')
+            .replace(/_([^_]+)_/g, '$1')
+            .replace(/~~([^~]+)~~/g, '$1')
+            // 移除引用标记
+            .replace(/^>\s*/gm, '')
+            // 移除列表标记
+            .replace(/^[\s]*[-*+]\s+/gm, '')
+            .replace(/^[\s]*\d+\.\s+/gm, '')
+            // 移除水平线
+            .replace(/^[-*_]{3,}$/gm, '')
+            // 移除表格分隔符
+            .replace(/\|/g, ' ')
+            .replace(/^[-:|\s]+$/gm, '')
+            // 清理多余空白
             .replace(/\n+/g, ' ')
+            .replace(/\s+/g, ' ')
             .trim();
           summary = plainText.slice(0, 150) + (plainText.length > 150 ? '...' : '');
         }
