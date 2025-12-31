@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MijiaoBy米椒 | 个人博客</title>
-  <meta name="description" content="MijiaoBy米椒（米椒小屋）：个人博客与学习笔记（非经营性）。" />
+  <title>加载中...</title>
+  <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
   <!-- 主题样式由 JS 动态加载 -->
 </head>
@@ -13,7 +13,7 @@
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
       <div class="nav-logo"></div>
-      <span>MijiaoBy米椒</span>
+      <span id="nav-site-name">加载中...</span>
     </a>
     <div class="nav-links" id="nav-links">
       <a href="./index.html" class="nav-link active">首页</a>
@@ -23,12 +23,9 @@
   <main class="main">
     <div class="container">
       <section class="hero">
-        <div class="hero-badge">备案完成后将逐步上线完整内容</div>
-        <h1 class="hero-title">米椒小屋</h1>
-        <p class="hero-subtitle">
-          个人博客 · 学习笔记 · 生活记录<br/>
-          记录思考，沉淀经验，把零散的学习笔记写成可复用的技术文档
-        </p>
+        <div class="hero-badge" id="hero-badge"></div>
+        <h1 class="hero-title" id="hero-title"></h1>
+        <p class="hero-subtitle" id="hero-subtitle"></p>
       </section>
 
       <section class="section">
@@ -50,28 +47,15 @@
         <div id="posts-error" class="empty-state" style="display: none;"><p id="error-message">加载失败</p></div>
       </section>
 
-      <section class="section">
+      <section class="section" id="site-info-section">
         <div class="section-header">
           <h2 class="section-title">站点信息</h2>
         </div>
-        <div class="site-info">
-          <div class="info-item">
-            <div class="label">站点名称</div>
-            <div class="value">MijiaoBy米椒（米椒小屋）</div>
-          </div>
-          <div class="info-item">
-            <div class="label">站点类型</div>
-            <div class="value">个人博客（非经营性）</div>
-          </div>
-          <div class="info-item">
-            <div class="label">内容方向</div>
-            <div class="value">技术 / 工具 / 随记</div>
-          </div>
-        </div>
-        <div class="contact-box">
+        <div class="site-info" id="site-info"></div>
+        <div class="contact-box" id="contact-box" style="display: none;">
           <span class="icon">📮</span>
           <span>联系邮箱：</span>
-          <span class="email">y992017784@outlook.com</span>
+          <span class="email" id="contact-email"></span>
         </div>
       </section>
     </div>
@@ -101,6 +85,66 @@
       try {
         const success = await Blog.init();
         if (!success) throw new Error('初始化失败，请运行 node build.js');
+
+        // 设置页面标题和元信息
+        const site = Blog.config?.site || {};
+        const display = Blog.config?.display || {};
+        
+        document.title = `${site.name || '博客'} | ${site.description || '个人博客'}`;
+        document.querySelector('meta[name="description"]').content = site.description || '';
+        document.getElementById('nav-site-name').textContent = site.name || '博客';
+        
+        // 设置 Hero 区域
+        const heroBadge = document.getElementById('hero-badge');
+        const heroTitle = document.getElementById('hero-title');
+        const heroSubtitle = document.getElementById('hero-subtitle');
+        
+        if (display.heroBadge) {
+          heroBadge.textContent = display.heroBadge;
+          heroBadge.style.display = 'inline-block';
+        } else {
+          heroBadge.style.display = 'none';
+        }
+        
+        heroTitle.textContent = site.alias || site.name || '我的博客';
+        heroSubtitle.innerHTML = (display.heroSubtitle || site.description || '').replace(/\\n/g, '<br/>');
+        
+        // 设置站点信息区域
+        const siteInfoSection = document.getElementById('site-info-section');
+        const siteInfoEl = document.getElementById('site-info');
+        const contactBox = document.getElementById('contact-box');
+        
+        if (display.showSiteInfo !== false) {
+          let infoHtml = '';
+          
+          // 站点名称
+          const siteName = site.alias ? `${site.name}（${site.alias}）` : site.name;
+          if (siteName) {
+            infoHtml += `<div class="info-item"><div class="label">站点名称</div><div class="value">${Blog.escapeHtml(siteName)}</div></div>`;
+          }
+          
+          // 站点类型
+          if (display.siteType) {
+            infoHtml += `<div class="info-item"><div class="label">站点类型</div><div class="value">${Blog.escapeHtml(display.siteType)}</div></div>`;
+          }
+          
+          // 内容方向
+          if (display.contentDirection) {
+            infoHtml += `<div class="info-item"><div class="label">内容方向</div><div class="value">${Blog.escapeHtml(display.contentDirection)}</div></div>`;
+          }
+          
+          siteInfoEl.innerHTML = infoHtml;
+          
+          // 联系邮箱
+          if (site.email) {
+            document.getElementById('contact-email').textContent = site.email;
+            contactBox.style.display = 'flex';
+          }
+          
+          siteInfoSection.style.display = infoHtml || site.email ? 'block' : 'none';
+        } else {
+          siteInfoSection.style.display = 'none';
+        }
 
         // 渲染导航栏
         Blog.renderNavLinks();

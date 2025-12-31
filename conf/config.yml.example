@@ -10,9 +10,9 @@ site:
   author: YourName
   email: your-email@example.com
   # 网站图标（相对于站点根目录）
-  favicon: assets/favicon-light.ico
+  favicon: assets-example/favicon.ico
   # 网站 Logo（相对于站点根目录）
-  logo: assets/favicon-light.ico
+  logo: assets-example/favicon.ico
 
 # ---------- 主题配置 ----------
 # 主题目录固定为 usr/themes/
@@ -134,3 +134,13 @@ display:
   postsPerPage: 10
   # 摘要最大长度
   summaryLength: 150
+  # Hero 区域徽章文字（留空则不显示）
+  heroBadge: ""
+  # Hero 区域副标题（支持 \n 换行）
+  heroSubtitle: "记录思考，沉淀经验"
+  # 是否显示站点信息区域
+  showSiteInfo: true
+  # 站点类型
+  siteType: "个人博客"
+  # 内容方向
+  contentDirection: "技术 / 工具 / 随记"

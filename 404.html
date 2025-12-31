@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>404 | MijiaoBy米椒</title>
+  <title>404 | 加载中...</title>
   <meta name="color-scheme" content="light dark" />
 </head>
 
@@ -11,7 +11,7 @@
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
       <div class="nav-logo"></div>
-      <span>MijiaoBy米椒</span>
+      <span id="nav-site-name">加载中...</span>
     </a>
     <div class="nav-links" id="nav-links">
       <a href="./index.html" class="nav-link">首页</a>
@@ -25,7 +25,7 @@
       <p class="error-desc">抱歉，您访问的页面不存在或已被移除</p>
       <div style="display: flex; gap: 12px; justify-content: center;">
         <a href="./index.html" class="btn btn-primary">返回首页</a>
-        <a href="./about.html" class="btn btn-secondary">关于本站</a>
+        <a href="./page.html?id=about" class="btn btn-secondary">关于本站</a>
       </div>
     </div>
 
@@ -42,6 +42,13 @@
   </main>
 
   <script src="./blog.js"></script>
-  <script>Blog.init().then(() => Blog.renderNavLinks());</script>
+  <script>
+    Blog.init().then(() => {
+      const siteName = Blog.config?.site?.name || '博客';
+      document.title = `404 | ${siteName}`;
+      document.getElementById('nav-site-name').textContent = siteName;
+      Blog.renderNavLinks();
+    });
+  </script>
 </body>
 </html>

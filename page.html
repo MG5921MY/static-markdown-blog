@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>页面 | MijiaoBy米椒</title>
-  <meta name="description" content="MijiaoBy米椒（米椒小屋）" />
+  <title>加载中...</title>
+  <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css" media="(prefers-color-scheme: light)" />
@@ -14,7 +14,7 @@
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
       <div class="nav-logo"></div>
-      <span>MijiaoBy米椒</span>
+      <span id="nav-site-name">加载中...</span>
     </a>
     <div class="nav-links" id="nav-links"></div>
   </nav>
@@ -114,7 +114,8 @@
         const page = Blog.config?.pages?.[pageId];
         if (!page) throw new Error('页面不存在');
 
-        document.title = `${page.name} | MijiaoBy米椒`;
+        document.title = `${page.name} | ${Blog.config?.site?.name || '博客'}`;
+        document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
         loadingEl.style.display = 'none';
 
         if (page.type === 'markdown') {

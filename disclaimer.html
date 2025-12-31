@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>免责声明 | MijiaoBy米椒</title>
-  <meta name="description" content="MijiaoBy米椒（米椒小屋）免责声明。" />
+  <title>免责声明 | 加载中...</title>
+  <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
 </head>
 
@@ -12,7 +12,7 @@
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
       <div class="nav-logo"></div>
-      <span>MijiaoBy米椒</span>
+      <span id="nav-site-name">加载中...</span>
     </a>
     <div class="nav-links" id="nav-links">
       <a href="./index.html" class="nav-link">首页</a>
@@ -69,6 +69,13 @@
   </main>
 
   <script src="./blog.js"></script>
-  <script>Blog.init().then(() => Blog.renderNavLinks());</script>
+  <script>
+    Blog.init().then(() => {
+      const siteName = Blog.config?.site?.name || '博客';
+      document.title = `免责声明 | ${siteName}`;
+      document.getElementById('nav-site-name').textContent = siteName;
+      Blog.renderNavLinks();
+    });
+  </script>
 </body>
 </html>

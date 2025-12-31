@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>文章 | MijiaoBy米椒</title>
-  <meta name="description" content="MijiaoBy米椒（米椒小屋）：个人博客与学习笔记。" />
+  <title>加载中...</title>
+  <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css" media="(prefers-color-scheme: light)" />
@@ -14,7 +14,7 @@
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
       <div class="nav-logo"></div>
-      <span>MijiaoBy米椒</span>
+      <span id="nav-site-name">加载中...</span>
     </a>
     <div class="nav-links" id="nav-links">
       <a href="./index.html" class="nav-link">首页</a>
@@ -96,7 +96,8 @@
 
         const post = await Blog.loadPostContent(postId);
         
-        document.title = `${post.title} | MijiaoBy米椒`;
+        document.title = `${post.title} | ${Blog.config?.site?.name || '博客'}`;
+        document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
         document.getElementById('post-category').textContent = `${post.categoryIcon || ''} ${post.categoryName}`;
         document.getElementById('post-date').textContent = Blog.formatDate(post.date);
         document.getElementById('post-title').textContent = post.title;

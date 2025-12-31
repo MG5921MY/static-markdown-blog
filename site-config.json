@@ -83,7 +83,12 @@
   ],
   "display": {
     "postsPerPage": 10,
-    "summaryLength": 150
+    "summaryLength": 150,
+    "heroBadge": "备案完成后将逐步上线完整内容",
+    "heroSubtitle": "记录思考，沉淀经验，把零散的学习笔记写成可复用的技术文档",
+    "showSiteInfo": true,
+    "siteType": "个人博客（非经营性）",
+    "contentDirection": "技术 / 工具 / 随记"
   },
   "pages": {
     "about": {
