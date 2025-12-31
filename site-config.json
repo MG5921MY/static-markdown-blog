@@ -9,7 +9,7 @@
     "logo": "assets/favicon-light.ico"
   },
   "theme": {
-    "active": "default",
+    "active": "medium",
     "available": [
       {
         "id": "dark-pro",
@@ -28,12 +28,52 @@
         "path": "usr/themes/default"
       },
       {
+        "id": "github",
+        "name": "GitHub",
+        "version": "1.0.0",
+        "author": "Community",
+        "description": "GitHub 风格主题 - 简洁专业的开发者风格",
+        "path": "usr/themes/github"
+      },
+      {
+        "id": "medium",
+        "name": "Medium",
+        "version": "1.0.0",
+        "author": "Community",
+        "description": "Medium 风格主题 - 专注阅读的经典博客设计",
+        "path": "usr/themes/medium"
+      },
+      {
         "id": "minimal",
         "name": "Minimal",
         "version": "1.0.0",
         "author": "MijiaoBy",
         "description": "极简主题 - 纯净简洁的阅读体验",
         "path": "usr/themes/minimal"
+      },
+      {
+        "id": "notion",
+        "name": "Notion",
+        "version": "1.0.0",
+        "author": "Community",
+        "description": "Notion 风格主题 - 干净优雅的笔记风格",
+        "path": "usr/themes/notion"
+      },
+      {
+        "id": "stripe",
+        "name": "Stripe",
+        "version": "1.0.0",
+        "author": "Community",
+        "description": "Stripe 风格主题 - 精致渐变的商业感设计",
+        "path": "usr/themes/stripe"
+      },
+      {
+        "id": "vercel",
+        "name": "Vercel",
+        "version": "1.0.0",
+        "author": "Community",
+        "description": "Vercel 风格主题 - 现代极简的科技感设计",
+        "path": "usr/themes/vercel"
       }
     ],
     "config": {
