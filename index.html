@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MijiaoBy米椒 | 个人博客</title>
+  <meta name="description" content="MijiaoBy米椒（米椒小屋）：个人博客与学习笔记（非经营性）。" />
+  <meta name="color-scheme" content="light dark" />
+  <!-- 主题样式由 JS 动态加载 -->
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span>MijiaoBy米椒</span>
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="./index.html" class="nav-link active">首页</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <section class="hero">
+        <div class="hero-badge">备案完成后将逐步上线完整内容</div>
+        <h1 class="hero-title">米椒小屋</h1>
+        <p class="hero-subtitle">
+          个人博客 · 学习笔记 · 生活记录<br/>
+          记录思考，沉淀经验，把零散的学习笔记写成可复用的技术文档
+        </p>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">最新文章</h2>
+          <div class="filter-group" id="category-filter"></div>
+        </div>
+
+        <div id="subdir-filter-container"></div>
+        <div id="dir-tree-container"></div>
+
+        <div id="posts-loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>正在加载...</p>
+        </div>
+
+        <div id="posts-grid" class="posts-grid" style="display: none;"></div>
+        <div id="posts-empty" class="empty-state" style="display: none;"><p>暂无文章</p></div>
+        <div id="posts-error" class="empty-state" style="display: none;"><p id="error-message">加载失败</p></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">站点信息</h2>
+        </div>
+        <div class="site-info">
+          <div class="info-item">
+            <div class="label">站点名称</div>
+            <div class="value">MijiaoBy米椒（米椒小屋）</div>
+          </div>
+          <div class="info-item">
+            <div class="label">站点类型</div>
+            <div class="value">个人博客（非经营性）</div>
+          </div>
+          <div class="info-item">
+            <div class="label">内容方向</div>
+            <div class="value">技术 / 工具 / 随记</div>
+          </div>
+        </div>
+        <div class="contact-box">
+          <span class="icon">📮</span>
+          <span>联系邮箱：</span>
+          <span class="email">y992017784@outlook.com</span>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links">
+            <a href="./index.html" class="footer-link">首页</a>
+          </div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./blog.js"></script>
+  <script>
+    (async function() {
+      const loadingEl = document.getElementById('posts-loading');
+      const gridEl = document.getElementById('posts-grid');
+      const emptyEl = document.getElementById('posts-empty');
+      const errorEl = document.getElementById('posts-error');
+      const errorMsg = document.getElementById('error-message');
+      const filterEl = document.getElementById('category-filter');
+
+      try {
+        const success = await Blog.init();
+        if (!success) throw new Error('初始化失败，请运行 node build.js');
+
+        // 渲染导航栏
+        Blog.renderNavLinks();
+
+        filterEl.innerHTML = Blog.renderCategoryFilter();
+        const posts = Blog.getAllPosts();
+        const subdirContainer = document.getElementById('subdir-filter-container');
+        const treeContainer = document.getElementById('dir-tree-container');
+
+        loadingEl.style.display = 'none';
+
+        if (posts.length === 0) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        // 默认显示全部（平铺模式）
+        gridEl.innerHTML = posts.map(post => Blog.renderPostCard(post)).join('');
+        gridEl.style.display = 'grid';
+        gridEl.className = 'posts-grid';
+
+        // 当前状态
+        let currentCategory = 'all';
+        let currentPath = '';
+
+        // 更新显示
+        function updateDisplay(category, dirPath = '') {
+          currentCategory = category;
+          currentPath = dirPath;
+
+          if (category === 'all') {
+            subdirContainer.innerHTML = '';
+            treeContainer.innerHTML = '';
+            gridEl.className = 'posts-grid';
+            gridEl.innerHTML = posts.map(post => Blog.renderPostCard(post)).join('');
+          } else {
+            const result = Blog.renderCategoryContent(category, dirPath);
+            
+            // 显示目录导航
+            subdirContainer.innerHTML = result.dirNav || '';
+            treeContainer.innerHTML = result.dirTreePanel || '';
+            
+            gridEl.className = 'posts-grid';
+            gridEl.innerHTML = result.html;
+            
+            if (!result.html) {
+              gridEl.innerHTML = '<div class="empty-state"><p>该目录暂无文章</p></div>';
+            }
+          }
+        }
+
+        // 分类筛选点击
+        filterEl.addEventListener('click', (e) => {
+          if (!e.target.classList.contains('filter-btn')) return;
+          filterEl.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+          updateDisplay(e.target.dataset.category, '');
+        });
+
+        // 目录导航点击
+        subdirContainer.addEventListener('click', (e) => {
+          const btn = e.target.closest('.dir-nav-btn');
+          if (btn) {
+            const path = btn.dataset.path;
+            updateDisplay(currentCategory, path);
+            return;
+          }
+          
+          // 目录树切换按钮
+          if (e.target.closest('.dir-tree-toggle')) {
+            const panel = treeContainer.querySelector('.dir-tree-panel');
+            if (panel) {
+              panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+            }
+          }
+        });
+
+        // 目录树面板点击
+        treeContainer.addEventListener('click', (e) => {
+          // 关闭按钮
+          if (e.target.closest('.dir-tree-close')) {
+            const panel = treeContainer.querySelector('.dir-tree-panel');
+            if (panel) panel.style.display = 'none';
+            return;
+          }
+          
+          // 目录项点击
+          const item = e.target.closest('.tree-item');
+          if (item) {
+            const path = item.dataset.path;
+            updateDisplay(currentCategory, path);
+            
+            // 更新激活状态
+            treeContainer.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+          }
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        loadingEl.style.display = 'none';
+        errorMsg.textContent = error.message;
+        errorEl.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

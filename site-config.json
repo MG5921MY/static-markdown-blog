@@ -1,0 +1,126 @@
+{
+  "site": {
+    "name": "MijiaoBy米椒",
+    "alias": "米椒小屋",
+    "description": "个人博客 · 学习笔记 · 生活记录",
+    "author": "MijiaoBy",
+    "email": "y992017784@outlook.com",
+    "favicon": "assets/favicon-light.ico",
+    "logo": "assets/favicon-light.ico"
+  },
+  "theme": {
+    "active": "default",
+    "available": [
+      {
+        "id": "dark-pro",
+        "name": "Dark Pro",
+        "version": "1.0.0",
+        "author": "MijiaoBy",
+        "description": "深色专业主题 - 适合夜间阅读的高对比度设计",
+        "path": "usr/themes/dark-pro"
+      },
+      {
+        "id": "default",
+        "name": "Default",
+        "version": "1.0.0",
+        "author": "MijiaoBy",
+        "description": "默认主题 - 现代化深色/浅色自适应设计",
+        "path": "usr/themes/default"
+      },
+      {
+        "id": "minimal",
+        "name": "Minimal",
+        "version": "1.0.0",
+        "author": "MijiaoBy",
+        "description": "极简主题 - 纯净简洁的阅读体验",
+        "path": "usr/themes/minimal"
+      }
+    ],
+    "config": {
+      "primaryColor": "#6366f1",
+      "showFooter": true
+    }
+  },
+  "beian": {
+    "enabled": true,
+    "displayName": "MijiaoBy米椒",
+    "aliasName": "米椒小屋",
+    "recordName": "MijiaoBy米椒",
+    "icp": {
+      "enabled": true,
+      "number": "皖ICP备2025107617号-1",
+      "url": "https://beian.miit.gov.cn/"
+    },
+    "police": {
+      "enabled": true,
+      "statusText": "备案中（备案成功后填写）",
+      "number": "",
+      "url": ""
+    },
+    "year": 2025
+  },
+  "nav": [
+    {
+      "name": "首页",
+      "url": "./index.html"
+    },
+    {
+      "name": "技术笔记",
+      "url": "./page.html?id=tech-notes"
+    },
+    {
+      "name": "工具记录",
+      "url": "./page.html?id=tools"
+    },
+    {
+      "name": "关于",
+      "url": "./page.html?id=about"
+    },
+    {
+      "name": "免责声明",
+      "url": "./page.html?id=disclaimer"
+    }
+  ],
+  "display": {
+    "postsPerPage": 10,
+    "summaryLength": 150
+  },
+  "pages": {
+    "about": {
+      "id": "about",
+      "name": "关于本站",
+      "icon": "👤",
+      "description": "",
+      "type": "markdown",
+      "title": "关于本站",
+      "content": "# 这里是什么\r\n\r\n这里是我的个人博客，用来整理与分享：\r\n\r\n- 技术学习笔记（概念、要点、对比、总结）\r\n- 技术文档与操作手册（部署、配置、排错、最佳实践）\r\n- 实践记录与复盘（踩坑记录、方案选型、性能对比）\r\n\r\n## 我会尽量做到\r\n\r\n- **结论可追溯**：给出关键依据与参考链接\r\n- **步骤可复现**：能在相似环境重现结果\r\n- **内容可维护**：随版本/认知变化持续修订\r\n\r\n> 💡 部分文章属于阶段性总结，可能存在遗漏、过时或错误。重要操作请先在测试环境验证并做好备份。\r\n\r\n## 联系方式\r\n\r\n📮 邮箱：y992017784@outlook.com",
+      "source": "pages/about.md"
+    },
+    "disclaimer": {
+      "id": "disclaimer",
+      "name": "免责声明",
+      "icon": "⚠️",
+      "description": "",
+      "type": "markdown",
+      "title": "免责声明",
+      "content": "# 免责声明\r\n\r\n为避免误解与风险，请在使用本站内容前阅读以下声明：\r\n\r\n## 1. 内容性质\r\n\r\n本站文章为个人学习笔记与经验总结，可能存在遗漏、过时或错误。\r\n\r\n## 2. 不构成建议\r\n\r\n本站内容不构成法律、医疗、投资、安全、商业等任何专业建议或承诺。\r\n\r\n## 3. 风险自担\r\n\r\n你使用本站内容进行操作产生的任何后果，由你自行承担。建议在生产环境操作前先在测试环境验证，并做好备份。\r\n\r\n## 4. 外部链接\r\n\r\n本站可能包含第三方链接或引用。第三方内容的准确性、可用性与安全性不由本站保证。\r\n\r\n## 5. 版权与引用\r\n\r\n除非特别说明，本站原创内容默认仅供学习参考；引用内容将尽量注明来源。如你认为存在侵权，请联系我删除或更正。\r\n\r\n## 6. 更新与修订\r\n\r\n本站内容会不定期更新，历史文章可能与当前实践不一致，请以最新修订为准。",
+      "source": "pages/disclaimer.md"
+    },
+    "tech-notes": {
+      "id": "tech-notes",
+      "name": "技术笔记",
+      "icon": "📝",
+      "description": "",
+      "type": "category",
+      "categoryId": "tech"
+    },
+    "tools": {
+      "id": "tools",
+      "name": "工具记录",
+      "icon": "🛠️",
+      "description": "",
+      "type": "category",
+      "categoryId": "tools"
+    }
+  }
+}
