@@ -1,0 +1,30 @@
+{
+  "dae97a3b": {
+    "category": "guide",
+    "file": "config-guide.md"
+  },
+  "c21a630f": {
+    "category": "guide",
+    "file": "getting-started.md"
+  },
+  "fd347346": {
+    "category": "features",
+    "file": "category-modes.md"
+  },
+  "3a3c20cd": {
+    "category": "features",
+    "file": "custom-pages.md"
+  },
+  "dd51f158": {
+    "category": "features",
+    "file": "security.md"
+  },
+  "bac830c0": {
+    "category": "features",
+    "file": "theme-system.md"
+  },
+  "6bb4da9b": {
+    "category": "demo",
+    "file": "markdown-example.md"
+  }
+}

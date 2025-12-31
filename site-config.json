@@ -274,29 +274,16 @@
       ],
       "images": {
         "photos": {
-          "images": [
-            "assets/gallery/photos/Quicker_20251222_110226.png"
-          ],
+          "images": [],
           "subfolders": {}
         },
         "wallpapers": {
-          "images": [
-            "assets/gallery/wallpapers/Quicker_20251222_110226.png"
-          ],
+          "images": [],
           "subfolders": {}
         },
         "screenshots": {
-          "images": [
-            "assets/gallery/screenshots/Quicker_20251222_110226.png"
-          ],
-          "subfolders": {
-            "al": {
-              "images": [
-                "assets/gallery/screenshots/al/Quicker_20251222_110226.png"
-              ],
-              "subfolders": {}
-            }
-          }
+          "images": [],
+          "subfolders": {}
         }
       }
     }

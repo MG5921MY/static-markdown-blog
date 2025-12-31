@@ -5,7 +5,7 @@ logs/
 
 old/
 
-assets/
-posts/
-conf/config.yml
-pages/
+#assets/
+#posts/
+#conf/
+#pages/
