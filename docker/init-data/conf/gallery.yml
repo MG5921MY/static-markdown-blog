@@ -1,0 +1,23 @@
+# ============================================
+# 图库配置 - Docker 默认演示
+# ============================================
+
+settings:
+  maxDepth: 2
+  formats:
+    - jpg
+    - jpeg
+    - png
+    - gif
+    - webp
+    - svg
+  thumbnail:
+    lazyLoad: true
+    perPage: 20
+
+groups:
+  - id: demo
+    name: 示例图片
+    icon: 🖼️
+    path: assets/gallery/demo
+    description: 演示用图片（请替换为您自己的图片）

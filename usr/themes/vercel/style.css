@@ -18,6 +18,18 @@
   --geist-cyan: #79ffe1;
   --nav-height: 64px;
   --page-margin: 24px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-primary: var(--geist-background);
+  --bg-secondary: var(--accents-1);
+  --bg-card: var(--accents-1);
+  --bg-card-hover: var(--accents-2);
+  --text-primary: var(--geist-foreground);
+  --text-secondary: var(--accents-5);
+  --text-muted: var(--accents-4);
+  --accent: var(--geist-success);
+  --accent-light: var(--geist-success);
+  --border: var(--accents-2);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,6 +44,18 @@
     --accents-6: #999;
     --accents-7: #eaeaea;
     --accents-8: #fafafa;
+    
+    /* 统一变量别名 */
+    --bg-primary: var(--geist-background);
+    --bg-secondary: var(--accents-1);
+    --bg-card: var(--accents-1);
+    --bg-card-hover: var(--accents-2);
+    --text-primary: var(--geist-foreground);
+    --text-secondary: var(--accents-5);
+    --text-muted: var(--accents-4);
+    --accent: var(--geist-success);
+    --accent-light: var(--geist-success);
+    --border: var(--accents-2);
   }
 }
 

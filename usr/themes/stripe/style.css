@@ -14,6 +14,18 @@
   --stripe-pink: #ff80b5;
   --stripe-success: #00d924;
   --nav-height: 68px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-primary: var(--stripe-bg);
+  --bg-secondary: var(--stripe-surface);
+  --bg-card: var(--stripe-surface);
+  --bg-card-hover: var(--stripe-bg);
+  --text-primary: var(--stripe-heading);
+  --text-secondary: var(--stripe-text);
+  --text-muted: var(--stripe-muted);
+  --accent: var(--stripe-primary);
+  --accent-light: var(--stripe-primary-light);
+  --border: var(--stripe-border);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +36,18 @@
     --stripe-heading: #ffffff;
     --stripe-muted: #6b7c93;
     --stripe-border: #1a3a5c;
+    
+    /* 统一变量别名 */
+    --bg-primary: var(--stripe-bg);
+    --bg-secondary: var(--stripe-surface);
+    --bg-card: var(--stripe-surface);
+    --bg-card-hover: var(--stripe-bg);
+    --text-primary: var(--stripe-heading);
+    --text-secondary: var(--stripe-text);
+    --text-muted: var(--stripe-muted);
+    --accent: var(--stripe-primary);
+    --accent-light: var(--stripe-primary-light);
+    --border: var(--stripe-border);
   }
 }
 

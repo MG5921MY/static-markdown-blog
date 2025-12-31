@@ -7,6 +7,9 @@
 - 📝 **Markdown 支持** - 使用 Markdown 编写文章，支持 Front Matter
 - 🎨 **多主题系统** - 内置 8 套主题（default、minimal、dark-pro、github、notion、vercel、stripe、medium）
 - 📂 **灵活分类** - 支持平铺(flat)和层级(tree)两种显示模式
+- 💭 **瞬间/说说** - 记录生活点滴，时间线展示
+- 🔗 **友情链接** - 卡片式布局，支持分组管理
+- 🖼️ **图库相册** - 瀑布流展示，Lightbox 灯箱，递归扫描
 - 🔒 **安全加固** - XSS 防护、路径遍历防护、URL 验证
 - ⚡ **纯静态** - 无需数据库和后端，可部署到任意静态托管服务
 - 🐳 **Docker 开箱即用** - 一条命令启动，自动初始化演示站点
@@ -17,20 +20,22 @@
 ```
 ├── conf/
 │   ├── config.yml          # 主配置文件
-│   └── config.yml.example  # 配置示例
-├── usr/themes/             # 主题目录
-│   ├── default/            # 默认主题
-│   ├── minimal/            # 极简主题
-│   └── dark-pro/           # 深色主题
+│   ├── moments.yml         # 瞬间配置
+│   ├── links.yml           # 友链配置
+│   └── gallery.yml         # 图库配置
+├── usr/themes/             # 主题目录（8 套内置主题）
 ├── posts/                  # 文章目录
-│   └── [分类]/[文章].md
 ├── pages/                  # 自定义页面
+├── assets/gallery/         # 图库图片目录
 ├── build.js                # 构建脚本
 ├── blog.js                 # 前端引擎
-├── backup.js               # 备份脚本
+├── serve.js                # 开发服务器
 ├── index.html              # 首页
 ├── post.html               # 文章页
-└── page.html               # 自定义页面
+├── page.html               # 自定义页面
+├── moments.html            # 瞬间页面
+├── links.html              # 友链页面
+└── gallery.html            # 图库页面
 ```
 
 ## 🚀 快速开始
@@ -42,13 +47,50 @@ git clone https://github.com/your-username/your-blog.git
 cd your-blog
 ```
 
-### 2. 配置站点
+### 2. 初始化项目
 
-复制并编辑配置文件：
+Git 仓库中只包含示例文件（`xxx-example`），需要先初始化：
+
+**方式一：使用初始化脚本（推荐）**
 
 ```bash
-cp conf/config.yml.example conf/config.yml
+# Node.js（跨平台）
+node init.js
+
+# Linux/macOS
+chmod +x init.sh && ./init.sh
+
+# Windows PowerShell
+.\init.ps1
 ```
+
+脚本会将示例文件复制到工作目录：
+- `conf-example/config.yml.example` → `conf/config.yml`
+- `conf-example/moments.yml.example` → `conf/moments.yml`
+- `conf-example/links.yml.example` → `conf/links.yml`
+- `conf-example/gallery.yml.example` → `conf/gallery.yml`
+- `posts-example/` → `posts/`
+- `pages-example/` → `pages/`
+- `assets-example/` → `assets/`
+
+> 如果目标已存在，脚本会要求连续确认 3 次才会覆盖。
+
+**方式二：手动复制**
+
+```bash
+# 复制配置文件
+cp conf-example/config.yml.example conf/config.yml
+cp conf-example/moments.yml.example conf/moments.yml
+cp conf-example/links.yml.example conf/links.yml
+cp conf-example/gallery.yml.example conf/gallery.yml
+
+# 复制示例内容
+cp -r posts-example posts
+cp -r pages-example pages
+cp -r assets-example assets
+```
+
+### 3. 配置站点
 
 编辑 `conf/config.yml` 设置站点信息：
 
@@ -60,7 +102,7 @@ site:
   email: your@email.com
 ```
 
-### 3. 编写文章
+### 4. 编写文章
 
 在 `posts/` 目录下创建 Markdown 文件：
 
@@ -76,20 +118,20 @@ tags: [标签1, 标签2]
 这里是文章正文...
 ```
 
-### 4. 构建索引
+### 5. 构建索引
 
 ```bash
 node build.js
 ```
 
-### 5. 本地预览
+### 6. 本地预览
 
 ```bash
-# Python
-python -m http.server 8080
+# 使用内置服务器（推荐）
+node serve.js
 
-# 或 Node.js
-npx serve .
+# 或 Python
+python -m http.server 8080
 ```
 
 访问 `http://localhost:8080` 预览效果。
@@ -189,9 +231,9 @@ pages:
     source: pages/about.md
 ```
 
-### 功能模块（瞬间/友链）
+### 功能模块（瞬间/友链/图库）
 
-瞬间和友链使用独立 YAML 文件配置：
+使用独立 YAML 文件配置：
 
 ```yaml
 # config.yml 中启用
@@ -202,6 +244,9 @@ features:
   links:
     enabled: true
     source: conf/links.yml
+  gallery:
+    enabled: true
+    source: conf/gallery.yml
 
 # 在导航栏添加入口
 nav:
@@ -209,6 +254,22 @@ nav:
     url: ./moments.html
   - name: 友链
     url: ./links.html
+  - name: 图库
+    url: ./gallery.html
+```
+
+图库配置示例 (`conf/gallery.yml`)：
+```yaml
+settings:
+  maxDepth: 2  # 全局递归深度
+  formats: [jpg, jpeg, png, gif, webp]
+
+groups:
+  - id: photos
+    name: 摄影作品
+    icon: 📷
+    path: assets/gallery/photos
+    maxDepth: 3  # 可覆盖全局深度
 ```
 
 瞬间配置示例 (`conf/moments.yml`)：
@@ -245,6 +306,9 @@ links:
 ## 📜 命令参考
 
 ```bash
+# 项目初始化（复制示例文件）
+node init.js
+
 # 构建索引
 node build.js
 

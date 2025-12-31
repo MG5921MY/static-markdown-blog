@@ -192,10 +192,21 @@
       }
       
       function renderLinks(links) {
-        return links.map(link => {
-          const avatarHtml = link.avatar 
-            ? `<img src="${Blog.escapeHtml(link.avatar)}" alt="${Blog.escapeHtml(link.name)}" onerror="this.parentElement.innerHTML='${link.icon || '🔗'}'">`
-            : (link.icon || '🔗');
+        return links.filter(link => {
+          // 验证 URL 安全性
+          if (!link.url || typeof link.url !== 'string') return false;
+          const lower = link.url.toLowerCase().trim();
+          if (/^(javascript|data|vbscript):/i.test(lower)) return false;
+          return true;
+        }).map(link => {
+          // 验证头像 URL
+          let avatarHtml = link.icon || '🔗';
+          if (link.avatar && typeof link.avatar === 'string') {
+            const avatarLower = link.avatar.toLowerCase();
+            if (!(/^(javascript|data|vbscript):/i.test(avatarLower))) {
+              avatarHtml = `<img src="${Blog.escapeHtml(link.avatar)}" alt="${Blog.escapeHtml(link.name)}" onerror="this.parentElement.innerHTML='${Blog.escapeHtml(link.icon || '🔗')}'">`;
+            }
+          }
           
           let domain = '';
           try {

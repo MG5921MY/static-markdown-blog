@@ -11,6 +11,14 @@
   --accent: #1a8917;
   --accent-hover: #0f730c;
   --nav-height: 65px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--surface);
+  --bg-card: var(--surface);
+  --bg-card-hover: rgba(0, 0, 0, 0.04);
+  --text-primary: var(--text);
+  --accent-light: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,6 +30,14 @@
     --text-muted: rgba(255, 255, 255, 0.38);
     --border: rgba(255, 255, 255, 0.12);
     --accent: #49a148;
+    
+    /* 统一变量别名 */
+    --bg-primary: var(--bg);
+    --bg-secondary: var(--surface);
+    --bg-card: var(--surface);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --text-primary: var(--text);
+    --accent-light: var(--accent);
   }
 }
 

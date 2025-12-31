@@ -75,6 +75,8 @@ nav:
     url: ./moments.html
   - name: 友链
     url: ./links.html
+  - name: 图库
+    url: ./gallery.html
   - name: 关于
     url: ./page.html?id=about
 
@@ -116,3 +118,6 @@ features:
   links:
     enabled: true
     source: conf/links.yml
+  gallery:
+    enabled: true
+    source: conf/gallery.yml

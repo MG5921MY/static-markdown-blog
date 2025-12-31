@@ -318,6 +318,52 @@ function resolvePath(configPath, basePath) {
 }
 
 /**
+ * 扫描图库目录
+ */
+function scanGalleryDir(dirPath, basePath, currentDepth, maxDepth, formats) {
+  const result = { images: [], subfolders: {} };
+  
+  if (maxDepth !== -1 && currentDepth > maxDepth) return result;
+  if (!fs.existsSync(dirPath)) return result;
+  
+  const items = fs.readdirSync(dirPath);
+  
+  for (const item of items) {
+    if (item.startsWith('.') || item.startsWith('_')) continue;
+    
+    const fullPath = path.join(dirPath, item);
+    const relativePath = path.relative('.', fullPath).replace(/\\/g, '/');
+    const stat = fs.statSync(fullPath);
+    
+    if (stat.isDirectory()) {
+      const subResult = scanGalleryDir(fullPath, basePath, currentDepth + 1, maxDepth, formats);
+      if (subResult.images.length > 0 || Object.keys(subResult.subfolders).length > 0) {
+        result.subfolders[item] = subResult;
+      }
+    } else if (stat.isFile()) {
+      const ext = path.extname(item).toLowerCase().slice(1);
+      if (formats.includes(ext)) {
+        result.images.push(relativePath);
+      }
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * 统计图库图片数量
+ */
+function countGalleryImages(data) {
+  if (!data) return 0;
+  let count = (data.images || []).length;
+  for (const sub of Object.values(data.subfolders || {})) {
+    count += countGalleryImages(sub);
+  }
+  return count;
+}
+
+/**
  * 扫描可用主题
  */
 function scanThemes() {
@@ -569,6 +615,45 @@ function build() {
       }
     } else {
       console.warn(`   ⚠️ 友链配置不存在: ${linksPath}`);
+    }
+  }
+  
+  // 图库
+  if (features.gallery?.enabled && features.gallery?.source) {
+    const galleryPath = features.gallery.source;
+    if (fs.existsSync(galleryPath)) {
+      try {
+        const galleryContent = fs.readFileSync(galleryPath, 'utf8');
+        const galleryConfig = parseYaml(galleryContent);
+        const settings = galleryConfig.settings || {};
+        const defaultMaxDepth = settings.maxDepth !== undefined ? settings.maxDepth : 2;
+        const formats = settings.formats || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        
+        // 扫描各分组的图片
+        const groups = galleryConfig.groups || [];
+        const imagesData = {};
+        let totalImages = 0;
+        
+        for (const group of groups) {
+          if (!group.path) continue;
+          const groupMaxDepth = group.maxDepth !== undefined ? group.maxDepth : defaultMaxDepth;
+          const groupImages = scanGalleryDir(group.path, group.path, 0, groupMaxDepth, formats);
+          imagesData[group.id] = groupImages;
+          totalImages += countGalleryImages(groupImages);
+        }
+        
+        siteConfig.features.gallery = {
+          enabled: true,
+          settings: settings,
+          groups: groups,
+          images: imagesData
+        };
+        console.log(`   ✅ 图库 (${groups.length} 个分组, ${totalImages} 张图片)`);
+      } catch (e) {
+        console.warn(`   ⚠️ 图库配置读取失败: ${galleryPath}`, e.message);
+      }
+    } else {
+      console.warn(`   ⚠️ 图库配置不存在: ${galleryPath}`);
     }
   }
   

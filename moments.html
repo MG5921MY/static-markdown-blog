@@ -209,12 +209,21 @@
         content = content.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
         content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
         
-        // 图片
+        // 图片（验证 URL 安全性）
         let imagesHtml = '';
         if (moment.images && moment.images.length > 0) {
-          imagesHtml = `<div class="moment-images">
-            ${moment.images.map(img => `<img src="${Blog.escapeHtml(img)}" alt="图片" loading="lazy">`).join('')}
-          </div>`;
+          const safeImages = moment.images.filter(img => {
+            if (!img || typeof img !== 'string') return false;
+            // 只允许相对路径或 https URL
+            if (img.startsWith('http://')) return false;
+            if (/^(javascript|data|vbscript):/i.test(img)) return false;
+            return true;
+          });
+          if (safeImages.length > 0) {
+            imagesHtml = `<div class="moment-images">
+              ${safeImages.map(img => `<img src="${Blog.escapeHtml(img)}" alt="图片" loading="lazy">`).join('')}
+            </div>`;
+          }
         }
         
         // 标签

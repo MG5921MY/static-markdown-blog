@@ -15,6 +15,18 @@
   --color-danger-fg: #d1242f;
   --color-btn-bg: #f6f8fa;
   --nav-height: 62px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-primary: var(--color-canvas-default);
+  --bg-secondary: var(--color-canvas-subtle);
+  --bg-card: var(--color-canvas-subtle);
+  --bg-card-hover: var(--color-btn-bg);
+  --text-primary: var(--color-fg-default);
+  --text-secondary: var(--color-fg-muted);
+  --text-muted: var(--color-fg-subtle);
+  --accent: var(--color-accent-fg);
+  --accent-light: var(--color-accent-emphasis);
+  --border: var(--color-border-default);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -31,6 +43,18 @@
     --color-success-fg: #3fb950;
     --color-danger-fg: #f85149;
     --color-btn-bg: #21262d;
+    
+    /* 统一变量别名 */
+    --bg-primary: var(--color-canvas-default);
+    --bg-secondary: var(--color-canvas-subtle);
+    --bg-card: var(--color-canvas-subtle);
+    --bg-card-hover: var(--color-btn-bg);
+    --text-primary: var(--color-fg-default);
+    --text-secondary: var(--color-fg-muted);
+    --text-muted: var(--color-fg-subtle);
+    --accent: var(--color-accent-fg);
+    --accent-light: var(--color-accent-emphasis);
+    --border: var(--color-border-default);
   }
 }
 

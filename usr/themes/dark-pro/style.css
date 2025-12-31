@@ -14,6 +14,11 @@
   --red: #f85149;
   --purple: #a371f7;
   --nav-height: 60px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-card: var(--bg-secondary);
+  --bg-card-hover: var(--bg-tertiary);
+  --accent-light: var(--accent-hover);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

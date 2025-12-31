@@ -1,12 +1,12 @@
 {
   "site": {
-    "name": "MijiaoBy米椒",
-    "alias": "米椒小屋",
+    "name": "YourSiteName",
+    "alias": "站点别名",
     "description": "个人博客 · 学习笔记 · 生活记录",
-    "author": "MijiaoBy",
-    "email": "y992017784@outlook.com",
-    "favicon": "assets/favicon-light.ico",
-    "logo": "assets/favicon-light.ico"
+    "author": "YourName",
+    "email": "your-email@example.com",
+    "favicon": "assets/favicon.ico",
+    "logo": "assets/favicon.ico"
   },
   "theme": {
     "active": "default",
@@ -82,13 +82,13 @@
     }
   },
   "beian": {
-    "enabled": true,
-    "displayName": "MijiaoBy米椒",
-    "aliasName": "米椒小屋",
-    "recordName": "MijiaoBy米椒",
+    "enabled": false,
+    "displayName": "YourSiteName",
+    "aliasName": "站点别名",
+    "recordName": "YourSiteName",
     "icp": {
-      "enabled": true,
-      "number": "皖ICP备2025107617号-1",
+      "enabled": false,
+      "number": "备案号-XXXXXXXXX",
       "url": "https://beian.miit.gov.cn/"
     },
     "police": {
@@ -105,37 +105,37 @@
       "url": "./index.html"
     },
     {
-      "name": "技术笔记",
-      "url": "./page.html?id=tech-notes"
+      "name": "使用指南",
+      "url": "./page.html?id=guide"
     },
     {
-      "name": "工具记录",
-      "url": "./page.html?id=tools"
+      "name": "功能展示",
+      "url": "./page.html?id=features"
     },
     {
       "name": "瞬间",
       "url": "./moments.html"
     },
     {
-      "name": "友情链接",
+      "name": "友链",
       "url": "./links.html"
+    },
+    {
+      "name": "图库",
+      "url": "./gallery.html"
     },
     {
       "name": "关于",
       "url": "./page.html?id=about"
-    },
-    {
-      "name": "免责声明",
-      "url": "./page.html?id=disclaimer"
     }
   ],
   "display": {
     "postsPerPage": 10,
     "summaryLength": 150,
-    "heroBadge": "备案完成后将逐步上线完整内容",
-    "heroSubtitle": "记录思考，沉淀经验，把零散的学习笔记写成可复用的技术文档",
+    "heroBadge": "",
+    "heroSubtitle": "记录思考，沉淀经验",
     "showSiteInfo": true,
-    "siteType": "个人博客（非经营性）",
+    "siteType": "个人博客",
     "contentDirection": "技术 / 工具 / 随记"
   },
   "pages": {
@@ -146,34 +146,24 @@
       "description": "",
       "type": "markdown",
       "title": "关于本站",
-      "content": "# 这里是什么\r\n\r\n这里是我的个人博客，用来整理与分享：\r\n\r\n- 技术学习笔记（概念、要点、对比、总结）\r\n- 技术文档与操作手册（部署、配置、排错、最佳实践）\r\n- 实践记录与复盘（踩坑记录、方案选型、性能对比）\r\n\r\n## 我会尽量做到\r\n\r\n- **结论可追溯**：给出关键依据与参考链接\r\n- **步骤可复现**：能在相似环境重现结果\r\n- **内容可维护**：随版本/认知变化持续修订\r\n\r\n> 💡 部分文章属于阶段性总结，可能存在遗漏、过时或错误。重要操作请先在测试环境验证并做好备份。\r\n\r\n## 联系方式\r\n\r\n📮 邮箱：y992017784@outlook.com",
+      "content": "# 关于本站\r\n\r\n这是一个基于纯静态文件的博客系统示例站点。\r\n\r\n## 特性\r\n\r\n- 📝 Markdown 文章支持\r\n- 🎨 多主题切换\r\n- 📂 灵活的分类系统\r\n- 🔒 内置安全防护\r\n- ⚡ 纯静态，无需后端\r\n\r\n## 技术栈\r\n\r\n- 前端：原生 HTML/CSS/JavaScript\r\n- 构建：Node.js\r\n- 配置：YAML\r\n- 渲染：Marked.js + DOMPurify\r\n\r\n## 开源协议\r\n\r\nMIT License\r\n",
       "source": "pages/about.md"
     },
-    "disclaimer": {
-      "id": "disclaimer",
-      "name": "免责声明",
-      "icon": "⚠️",
-      "description": "",
-      "type": "markdown",
-      "title": "免责声明",
-      "content": "# 免责声明\r\n\r\n为避免误解与风险，请在使用本站内容前阅读以下声明：\r\n\r\n## 1. 内容性质\r\n\r\n本站文章为个人学习笔记与经验总结，可能存在遗漏、过时或错误。\r\n\r\n## 2. 不构成建议\r\n\r\n本站内容不构成法律、医疗、投资、安全、商业等任何专业建议或承诺。\r\n\r\n## 3. 风险自担\r\n\r\n你使用本站内容进行操作产生的任何后果，由你自行承担。建议在生产环境操作前先在测试环境验证，并做好备份。\r\n\r\n## 4. 外部链接\r\n\r\n本站可能包含第三方链接或引用。第三方内容的准确性、可用性与安全性不由本站保证。\r\n\r\n## 5. 版权与引用\r\n\r\n除非特别说明，本站原创内容默认仅供学习参考；引用内容将尽量注明来源。如你认为存在侵权，请联系我删除或更正。\r\n\r\n## 6. 更新与修订\r\n\r\n本站内容会不定期更新，历史文章可能与当前实践不一致，请以最新修订为准。",
-      "source": "pages/disclaimer.md"
-    },
-    "tech-notes": {
-      "id": "tech-notes",
-      "name": "技术笔记",
-      "icon": "📝",
+    "guide": {
+      "id": "guide",
+      "name": "使用指南",
+      "icon": "📖",
       "description": "",
       "type": "category",
-      "categoryId": "tech"
+      "categoryId": "guide"
     },
-    "tools": {
-      "id": "tools",
-      "name": "工具记录",
-      "icon": "🛠️",
+    "features": {
+      "id": "features",
+      "name": "功能展示",
+      "icon": "✨",
       "description": "",
       "type": "category",
-      "categoryId": "tools"
+      "categoryId": "features"
     }
   },
   "features": {
@@ -239,6 +229,76 @@
           "group": "resources"
         }
       ]
+    },
+    "gallery": {
+      "enabled": true,
+      "settings": {
+        "maxDepth": 2,
+        "formats": [
+          "jpg",
+          "jpeg",
+          "png",
+          "gif",
+          "webp",
+          "svg",
+          "ico"
+        ],
+        "thumbnail": {
+          "lazyLoad": true,
+          "perPage": 20
+        }
+      },
+      "groups": [
+        {
+          "id": "photos",
+          "name": "摄影作品",
+          "icon": "📷",
+          "path": "assets/gallery/photos",
+          "description": "日常摄影记录"
+        },
+        {
+          "id": "wallpapers",
+          "name": "壁纸收藏",
+          "icon": "🖼️",
+          "path": "assets/gallery/wallpapers",
+          "description": "精选壁纸"
+        },
+        {
+          "id": "screenshots",
+          "name": "截图记录",
+          "icon": "📱",
+          "path": "assets/gallery/screenshots",
+          "description": "项目截图、界面设计",
+          "maxDepth": 2
+        }
+      ],
+      "images": {
+        "photos": {
+          "images": [
+            "assets/gallery/photos/Quicker_20251222_110226.png"
+          ],
+          "subfolders": {}
+        },
+        "wallpapers": {
+          "images": [
+            "assets/gallery/wallpapers/Quicker_20251222_110226.png"
+          ],
+          "subfolders": {}
+        },
+        "screenshots": {
+          "images": [
+            "assets/gallery/screenshots/Quicker_20251222_110226.png"
+          ],
+          "subfolders": {
+            "al": {
+              "images": [
+                "assets/gallery/screenshots/al/Quicker_20251222_110226.png"
+              ],
+              "subfolders": {}
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -10,9 +10,9 @@ site:
   author: YourName
   email: your-email@example.com
   # 网站图标（相对于站点根目录）
-  favicon: assets-example/favicon.ico
+  favicon: assets/favicon.ico
   # 网站 Logo（相对于站点根目录）
-  logo: assets-example/favicon.ico
+  logo: assets/favicon.ico
 
 # ---------- 主题配置 ----------
 # 主题目录固定为 usr/themes/
@@ -69,21 +69,21 @@ categories:
   - id: guide
     name: 使用指南
     icon: 📖
-    path: posts-example/guide
+    path: posts/guide
     description: 项目介绍与使用教程
     type: tree
 
   - id: features
     name: 功能展示
     icon: ✨
-    path: posts-example/features
+    path: posts/features
     description: 博客系统功能特性介绍
     type: flat
 
   - id: demo
     name: 示例文章
     icon: 📝
-    path: posts-example/demo
+    path: posts/demo
     description: Markdown 写作示例
     type: flat
 
@@ -96,6 +96,12 @@ nav:
     url: ./page.html?id=guide
   - name: 功能展示
     url: ./page.html?id=features
+  - name: 瞬间
+    url: ./moments.html
+  - name: 友链
+    url: ./links.html
+  - name: 图库
+    url: ./gallery.html
   - name: 关于
     url: ./page.html?id=about
 
@@ -114,7 +120,7 @@ pages:
     name: 关于本站
     icon: 👤
     type: markdown
-    source: pages-example/about.md
+    source: pages/about.md
 
   - id: guide
     name: 使用指南
@@ -147,18 +153,17 @@ display:
 
 # ---------- 功能模块 ----------
 # 瞬间和友链使用独立配置文件，便于管理大量数据
-# 启用后可在导航栏添加入口：
-#   nav:
-#     - name: 瞬间
-#       url: ./moments.html
-#     - name: 友链
-#       url: ./links.html
+# 已在导航栏添加入口，如需隐藏可删除对应导航项
 features:
   # 瞬间/说说
   moments:
-    enabled: false
+    enabled: true
     source: conf/moments.yml
   # 友情链接
   links:
-    enabled: false
+    enabled: true
     source: conf/links.yml
+  # 图库
+  gallery:
+    enabled: true
+    source: conf/gallery.yml

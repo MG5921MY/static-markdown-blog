@@ -13,6 +13,13 @@
   --accent-bg: rgba(46, 170, 220, 0.1);
   --tag-bg: rgba(206, 205, 202, 0.5);
   --nav-height: 45px;
+  
+  /* 统一变量别名 - 供瞬间/友链/图库页面使用 */
+  --bg-primary: var(--bg-default);
+  --bg-card: var(--bg-secondary);
+  --bg-card-hover: var(--bg-hover);
+  --text-primary: var(--text-default);
+  --accent-light: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +32,13 @@
     --text-muted: rgba(255, 255, 255, 0.4);
     --border: rgba(255, 255, 255, 0.094);
     --tag-bg: rgba(255, 255, 255, 0.13);
+    
+    /* 统一变量别名 */
+    --bg-primary: var(--bg-default);
+    --bg-card: var(--bg-secondary);
+    --bg-card-hover: var(--bg-hover);
+    --text-primary: var(--text-default);
+    --accent-light: var(--accent);
   }
 }
 
