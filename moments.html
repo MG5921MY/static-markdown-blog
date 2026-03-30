@@ -6,6 +6,9 @@
   <title>瞬间</title>
   <meta name="description" content="瞬间/说说" />
   <meta name="color-scheme" content="light dark" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
   <style>
     /* 瞬间页面专用样式 - 使用主题变量 */
     .moments-container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
@@ -167,87 +170,10 @@
     </footer>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script src="./blog.core.js"></script>
+  <script src="./blog.render.js"></script>
+  <script src="./blog.ui.js"></script>
   <script src="./blog.js"></script>
-  
-  <script>
-    (async function() {
-      try {
-        await Blog.init();
-        Blog.renderNavLinks();
-        document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
-        document.title = `瞬间 | ${Blog.config?.site?.name || '博客'}`;
-        
-        // 加载瞬间数据
-        const momentsData = Blog.config?.features?.moments;
-        if (!momentsData) {
-          document.getElementById('moments-content').innerHTML = '<div class="empty-state"><p>瞬间功能未启用</p></div>';
-          return;
-        }
-        
-        const moments = momentsData.moments || [];
-        
-        if (moments.length === 0) {
-          document.getElementById('moments-content').innerHTML = '<div class="empty-state"><p>暂无瞬间</p></div>';
-          return;
-        }
-        
-        // 按日期排序（倒序）
-        moments.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        const html = `<div class="moments-timeline">${moments.map(renderMoment).join('')}</div>`;
-        document.getElementById('moments-content').innerHTML = html;
-        
-      } catch (error) {
-        console.error('Failed to load moments:', error);
-        document.getElementById('moments-content').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
-      }
-      
-      function renderMoment(moment) {
-        // 简单处理内容中的代码块
-        let content = Blog.escapeHtml(moment.content || '');
-        content = content.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-        content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
-        
-        // 图片（验证 URL 安全性）
-        let imagesHtml = '';
-        if (moment.images && moment.images.length > 0) {
-          const safeImages = moment.images.filter(img => {
-            if (!img || typeof img !== 'string') return false;
-            // 只允许相对路径或 https URL
-            if (img.startsWith('http://')) return false;
-            if (/^(javascript|data|vbscript):/i.test(img)) return false;
-            return true;
-          });
-          if (safeImages.length > 0) {
-            imagesHtml = `<div class="moment-images">
-              ${safeImages.map(img => `<img src="${Blog.escapeHtml(img)}" alt="图片" loading="lazy">`).join('')}
-            </div>`;
-          }
-        }
-        
-        // 标签
-        let tagsHtml = '';
-        if (moment.tags && moment.tags.length > 0) {
-          tagsHtml = `<div class="moment-tags">
-            ${moment.tags.map(tag => `<span class="moment-tag">#${Blog.escapeHtml(tag)}</span>`).join('')}
-          </div>`;
-        }
-        
-        return `<div class="moment-item">
-          <div class="moment-dot"></div>
-          <div class="moment-card">
-            <div class="moment-meta">
-              ${moment.mood ? `<span class="moment-mood">${Blog.escapeHtml(moment.mood)}</span>` : ''}
-              <span class="moment-date">${Blog.formatDate(moment.date)}</span>
-            </div>
-            <div class="moment-content">${content}</div>
-            ${imagesHtml}
-            ${tagsHtml}
-          </div>
-        </div>`;
-      }
-    })();
-  </script>
+  <script src="./moments.page.js"></script>
 </body>
 </html>

@@ -6,27 +6,29 @@
   <title>友情链接</title>
   <meta name="description" content="友情链接" />
   <meta name="color-scheme" content="light dark" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
   <style>
-    /* 友链页面专用样式 - 使用主题变量 */
     .links-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
     .links-header { text-align: center; margin-bottom: 40px; }
     .links-header h1 { font-size: 2rem; margin-bottom: 10px; }
     .links-header p { color: var(--text-secondary, #666); }
-    
+
     .links-group { margin-bottom: 40px; }
-    .links-group-title { 
-      font-size: 1.25rem; 
-      margin-bottom: 20px; 
+    .links-group-title {
+      font-size: 1.25rem;
+      margin-bottom: 20px;
       padding-bottom: 10px;
       border-bottom: 2px solid var(--border, #eee);
     }
-    
+
     .links-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
-    
+
     .link-card {
       background: var(--bg-card, rgba(255,255,255,0.03));
       border: 1px solid var(--border, #eee);
@@ -44,7 +46,7 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.1);
       border-color: var(--accent, #6366f1);
     }
-    
+
     .link-avatar {
       width: 50px;
       height: 50px;
@@ -62,10 +64,10 @@
       border-radius: 50%;
       object-fit: cover;
     }
-    
+
     .link-info { flex: 1; min-width: 0; }
-    .link-name { 
-      font-weight: 600; 
+    .link-name {
+      font-weight: 600;
       font-size: 1.1rem;
       margin-bottom: 5px;
       color: var(--text-primary, #333);
@@ -85,13 +87,13 @@
       color: var(--text-muted, #999);
       margin-top: 8px;
     }
-    
+
     .empty-state {
       text-align: center;
       padding: 60px 20px;
       color: var(--text-secondary, #666);
     }
-    
+
     @media (max-width: 640px) {
       .links-grid { grid-template-columns: 1fr; }
     }
@@ -110,10 +112,10 @@
   <main class="main">
     <div class="links-container">
       <div class="links-header">
-        <h1>🔗 友情链接</h1>
+        <h1>🔆 友情链接</h1>
         <p>一些有趣的网站和朋友们</p>
       </div>
-      
+
       <div id="links-content">
         <div class="loading-state" style="padding: 60px 0;">
           <div class="loading-spinner"></div>
@@ -132,100 +134,10 @@
     </footer>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script src="./blog.core.js"></script>
+  <script src="./blog.render.js"></script>
+  <script src="./blog.ui.js"></script>
   <script src="./blog.js"></script>
-  
-  <script>
-    (async function() {
-      try {
-        await Blog.init();
-        Blog.renderNavLinks();
-        document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
-        document.title = `友情链接 | ${Blog.config?.site?.name || '博客'}`;
-        
-        // 加载友链数据
-        const linksData = Blog.config?.features?.links;
-        if (!linksData) {
-          document.getElementById('links-content').innerHTML = '<div class="empty-state"><p>友链功能未启用</p></div>';
-          return;
-        }
-        
-        const groups = linksData.groups || [];
-        const links = linksData.links || [];
-        
-        if (links.length === 0) {
-          document.getElementById('links-content').innerHTML = '<div class="empty-state"><p>暂无友链</p></div>';
-          return;
-        }
-        
-        let html = '';
-        
-        // 按分组渲染
-        if (groups.length > 0) {
-          for (const group of groups) {
-            const groupLinks = links.filter(l => l.group === group.id);
-            if (groupLinks.length === 0) continue;
-            
-            html += `<div class="links-group">
-              <h2 class="links-group-title">${Blog.escapeHtml(group.icon || '')} ${Blog.escapeHtml(group.name)}</h2>
-              <div class="links-grid">${renderLinks(groupLinks)}</div>
-            </div>`;
-          }
-          
-          // 未分组的链接
-          const ungrouped = links.filter(l => !l.group || !groups.find(g => g.id === l.group));
-          if (ungrouped.length > 0) {
-            html += `<div class="links-group">
-              <h2 class="links-group-title">🔗 其他链接</h2>
-              <div class="links-grid">${renderLinks(ungrouped)}</div>
-            </div>`;
-          }
-        } else {
-          html = `<div class="links-grid">${renderLinks(links)}</div>`;
-        }
-        
-        document.getElementById('links-content').innerHTML = html;
-        
-      } catch (error) {
-        console.error('Failed to load links:', error);
-        document.getElementById('links-content').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
-      }
-      
-      function renderLinks(links) {
-        return links.filter(link => {
-          // 验证 URL 安全性
-          if (!link.url || typeof link.url !== 'string') return false;
-          const lower = link.url.toLowerCase().trim();
-          if (/^(javascript|data|vbscript):/i.test(lower)) return false;
-          return true;
-        }).map(link => {
-          // 验证头像 URL
-          let avatarHtml = link.icon || '🔗';
-          if (link.avatar && typeof link.avatar === 'string') {
-            const avatarLower = link.avatar.toLowerCase();
-            if (!(/^(javascript|data|vbscript):/i.test(avatarLower))) {
-              avatarHtml = `<img src="${Blog.escapeHtml(link.avatar)}" alt="${Blog.escapeHtml(link.name)}" onerror="this.parentElement.innerHTML='${Blog.escapeHtml(link.icon || '🔗')}'">`;
-            }
-          }
-          
-          let domain = '';
-          try {
-            domain = new URL(link.url).hostname;
-          } catch (e) {
-            domain = link.url;
-          }
-          
-          return `<a href="${Blog.escapeHtml(link.url)}" class="link-card" target="_blank" rel="noopener noreferrer">
-            <div class="link-avatar">${avatarHtml}</div>
-            <div class="link-info">
-              <div class="link-name">${Blog.escapeHtml(link.name)}</div>
-              ${link.description ? `<div class="link-desc">${Blog.escapeHtml(link.description)}</div>` : ''}
-              <div class="link-url">${Blog.escapeHtml(domain)}</div>
-            </div>
-          </a>`;
-        }).join('');
-      }
-    })();
-  </script>
+  <script src="./links.page.js"></script>
 </body>
 </html>

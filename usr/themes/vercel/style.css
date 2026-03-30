@@ -171,6 +171,13 @@ img.nav-logo { background: none; clip-path: none; object-fit: contain; }
 .section-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
 .section-title::before { display: none; }
 
+.search-box { position: relative; display: flex; align-items: center; }
+.search-input { width: 200px; padding: 8px 12px 8px 32px; background: var(--accents-1); border: 1px solid var(--accents-2); border-radius: 6px; color: var(--geist-foreground); font-size: 14px; outline: none; transition: all 0.15s; }
+.search-input:focus { border-color: var(--geist-foreground); width: 260px; }
+.search-input::placeholder { color: var(--accents-4); }
+.search-icon { position: absolute; left: 10px; font-size: 13px; pointer-events: none; }
+mark { background: var(--accents-2); color: var(--geist-foreground); padding: 0 2px; }
+
 /* Posts - Vercel 卡片风格 */
 .posts-grid {
   display: grid;
@@ -381,3 +388,32 @@ img.nav-logo { background: none; clip-path: none; object-fit: contain; }
   .site-info { grid-template-columns: 1fr; }
   .section-header { flex-direction: column; align-items: flex-start; }
 }
+
+.nav-toggle { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 36px; height: 36px; background: none; border: 1px solid var(--accents-2); border-radius: 6px; cursor: pointer; padding: 8px; }
+.nav-toggle span { display: block; width: 16px; height: 1.5px; background: var(--geist-foreground); border-radius: 1px; transition: all 0.2s; }
+.nav-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; transition: opacity 0.2s; }
+.nav-overlay.active { display: block; opacity: 1; }
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; }
+  .nav-links { position: fixed; top: 0; right: 0; width: 260px; height: 100vh; flex-direction: column; background: var(--geist-background); padding: 70px 16px 16px; gap: 2px; z-index: 100; transform: translateX(100%); transition: transform 0.2s; border-left: 1px solid var(--accents-2); overflow-y: auto; }
+  .nav-links.open { transform: translateX(0); }
+  .nav-link { padding: 10px 14px; font-size: 14px; width: 100%; border-radius: 6px; }
+}
+.back-to-top { position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px; border-radius: 50%; background: var(--geist-foreground); color: var(--geist-background); border: none; font-size: 16px; cursor: pointer; opacity: 0; transform: translateY(10px); transition: all 0.15s; z-index: 998; }
+.back-to-top.visible { opacity: 1; transform: translateY(0); }
+.reading-progress { position: fixed; top: var(--nav-height); left: 0; right: 0; height: 2px; background: var(--accents-2); z-index: 999; }
+.reading-progress-bar { height: 100%; width: 0; background: var(--geist-foreground); transition: width 0.1s; }
+.toc-container { background: var(--accents-1); border: 1px solid var(--accents-2); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+.toc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: 500; }
+.toc-toggle { background: var(--geist-background); border: 1px solid var(--accents-2); border-radius: 4px; padding: 4px 8px; font-size: 12px; color: var(--accents-5); cursor: pointer; }
+.toc-list { display: flex; flex-direction: column; gap: 2px; }
+.toc-list.collapsed { display: none; }
+.toc-link { display: block; padding: 5px 10px; font-size: 13px; color: var(--accents-5); border-radius: 4px; text-decoration: none; transition: all 0.1s; border-left: 2px solid transparent; }
+.toc-link:hover { background: var(--accents-1); color: var(--geist-foreground); }
+.toc-link.active { background: var(--accents-1); color: var(--geist-foreground); border-left-color: var(--geist-foreground); }
+.toc-h3 { padding-left: 20px; font-size: 12px; }
+.post-card.animate-in { animation: cardFade 0.3s ease-out forwards; }
+@keyframes cardFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }

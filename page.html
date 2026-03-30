@@ -6,10 +6,13 @@
   <title>加载中...</title>
   <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link rel="preload" as="fetch" href="./posts/index.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css" media="(prefers-color-scheme: light)" />
 </head>
-
 <body>
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
@@ -26,7 +29,6 @@
         <p>正在加载...</p>
       </div>
 
-      <!-- Markdown 页面内容 -->
       <div id="page-markdown" style="display: none;">
         <section class="hero" style="padding-bottom: 40px;">
           <h1 class="hero-title" id="page-title"></h1>
@@ -37,7 +39,6 @@
         </section>
       </div>
 
-      <!-- 分类页面内容 -->
       <div id="page-category" style="display: none;">
         <section class="hero" style="padding-bottom: 40px;">
           <h1 class="hero-title" id="cat-title"></h1>
@@ -50,7 +51,6 @@
         </section>
       </div>
 
-      <!-- HTML 页面内容 -->
       <div id="page-html" style="display: none;">
         <section class="hero" style="padding-bottom: 40px;">
           <h1 class="hero-title" id="html-title"></h1>
@@ -61,7 +61,6 @@
         </section>
       </div>
 
-      <!-- 错误页面 -->
       <div id="page-error" class="error-state" style="display: none; padding: 100px 0; text-align: center;">
         <h2>页面未找到</h2>
         <p id="error-detail">抱歉，您访问的页面不存在</p>
@@ -79,120 +78,109 @@
     </footer>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/javascript.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/bash.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/yaml.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/json.min.js"></script>
+  <script src="./blog.core.js"></script>
+  <script src="./blog.render.js"></script>
+  <script src="./blog.ui.js"></script>
   <script src="./blog.js"></script>
-  
   <script>
     (async function() {
       const loadingEl = document.getElementById('page-loading');
       const errorEl = document.getElementById('page-error');
       const errorDetail = document.getElementById('error-detail');
 
-      // 获取页面 ID
       const pageId = Blog.getUrlParam('id');
       if (!pageId) {
-        loadingEl.style.display = 'none';
-        errorDetail.textContent = '缺少页面参数';
-        errorEl.style.display = 'block';
+        Blog.showPageError(loadingEl, errorEl, errorDetail, '缺少页面参数');
         return;
       }
 
-      try {
-        const success = await Blog.init();
-        if (!success) throw new Error('初始化失败');
+      await Blog.runPage({
+        needIndex: true,
+        needPathMap: false,
+        loadingEl,
+        errorEl,
+        errorDetailEl: errorDetail,
+        task: async () => {
+          const page = Blog.getPage(pageId);
+          if (!page) throw new Error('页面不存在');
 
-        // 渲染导航栏
-        Blog.renderNavLinks();
+          document.title = `${page.name} | ${Blog.config?.site?.name || '博客'}`;
+          document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
+          loadingEl.style.display = 'none';
 
-        // 获取页面数据
-        const page = Blog.config?.pages?.[pageId];
-        if (!page) throw new Error('页面不存在');
-
-        document.title = `${page.name} | ${Blog.config?.site?.name || '博客'}`;
-        document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || '博客';
-        loadingEl.style.display = 'none';
-
-        if (page.type === 'markdown') {
-          // Markdown 页面
-          document.getElementById('page-title').textContent = page.title || page.name;
-          document.getElementById('page-desc').textContent = page.description || '';
-          document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
-          document.getElementById('page-markdown').style.display = 'block';
-
-        } else if (page.type === 'category') {
-          // 分类页面
-          const category = Blog.index?.categories?.[page.categoryId];
-          if (!category) throw new Error('分类不存在');
-
-          document.getElementById('cat-title').textContent = `${page.icon || category.icon || ''} ${page.name}`;
-          document.getElementById('cat-desc').textContent = page.description || category.description || '';
-          
-          // 当前路径
-          let currentPath = '';
-          
-          function updateCategoryDisplay(dirPath = '') {
-            currentPath = dirPath;
-            const result = Blog.renderCategoryContent(page.categoryId, dirPath);
-            
-            document.getElementById('cat-dir-nav').innerHTML = result.dirNav || '';
-            document.getElementById('cat-dir-tree').innerHTML = result.dirTreePanel || '';
-            document.getElementById('cat-posts').innerHTML = result.html || '<div class="empty-state"><p>暂无文章</p></div>';
+          if (page.type === 'markdown') {
+            await Promise.all([Blog.loadMarkdownDeps(), Blog.loadHighlightDeps()]);
+            document.getElementById('page-title').textContent = page.title || page.name;
+            document.getElementById('page-desc').textContent = page.description || '';
+            document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
+            document.getElementById('page-markdown').style.display = 'block';
+            return;
           }
-          
-          updateCategoryDisplay();
-          document.getElementById('page-category').style.display = 'block';
 
-          // 目录导航点击
-          document.getElementById('cat-dir-nav').addEventListener('click', (e) => {
-            const btn = e.target.closest('.dir-nav-btn');
-            if (btn) {
-              updateCategoryDisplay(btn.dataset.path);
-              return;
-            }
-            if (e.target.closest('.dir-tree-toggle')) {
-              const panel = document.querySelector('.dir-tree-panel');
-              if (panel) panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-            }
-          });
+          if (page.type === 'category') {
+            const category = Blog.index?.categories?.[page.categoryId];
+            if (!category) throw new Error('分类不存在');
 
-          // 目录树点击
-          document.getElementById('cat-dir-tree').addEventListener('click', (e) => {
-            if (e.target.closest('.dir-tree-close')) {
-              const panel = document.querySelector('.dir-tree-panel');
-              if (panel) panel.style.display = 'none';
-              return;
-            }
-            const item = e.target.closest('.tree-item');
-            if (item) {
-              updateCategoryDisplay(item.dataset.path);
-              document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
-              item.classList.add('active');
-            }
-          });
+            document.getElementById('cat-title').textContent = `${page.icon || category.icon || ''} ${page.name}`;
+            document.getElementById('cat-desc').textContent = page.description || category.description || '';
 
-        } else if (page.type === 'html') {
-          // HTML 页面 - 使用 DOMPurify 净化
-          document.getElementById('html-title').textContent = `${page.icon || ''} ${page.name}`;
-          document.getElementById('html-desc').textContent = page.description || '';
-          const htmlContent = page.content || '';
-          document.getElementById('html-content').innerHTML = typeof DOMPurify !== 'undefined' 
-            ? DOMPurify.sanitize(htmlContent) 
-            : Blog.escapeHtml(htmlContent);
-          document.getElementById('page-html').style.display = 'block';
+            const dirNavEl = document.getElementById('cat-dir-nav');
+            const dirTreeEl = document.getElementById('cat-dir-tree');
+            const postsEl = document.getElementById('cat-posts');
+
+            const updateCategoryDisplay = (dirPath = '') => {
+              const result = Blog.renderCategoryContent(page.categoryId, dirPath);
+              dirNavEl.innerHTML = result.dirNav || '';
+              dirTreeEl.innerHTML = result.dirTreePanel || '';
+              postsEl.innerHTML = result.html || '<div class="empty-state"><p>暂无文章</p></div>';
+            };
+
+            updateCategoryDisplay();
+            document.getElementById('page-category').style.display = 'block';
+
+            dirNavEl.addEventListener('click', (e) => {
+              const btn = e.target.closest('.dir-nav-btn');
+              if (btn) {
+                updateCategoryDisplay(btn.dataset.path);
+                return;
+              }
+              if (e.target.closest('.dir-tree-toggle')) {
+                const panel = document.querySelector('.dir-tree-panel');
+                if (panel) panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+              }
+            });
+
+            dirTreeEl.addEventListener('click', (e) => {
+              if (e.target.closest('.dir-tree-close')) {
+                const panel = document.querySelector('.dir-tree-panel');
+                if (panel) panel.style.display = 'none';
+                return;
+              }
+              const item = e.target.closest('.tree-item');
+              if (item) {
+                updateCategoryDisplay(item.dataset.path);
+                document.querySelectorAll('.tree-item').forEach((i) => i.classList.remove('active'));
+                item.classList.add('active');
+              }
+            });
+            return;
+          }
+
+          if (page.type === 'html') {
+            await Blog.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js');
+            document.getElementById('html-title').textContent = `${page.icon || ''} ${page.name}`;
+            document.getElementById('html-desc').textContent = page.description || '';
+            const htmlContent = page.content || '';
+            document.getElementById('html-content').innerHTML = typeof DOMPurify !== 'undefined'
+              ? DOMPurify.sanitize(htmlContent)
+              : Blog.escapeHtml(htmlContent);
+            document.getElementById('page-html').style.display = 'block';
+            return;
+          }
+
+          throw new Error(`不支持的页面类型: ${page.type}`);
         }
-
-      } catch (error) {
-        console.error('Failed to load page:', error);
-        loadingEl.style.display = 'none';
-        errorDetail.textContent = error.message;
-        errorEl.style.display = 'block';
-      }
+      });
     })();
   </script>
 </body>

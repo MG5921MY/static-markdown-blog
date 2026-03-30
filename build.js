@@ -317,6 +317,130 @@ function resolvePath(configPath, basePath) {
   return path.join(basePath, configPath);
 }
 
+function isNonEmptyString(v) {
+  return typeof v === 'string' && v.trim().length > 0;
+}
+
+function isValidRefId(v) {
+  return isNonEmptyString(v) && /^[a-zA-Z0-9_-]+$/.test(v);
+}
+
+function validateConfigShape(config) {
+  const errors = [];
+  const warnings = [];
+
+  if (!config || typeof config !== 'object') {
+    errors.push('配置文件根节点必须是对象。');
+    return { errors, warnings };
+  }
+
+  if (!isNonEmptyString(config.site?.name)) {
+    warnings.push('建议设置 site.name，避免页面标题为空。');
+  }
+
+  if (config.display?.postsPerPage !== undefined) {
+    const ppp = Number(config.display.postsPerPage);
+    if (!Number.isInteger(ppp) || ppp < 1) {
+      errors.push('display.postsPerPage 必须是大于等于 1 的整数。');
+    }
+  }
+
+  const categories = config.categories || [];
+  const categoryIdSet = new Set();
+  if (!Array.isArray(categories)) {
+    errors.push('categories 必须是数组。');
+  } else {
+    categories.forEach((cat, idx) => {
+      const prefix = `categories[${idx}]`;
+      if (!cat || typeof cat !== 'object') {
+        errors.push(`${prefix} 必须是对象。`);
+        return;
+      }
+      if (!isValidRefId(cat.id)) {
+        errors.push(`${prefix}.id 必须是非空字符串，且仅允许字母/数字/_/-。`);
+      } else if (categoryIdSet.has(cat.id)) {
+        errors.push(`categories.id 出现重复值: ${cat.id}`);
+      } else {
+        categoryIdSet.add(cat.id);
+      }
+      if (!isNonEmptyString(cat.name)) {
+        errors.push(`${prefix}.name 必须是非空字符串。`);
+      }
+      if (!isNonEmptyString(cat.path)) {
+        errors.push(`${prefix}.path 必须是非空字符串。`);
+      }
+      if (cat.type !== undefined && !['flat', 'tree'].includes(cat.type)) {
+        errors.push(`${prefix}.type 仅支持 flat 或 tree。`);
+      }
+    });
+  }
+
+  const pages = config.pages || [];
+  if (pages !== undefined && !Array.isArray(pages)) {
+    errors.push('pages 必须是数组。');
+  } else if (Array.isArray(pages)) {
+    const pageIdSet = new Set();
+    pages.forEach((page, idx) => {
+      const prefix = `pages[${idx}]`;
+      if (!page || typeof page !== 'object') {
+        errors.push(`${prefix} 必须是对象。`);
+        return;
+      }
+      if (!isValidRefId(page.id)) {
+        errors.push(`${prefix}.id 必须是非空字符串，且仅允许字母/数字/_/-。`);
+      } else if (pageIdSet.has(page.id)) {
+        errors.push(`pages.id 出现重复值: ${page.id}`);
+      } else {
+        pageIdSet.add(page.id);
+      }
+
+      const type = page.type || 'html';
+      if (!['markdown', 'category', 'html'].includes(type)) {
+        errors.push(`${prefix}.type 仅支持 markdown/category/html。`);
+      }
+      if (type === 'markdown' && !isNonEmptyString(page.source)) {
+        errors.push(`${prefix}.source 在 markdown 页面中必须是非空字符串。`);
+      }
+      if (type === 'category' && !isValidRefId(page.categoryId)) {
+        errors.push(`${prefix}.categoryId 在 category 页面中必须是合法 ID。`);
+      }
+      if (type === 'category' && isValidRefId(page.categoryId) && !categoryIdSet.has(page.categoryId)) {
+        errors.push(`${prefix}.categoryId 引用不存在的分类: ${page.categoryId}`);
+      }
+    });
+  }
+
+  const nav = config.nav || [];
+  if (nav !== undefined && !Array.isArray(nav)) {
+    errors.push('nav 必须是数组。');
+  } else if (Array.isArray(nav)) {
+    nav.forEach((item, idx) => {
+      const prefix = `nav[${idx}]`;
+      if (!item || typeof item !== 'object') {
+        errors.push(`${prefix} 必须是对象。`);
+        return;
+      }
+      if (!isNonEmptyString(item.name)) {
+        errors.push(`${prefix}.name 必须是非空字符串。`);
+      }
+      if (!isNonEmptyString(item.url)) {
+        errors.push(`${prefix}.url 必须是非空字符串。`);
+      }
+    });
+  }
+
+  const features = config.features || {};
+  ['moments', 'links', 'gallery'].forEach((key) => {
+    const feature = features[key];
+    if (!feature || feature.enabled !== true) return;
+    if (!isNonEmptyString(feature.source)) {
+      errors.push(`features.${key}.enabled=true 时，source 必须是非空字符串。`);
+    }
+  });
+
+  return { errors, warnings };
+}
+
 /**
  * 扫描图库目录
  */
@@ -420,6 +544,17 @@ function build() {
   
   const configContent = fs.readFileSync(CONFIG_PATH, 'utf8');
   const config = parseYaml(configContent);
+
+  const validation = validateConfigShape(config);
+  if (validation.warnings.length > 0) {
+    console.warn('\n⚠️ 配置警告:');
+    validation.warnings.forEach(msg => console.warn(`   - ${msg}`));
+  }
+  if (validation.errors.length > 0) {
+    console.error('\n❌ 配置校验失败:');
+    validation.errors.forEach(msg => console.error(`   - ${msg}`));
+    process.exit(1);
+  }
   
   const scanConfig = config.scan || {};
   const maxDepth = scanConfig.maxDepth !== undefined ? scanConfig.maxDepth : 2;

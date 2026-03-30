@@ -140,6 +140,13 @@ img.nav-logo { background: none; object-fit: contain; }
 .section-title { font-size: 18px; font-weight: 600; color: var(--text-secondary); }
 .section-title::before { display: none; }
 
+.search-box { position: relative; display: flex; align-items: center; }
+.search-input { width: 180px; padding: 5px 10px 5px 28px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-default); font-size: 13px; outline: none; transition: all 0.15s; }
+.search-input:focus { border-color: var(--accent); width: 240px; }
+.search-input::placeholder { color: var(--text-muted); }
+.search-icon { position: absolute; left: 8px; font-size: 12px; pointer-events: none; }
+mark { background: var(--accent-bg); color: var(--accent); padding: 0 2px; border-radius: 2px; }
+
 /* Posts - Notion 数据库风格 */
 .posts-grid {
   display: flex;
@@ -339,3 +346,34 @@ img.nav-logo { background: none; object-fit: contain; }
 .tree-item.active { background: var(--accent-bg); }
 .tree-name { flex: 1; font-size: 14px; }
 .tree-count { font-size: 12px; color: var(--text-muted); }
+
+.nav-toggle { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 4px; width: 32px; height: 32px; background: none; border: none; cursor: pointer; padding: 6px; border-radius: 4px; }
+.nav-toggle:hover { background: var(--bg-hover); }
+.nav-toggle span { display: block; width: 16px; height: 1.5px; background: var(--text-default); border-radius: 1px; transition: all 0.15s; }
+.nav-toggle.active span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 99; opacity: 0; transition: opacity 0.15s; }
+.nav-overlay.active { display: block; opacity: 1; }
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; }
+  .nav-links { position: fixed; top: 0; right: 0; width: 240px; height: 100vh; flex-direction: column; background: var(--bg-default); padding: 55px 12px 12px; gap: 2px; z-index: 100; transform: translateX(100%); transition: transform 0.15s; border-left: 1px solid var(--border); overflow-y: auto; }
+  .nav-links.open { transform: translateX(0); }
+  .nav-link { padding: 8px 10px; font-size: 14px; width: 100%; border-radius: 4px; }
+}
+.back-to-top { position: fixed; bottom: 20px; right: 20px; width: 32px; height: 32px; border-radius: 4px; background: var(--bg-hover); border: none; color: var(--text-default); font-size: 14px; cursor: pointer; opacity: 0; transition: all 0.15s; z-index: 998; }
+.back-to-top.visible { opacity: 1; }
+.reading-progress { position: fixed; top: var(--nav-height); left: 0; right: 0; height: 2px; background: var(--border); z-index: 999; }
+.reading-progress-bar { height: 100%; width: 0; background: var(--accent); transition: width 0.1s; }
+.toc-container { background: var(--bg-secondary); border-radius: 4px; padding: 12px; margin-bottom: 16px; }
+.toc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
+.toc-toggle { background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.toc-toggle:hover { background: var(--bg-hover); }
+.toc-list { display: flex; flex-direction: column; gap: 1px; }
+.toc-list.collapsed { display: none; }
+.toc-link { display: block; padding: 4px 8px; font-size: 13px; color: var(--text-secondary); border-radius: 4px; text-decoration: none; }
+.toc-link:hover { background: var(--bg-hover); color: var(--text-default); }
+.toc-link.active { background: var(--accent-bg); color: var(--accent); }
+.toc-h3 { padding-left: 16px; font-size: 12px; }
+.post-card.animate-in { animation: cardFade 0.2s ease-out forwards; }
+@keyframes cardFade { from { opacity: 0; } to { opacity: 1; } }

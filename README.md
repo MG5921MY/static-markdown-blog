@@ -407,3 +407,25 @@ docker compose down -v          # 停止并删除数据卷
 ## 📄 License
 
 MIT License
+
+## 配置校验（build 前置）
+
+从当前版本开始，`node build.js` 在生成索引前会先执行配置结构校验，发现错误会直接中断构建。
+
+已覆盖的关键规则：
+- `display.postsPerPage` 必须是大于等于 `1` 的整数
+- `categories`/`pages`/`nav` 必须是数组，且核心字段必填
+- `categories.id`、`pages.id` 不允许重复
+- `pages.type=markdown` 必须有 `source`
+- `pages.type=category` 必须有合法 `categoryId`，且该分类必须存在
+- `features.moments|links|gallery.enabled=true` 时必须配置 `source`
+
+常见报错示例：
+- `display.postsPerPage 必须是大于等于 1 的整数`
+- `pages[1].categoryId 引用不存在的分类: xxx`
+- `features.gallery.enabled=true 时，source 必须是非空字符串`
+
+建议流程：
+1. 修改 `conf/config.yml` 后先运行 `node build.js`
+2. 按报错逐条修正配置
+3. 构建通过后再运行 `node serve.js` 预览

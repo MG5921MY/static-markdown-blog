@@ -2,79 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>关于 | 加载中...</title>
-  <meta name="description" content="" />
-  <meta name="color-scheme" content="light dark" />
+  <meta http-equiv="refresh" content="0; url=./page.html?id=about" />
+  <title>重定向中...</title>
 </head>
-
 <body>
-  <nav class="nav">
-    <a href="./index.html" class="nav-brand">
-      <div class="nav-logo"></div>
-      <span id="nav-site-name">加载中...</span>
-    </a>
-    <div class="nav-links" id="nav-links">
-      <a href="./index.html" class="nav-link">首页</a>
-    </div>
-  </nav>
-
-  <main class="main">
-    <div class="container">
-      <section class="hero" style="padding-bottom: 40px;">
-        <h1 class="hero-title">关于本站</h1>
-        <p class="hero-subtitle" id="about-subtitle">记录思考，沉淀经验</p>
-      </section>
-
-      <section class="section" style="padding-top: 0;">
-        <div class="info-panel">
-          <h2>这里是什么</h2>
-          <p>这里是我的个人博客，用来整理与分享：</p>
-          <ul>
-            <li>技术学习笔记（概念、要点、对比、总结）</li>
-            <li>技术文档与操作手册（部署、配置、排错、最佳实践）</li>
-            <li>实践记录与复盘（踩坑记录、方案选型、性能对比）</li>
-          </ul>
-        </div>
-
-        <div class="info-panel" style="margin-top: 24px;">
-          <h2>我会尽量做到</h2>
-          <ul>
-            <li>结论可追溯：给出关键依据与参考链接</li>
-            <li>步骤可复现：能在相似环境重现结果</li>
-            <li>内容可维护：随版本/认知变化持续修订</li>
-          </ul>
-        </div>
-
-        <div class="note-box">
-          <span class="icon">💡</span>
-          <p>部分文章属于阶段性总结，可能存在遗漏、过时或错误。重要操作请先在测试环境验证并做好备份。</p>
-        </div>
-      </section>
-    </div>
-
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-links" id="footer-links">
-            <a href="./index.html" class="footer-link">首页</a>
-          </div>
-          <div class="footer-info" id="beian-footer"></div>
-        </div>
-      </div>
-    </footer>
-  </main>
-
-  <script src="./blog.js"></script>
-  <script>
-    Blog.init().then(() => {
-      const siteName = Blog.config?.site?.name || '博客';
-      const siteDesc = Blog.config?.site?.description || '';
-      document.title = `关于 | ${siteName}`;
-      document.querySelector('meta[name="description"]').content = siteDesc;
-      document.getElementById('nav-site-name').textContent = siteName;
-      Blog.renderNavLinks();
-    });
-  </script>
+  <script>window.location.replace('./page.html?id=about');</script>
+  <p>正在跳转到<a href="./page.html?id=about">关于页面</a>...</p>
 </body>
 </html>

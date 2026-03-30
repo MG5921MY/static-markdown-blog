@@ -12,6 +12,14 @@
     "active": "default",
     "available": [
       {
+        "id": "acid",
+        "name": "acid",
+        "version": "1.0.0",
+        "author": "Unknown",
+        "description": "",
+        "path": "usr/themes/acid"
+      },
+      {
         "id": "dark-pro",
         "name": "Dark Pro",
         "version": "1.0.0",
@@ -36,6 +44,14 @@
         "path": "usr/themes/github"
       },
       {
+        "id": "glass",
+        "name": "glass",
+        "version": "1.0.0",
+        "author": "Unknown",
+        "description": "",
+        "path": "usr/themes/glass"
+      },
+      {
         "id": "medium",
         "name": "Medium",
         "version": "1.0.0",
@@ -58,6 +74,14 @@
         "author": "Community",
         "description": "Notion 风格主题 - 干净优雅的笔记风格",
         "path": "usr/themes/notion"
+      },
+      {
+        "id": "retro",
+        "name": "retro",
+        "version": "1.0.0",
+        "author": "Unknown",
+        "description": "",
+        "path": "usr/themes/retro"
       },
       {
         "id": "stripe",

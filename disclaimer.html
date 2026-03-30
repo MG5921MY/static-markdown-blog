@@ -6,6 +6,9 @@
   <title>免责声明 | 加载中...</title>
   <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
 </head>
 
 <body>
@@ -23,14 +26,14 @@
     <div class="container">
       <section class="hero" style="padding-bottom: 40px;">
         <h1 class="hero-title">免责声明</h1>
-        <p class="hero-subtitle">为避免误解与风险，请在使用本站内容前阅读</p>
+        <p class="hero-subtitle">为避免误解与风险，请在使用本站内容前阅读本声明</p>
       </section>
 
       <section class="section" style="padding-top: 0;">
         <div class="disclaimer-list">
           <div class="disclaimer-item">
             <h3><span class="num">1</span>内容性质</h3>
-            <p>本站文章为个人学习笔记与经验总结，可能存在遗漏、过时或错误。</p>
+            <p>本站内容为个人学习记录与经验总结，可能存在遗漏、过时或错误。</p>
           </div>
           <div class="disclaimer-item">
             <h3><span class="num">2</span>不构成建议</h3>
@@ -42,7 +45,7 @@
           </div>
           <div class="disclaimer-item">
             <h3><span class="num">4</span>外部链接</h3>
-            <p>本站可能包含第三方链接或引用。第三方内容的准确性、可用性与安全性不由本站保证。</p>
+            <p>本站可能包含第三方链接或引用，第三方内容的准确性、可用性与安全性不由本站保证。</p>
           </div>
           <div class="disclaimer-item">
             <h3><span class="num">5</span>版权与引用</h3>
@@ -68,14 +71,10 @@
     </footer>
   </main>
 
+  <script src="./blog.core.js"></script>
+  <script src="./blog.render.js"></script>
+  <script src="./blog.ui.js"></script>
   <script src="./blog.js"></script>
-  <script>
-    Blog.init().then(() => {
-      const siteName = Blog.config?.site?.name || '博客';
-      document.title = `免责声明 | ${siteName}`;
-      document.getElementById('nav-site-name').textContent = siteName;
-      Blog.renderNavLinks();
-    });
-  </script>
+  <script src="./disclaimer.page.js"></script>
 </body>
 </html>
