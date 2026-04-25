@@ -1,17 +1,63 @@
 @import "../base.css";
 
 :root {
-  --bg-primary: #f6f9fc;
-  --bg-secondary: #ffffff;
+  --bg-primary: #f3f7ff;
+  --bg-secondary: rgba(255, 255, 255, 0.88);
   --bg-elevated: #ffffff;
-  --text-primary: #0b1f36;
-  --text-secondary: #5f7088;
-  --text-muted: #8090a4;
-  --border: #e4ebf5;
-  --accent: #5b3df5;
-  --accent-soft: rgba(91, 61, 245, 0.12);
-  --accent-strong: #735cff;
-  --shadow-sm: 0 18px 40px rgba(50, 50, 93, 0.12);
-  --shadow-md: 0 24px 60px rgba(50, 50, 93, 0.16);
-  --shadow-lg: 0 30px 80px rgba(50, 50, 93, 0.22);
+  --text-primary: #11203b;
+  --text-secondary: #5d6e8a;
+  --text-muted: #7d8da7;
+  --border: rgba(115, 92, 255, 0.16);
+  --accent: #635bff;
+  --accent-soft: rgba(99, 91, 255, 0.14);
+  --accent-strong: #7a72ff;
+  --shadow-sm: 0 20px 45px rgba(68, 56, 160, 0.10);
+  --shadow-md: 0 28px 72px rgba(68, 56, 160, 0.14);
+  --shadow-lg: 0 40px 110px rgba(68, 56, 160, 0.18);
+  --radius-lg: 26px;
+  --radius-xl: 36px;
+  --layout-width: 1180px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.95), transparent 28%),
+    radial-gradient(circle at 80% 0%, rgba(99, 91, 255, 0.22), transparent 24%),
+    linear-gradient(180deg, #f7f9ff 0%, #eef4ff 42%, #f7f8fd 100%);
+}
+
+.hero::after {
+  width: min(48vw, 560px);
+  height: min(48vw, 560px);
+  background: radial-gradient(circle, rgba(99, 91, 255, 0.22), transparent 68%);
+  filter: blur(24px);
+}
+
+.nav,
+.section-surface,
+.post-card,
+.link-card,
+.moment-card,
+.folder-card,
+.gallery-shell,
+.links-group,
+.post-article,
+.dir-tree-panel,
+.disclaimer-item,
+.info-item {
+  backdrop-filter: blur(20px);
+}
+
+.hero-title,
+.section-title,
+.post-card-title,
+.post-title {
+  letter-spacing: -0.045em;
+}
+
+.btn-primary,
+.group-btn.active,
+.filter-btn.active,
+.page-btn.active {
+  box-shadow: 0 14px 28px rgba(99, 91, 255, 0.24);
 }

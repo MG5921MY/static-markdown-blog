@@ -103,6 +103,39 @@ function parseYaml(content) {
     return null;
   }
 
+  function readBlockScalar(startIndex, parentIndent) {
+    const chunks = [];
+    let lastIndex = startIndex;
+
+    for (let i = startIndex + 1; i < lines.length; i += 1) {
+      const rawLine = lines[i];
+      const trimmedLine = rawLine.trim();
+      const lineIndent = rawLine.search(/\S/);
+
+      if (!trimmedLine) {
+        if (chunks.length > 0) chunks.push('');
+        lastIndex = i;
+        continue;
+      }
+
+      if (trimmedLine.startsWith('#') && lineIndent > parentIndent) {
+        lastIndex = i;
+        continue;
+      }
+
+      if (lineIndent <= parentIndent) break;
+
+      const sliceIndex = Math.min(rawLine.length, parentIndent + 2);
+      chunks.push(rawLine.slice(sliceIndex));
+      lastIndex = i;
+    }
+
+    return {
+      value: chunks.join('\n').replace(/\n+$/, ''),
+      nextIndex: lastIndex
+    };
+  }
+
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const trimmed = line.trim();
@@ -132,7 +165,13 @@ function parseYaml(content) {
         const rawValue = itemText.slice(colonIndex + 1).trim();
         const item = {};
         if (rawValue) {
-          item[key] = parseScalar(rawValue);
+          if (rawValue === '|' || rawValue === '|-' || rawValue === '>') {
+            const block = readBlockScalar(i, indent);
+            item[key] = block.value;
+            i = block.nextIndex;
+          } else {
+            item[key] = parseScalar(rawValue);
+          }
         } else {
           const next = nextUsefulLine(i);
           item[key] = next && next.indent > indent && next.text.startsWith('- ') ? [] : {};
@@ -154,6 +193,12 @@ function parseYaml(content) {
     const rawValue = trimmed.slice(colonIndex + 1).trim();
 
     if (rawValue) {
+      if (rawValue === '|' || rawValue === '|-' || rawValue === '>') {
+        const block = readBlockScalar(i, indent);
+        parent[key] = block.value;
+        i = block.nextIndex;
+        continue;
+      }
       parent[key] = parseScalar(rawValue);
       continue;
     }
@@ -502,8 +547,12 @@ function buildContent(normalized, availableThemes) {
     features.gallery = buildGalleryData(loadFeatureData(gallerySource, 'gallery'), ROOT);
   }
 
-  const activeTheme = availableThemes.some((theme) => theme.id === normalized.theme.active)
-    ? normalized.theme.active
+  const requestedTheme = process.env.BLOG_THEME_OVERRIDE && /^[a-zA-Z0-9_-]+$/.test(process.env.BLOG_THEME_OVERRIDE)
+    ? process.env.BLOG_THEME_OVERRIDE
+    : normalized.theme.active;
+
+  const activeTheme = availableThemes.some((theme) => theme.id === requestedTheme)
+    ? requestedTheme
     : (availableThemes[0]?.id || 'graphite');
 
   const siteConfig = {

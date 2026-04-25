@@ -1,9 +1,9 @@
 @import "../base.css";
 
 :root {
-  --bg-primary: #ffffff;
+  --bg-primary: #f8f8f6;
   --bg-secondary: #ffffff;
-  --bg-elevated: #fafafa;
+  --bg-elevated: #f2f2ef;
   --text-primary: #111111;
   --text-secondary: #4c4c4c;
   --text-muted: #767676;
@@ -14,9 +14,60 @@
   --shadow-sm: 0 0 0 1px rgba(17, 17, 17, 0.08);
   --shadow-md: 0 0 0 1px rgba(17, 17, 17, 0.08), 0 12px 24px rgba(17, 17, 17, 0.05);
   --shadow-lg: 0 0 0 1px rgba(17, 17, 17, 0.08), 0 18px 40px rgba(17, 17, 17, 0.08);
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
   --font-display: "Consolas", "SFMono-Regular", monospace;
   --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: "Consolas", "SFMono-Regular", monospace;
+  --layout-width: 1100px;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(17, 17, 17, 0.02) 0, rgba(17, 17, 17, 0.02) 1px, transparent 1px, transparent 32px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.02) 0, rgba(17, 17, 17, 0.02) 1px, transparent 1px, transparent 32px),
+    #f8f8f6;
+}
+
+.hero::after {
+  background: radial-gradient(circle, rgba(17, 17, 17, 0.08), transparent 70%);
+  filter: blur(42px);
+}
+
+.nav,
+.section-surface,
+.post-card,
+.link-card,
+.moment-card,
+.folder-card,
+.gallery-shell,
+.links-group,
+.post-article,
+.dir-tree-panel,
+.disclaimer-item,
+.info-item {
+  box-shadow: none;
+}
+
+.hero-title,
+.section-title,
+.post-card-title,
+.post-title {
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.btn,
+.filter-btn,
+.page-btn,
+.group-btn,
+.dir-nav-btn,
+.load-more,
+.nav-link {
+  border-radius: 6px;
 }

@@ -83,6 +83,12 @@ dist/
 
 兼容层的目标是平滑迁移，不是恢复旧结构为默认创作方式。新项目请直接使用 `config/ + content/ + themes/`。
 
+如需检查 legacy 输入里的中文内容是否出现实际乱码，可以执行：
+
+```bash
+node scripts/encoding-audit.js
+```
+
 ## 主题系统
 
 主题接口固定为：
