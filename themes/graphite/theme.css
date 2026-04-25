@@ -2,15 +2,55 @@
 
 :root {
   --bg-primary: #090b10;
-  --bg-secondary: #10131a;
-  --bg-elevated: #161b24;
-  --text-primary: #f6f8fb;
-  --text-secondary: #b8c0ce;
-  --text-muted: #808796;
-  --border: rgba(255, 255, 255, 0.08);
-  --accent: #6d78ff;
-  --accent-soft: rgba(109, 120, 255, 0.16);
-  --accent-strong: #8f98ff;
+  --bg-secondary: #10141b;
+  --bg-elevated: #171d27;
+  --text-primary: #f4f7fb;
+  --text-secondary: #b3bcc9;
+  --text-muted: #7a8494;
+  --border: rgba(183, 194, 210, 0.12);
+  --accent: #8190a6;
+  --accent-soft: rgba(129, 144, 166, 0.14);
+  --accent-strong: #a2aec0;
+  --brand-start: #5f6d82;
+  --brand-end: #8f9db2;
+  --brand-shadow: rgba(73, 88, 109, 0.24);
+  --shadow-sm: 0 12px 28px rgba(0, 0, 0, 0.14);
+  --shadow-md: 0 20px 48px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 28px 72px rgba(0, 0, 0, 0.24);
   --font-display: "Segoe UI Semibold", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(circle at 80% 16%, rgba(122, 136, 156, 0.14), transparent 22%),
+    radial-gradient(circle at 14% 0%, rgba(76, 88, 108, 0.08), transparent 18%),
+    linear-gradient(180deg, #0a0d13 0%, #0b0f16 48%, #0a0c12 100%);
+}
+
+.nav {
+  background: color-mix(in srgb, #0a0d13 88%, transparent);
+}
+
+.section-surface,
+.post-card,
+.link-card,
+.moment-card,
+.folder-card,
+.gallery-shell,
+.links-group,
+.post-article,
+.dir-tree-panel,
+.disclaimer-item,
+.info-item {
+  background: color-mix(in srgb, #111722 94%, transparent);
+}
+
+.btn-primary,
+.group-btn.active,
+.filter-btn.active,
+.page-btn.active {
+  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  border-color: color-mix(in srgb, var(--brand-end) 52%, transparent);
+  box-shadow: 0 14px 26px rgba(55, 67, 84, 0.24);
 }
