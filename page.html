@@ -11,8 +11,6 @@
   <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
   <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
   <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" media="(prefers-color-scheme: dark)" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css" media="(prefers-color-scheme: light)" />
 </head>
 <body>
   <nav class="nav">
@@ -142,7 +140,7 @@
               const result = Blog.renderCategoryContent(page.categoryId, dirPath);
               dirNavEl.innerHTML = result.dirNav || '';
               dirTreeEl.innerHTML = result.dirTreePanel || '';
-              postsEl.innerHTML = result.html || '<div class="empty-state"><p>当前分类暂无文章。</p></div>';
+              postsEl.innerHTML = result.html || '<div class="empty-state"><p>当前分类下暂无文章。</p></div>';
             };
 
             updateCategoryDisplay();
@@ -178,17 +176,17 @@
 
           if (page.type === 'html') {
             await Blog.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js');
-            document.getElementById('html-title').textContent = `${page.icon || ''} ${page.name}`;
+            document.getElementById('html-title').textContent = page.title || page.name;
             document.getElementById('html-desc').textContent = page.description || '';
-            const htmlContent = page.content || '';
-            document.getElementById('html-content').innerHTML = typeof DOMPurify !== 'undefined'
-              ? DOMPurify.sanitize(htmlContent)
-              : Blog.escapeHtml(htmlContent);
+            const htmlContent = typeof DOMPurify !== 'undefined'
+              ? DOMPurify.sanitize(page.content || '', { ADD_ATTR: ['target', 'rel'] })
+              : (page.content || '');
+            document.getElementById('html-content').innerHTML = htmlContent;
             document.getElementById('page-html').style.display = 'block';
             return;
           }
 
-          throw new Error(`不支持的页面类型：${page.type}`);
+          throw new Error(`Unsupported page type: ${page.type}`);
         }
       });
     })();

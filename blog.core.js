@@ -348,6 +348,7 @@ window.BlogCore = {
   },
 
   async loadHighlightDeps() {
+    await this.loadCDN('https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js');
     return true;
   },
 

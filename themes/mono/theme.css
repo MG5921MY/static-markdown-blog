@@ -11,6 +11,16 @@
   --accent: #111111;
   --accent-soft: rgba(17, 17, 17, 0.08);
   --accent-strong: #000000;
+  --code-bg: #101010;
+  --code-border: rgba(255, 255, 255, 0.1);
+  --code-text: #f4f4f4;
+  --code-muted: #8d8d8d;
+  --code-inline-bg: rgba(17, 17, 17, 0.08);
+  --code-inline-text: #111111;
+  --code-selection: rgba(255, 255, 255, 0.12);
+  --code-accent-1: #f1f1f1;
+  --code-accent-2: #cfcfcf;
+  --code-accent-3: #a4a4a4;
   --shadow-sm: 0 0 0 1px rgba(17, 17, 17, 0.08);
   --shadow-md: 0 0 0 1px rgba(17, 17, 17, 0.08), 0 12px 24px rgba(17, 17, 17, 0.05);
   --shadow-lg: 0 0 0 1px rgba(17, 17, 17, 0.08), 0 18px 40px rgba(17, 17, 17, 0.08);

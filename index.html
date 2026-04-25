@@ -28,24 +28,30 @@
     </div>
   </nav>
 
-  <main class="main">
+  <main class="main home-layout" id="home-layout">
     <div class="container">
-      <section class="hero">
-        <div class="hero-badge" id="hero-badge"></div>
-        <h1 class="hero-title" id="hero-title"></h1>
-        <p class="hero-subtitle" id="hero-subtitle"></p>
-        <div class="hero-actions">
-          <a href="./page.html?id=about" class="btn btn-primary">了解项目</a>
-          <a href="./disclaimer.html" class="btn btn-secondary">查看说明</a>
+      <section class="hero home-hero" id="home-hero">
+        <div class="hero-media" id="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <div class="hero-badge" id="hero-badge"></div>
+          <h1 class="hero-title" id="hero-title"></h1>
+          <p class="hero-subtitle" id="hero-subtitle"></p>
+          <div class="hero-actions">
+            <a href="./page.html?id=about" class="btn btn-primary">了解项目</a>
+            <a href="./disclaimer.html" class="btn btn-secondary">查看说明</a>
+          </div>
+          <div class="hero-meta">
+            <span>Markdown 优先</span>
+            <span>主题 token 驱动</span>
+            <span>支持任意子路径部署</span>
+          </div>
         </div>
-        <div class="hero-meta">
-          <span>Markdown 优先</span>
-          <span>主题 token 驱动</span>
-          <span>支持任意子路径部署</span>
-        </div>
+        <a href="#posts-section" class="hero-scroll-cue" id="hero-scroll-cue">
+          <span>继续阅读</span>
+        </a>
       </section>
 
-      <section class="section">
+      <section class="section home-feed-section" id="posts-section">
         <div class="section-surface">
           <div class="section-header">
             <div>
@@ -74,7 +80,7 @@
         </div>
       </section>
 
-      <section class="section" id="site-info-section">
+      <section class="section home-site-section" id="site-info-section">
         <div class="section-surface">
           <div class="section-header">
             <div>

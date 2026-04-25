@@ -14,6 +14,16 @@
   --brand-start: #5f6d82;
   --brand-end: #8f9db2;
   --brand-shadow: rgba(73, 88, 109, 0.24);
+  --code-bg: #111722;
+  --code-border: rgba(167, 182, 206, 0.16);
+  --code-text: #edf3ff;
+  --code-muted: #7f8aa0;
+  --code-inline-bg: rgba(173, 189, 214, 0.12);
+  --code-inline-text: #e9f0ff;
+  --code-selection: rgba(130, 150, 188, 0.2);
+  --code-accent-1: #9cb4df;
+  --code-accent-2: #8ccdbb;
+  --code-accent-3: #d4bc8f;
   --shadow-sm: 0 12px 28px rgba(0, 0, 0, 0.14);
   --shadow-md: 0 20px 48px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 28px 72px rgba(0, 0, 0, 0.24);

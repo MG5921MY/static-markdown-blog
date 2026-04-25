@@ -1,29 +1,36 @@
 groups:
-  - id: inspiration
+  - id: references
     name: 设计参考
-    icon: "In"
+    icon: "Ref"
+  - id: reading
+    name: 长期阅读
+    icon: "Read"
   - id: tooling
-    name: 工具链
+    name: 开发工具
     icon: "Dev"
 
 links:
-  - name: Linear
-    url: https://linear.app
-    description: 克制、稳定、信息密度很高的产品界面参考。
-    icon: "L"
-    group: inspiration
-  - name: Vercel
-    url: https://vercel.com
-    description: 深色产品视觉和开发者表达的优秀样本。
-    icon: "V"
-    group: inspiration
-  - name: Stripe
-    url: https://stripe.com
-    description: 品牌展示型界面和层次控制的长期参考。
-    icon: "S"
-    group: inspiration
-  - name: Playwright
-    url: https://playwright.dev
-    description: 用于本地页面回归和子路径浏览器验收。
+  - name: UI Patterns
+    url: https://ui-patterns.com/
+    description: 适合归档交互模式、信息层级和常见流程的参考入口。
+    icon: "UI"
+    label: 模式
+    group: references
+  - name: Smashing Magazine
+    url: https://www.smashingmagazine.com/
+    description: 用来补充前端体验、设计系统和内容表达的长期阅读来源。
+    icon: "SM"
+    label: 阅读
+    group: reading
+  - name: A List Apart
+    url: https://alistapart.com/
+    description: 更偏方法论和长期写作，适合沉淀内容结构与编辑感。
+    icon: "AL"
+    label: 文章
+    group: reading
+  - name: Playwright Docs
+    url: https://playwright.dev/
+    description: 本地页面回归、截图验收和子路径浏览器验证的常用工具入口。
     icon: "PW"
+    label: 测试
     group: tooling

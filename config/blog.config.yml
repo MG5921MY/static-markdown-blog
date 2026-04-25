@@ -45,7 +45,7 @@ nav:
     page: about
   - name: 瞬间
     url: ./moments.html
-  - name: 友链
+  - name: 参考
     url: ./links.html
   - name: 图库
     url: ./gallery.html
@@ -69,3 +69,12 @@ display:
   showSiteInfo: true
   siteType: 静态博客
   contentDirection: Markdown / Themes / Notes
+  hero:
+    immersive: false
+    background:
+      enabled: false
+      image: ""
+      focalPoint: "center center"
+      fit: "cover"
+      dimming: 0.42
+      blur: 0

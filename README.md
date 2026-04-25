@@ -1,12 +1,12 @@
 # 静态 Markdown 博客
 
-一个以 Markdown 为唯一正文来源的静态博客系统，当前版本已经完成这轮重构的核心落地：
+一个以 Markdown 为唯一正文来源的静态博客系统，当前版本已经完成新结构重构的核心落地：
 
-- 新结构优先，旧结构兼容
-- 配置模型收敛，默认上手成本更低
-- 主题改为 token 驱动，不再复制整页 CSS
+- 新结构优先，旧结构兼容读取
+- 配置模型收敛，默认更容易上手
+- 主题系统基于 token，而不是整页 CSS 复制
 - 构建产物统一输出到 `dist/`
-- 运行时默认支持任意子路径部署
+- 运行时支持任意子路径部署
 
 ## 快速开始
 
@@ -73,7 +73,7 @@ dist/
 
 ## 兼容策略
 
-当前构建器仍兼容读取这些旧目录作为输入层：
+构建器仍兼容读取这些旧目录作为输入层：
 
 - `conf/`
 - `posts/`
@@ -106,6 +106,25 @@ themes/<theme-id>/
 - `paper`：参考 Notion + Claude，阅读优先
 - `mono`：黑白极简，偏开发者语境
 
+首页支持可选的沉浸模式与背景图配置，默认关闭：
+
+```yaml
+display:
+  hero:
+    immersive: false
+    background:
+      enabled: false
+      image: ""
+      focalPoint: "center center"
+      fit: "cover"
+      dimming: 0.42
+      blur: 0
+```
+
+背景图仅支持本地资源路径，并通过 `Blog.resolveAsset()` 解析。
+
+`links` 页面默认定位为“参考与收藏”，更适合放长期阅读、设计来源和工具入口，而不是暗示互换友链或品牌背书。
+
 更完整的设计基线请见：
 
 - `docs/architecture/blog-rebuild-plan.md`
@@ -119,7 +138,7 @@ themes/<theme-id>/
 - `Blog.resolveAsset(path)`
 - `Blog.resolvePageUrl(page, params?)`
 
-模板、导航、主题资源、文章跳转都应围绕这组 helper 保持路径无关性。
+模板、导航、主题资源和文章跳转都应围绕这些 helper 保持路径无关性。
 
 ## 构建产物
 
@@ -134,9 +153,3 @@ themes/<theme-id>/
 - `dist/themes/`
 
 保留 `dist/posts/index.json` 和 `dist/posts/_pathmap.json` 是为了兼容旧前端读取链路。
-
-## 备注
-
-- `.tmp/` 中的大厂设计资料仅作为研究输入，不纳入正式源码结构。
-- 当前仓库中的设计决策以 `docs/architecture/theme-design-baseline.md` 为准。
-- 如果后续继续调整页面结构或部署方式，README 也应同步更新，避免文档再次漂移。

@@ -11,6 +11,16 @@
   --accent: #1f6fd1;
   --accent-soft: rgba(31, 111, 209, 0.10);
   --accent-strong: #145db6;
+  --code-bg: #2a241f;
+  --code-border: rgba(38, 35, 31, 0.16);
+  --code-text: #f6efe2;
+  --code-muted: #b6ab9a;
+  --code-inline-bg: rgba(53, 46, 38, 0.08);
+  --code-inline-text: #3d332c;
+  --code-selection: rgba(210, 176, 118, 0.18);
+  --code-accent-1: #a8c5ff;
+  --code-accent-2: #a8ddc8;
+  --code-accent-3: #f0c48c;
   --shadow-sm: 0 10px 24px rgba(34, 28, 18, 0.05);
   --shadow-md: 0 18px 40px rgba(34, 28, 18, 0.07);
   --shadow-lg: 0 24px 56px rgba(34, 28, 18, 0.08);

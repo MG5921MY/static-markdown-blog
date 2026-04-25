@@ -9,6 +9,10 @@
   const treeContainer = document.getElementById('dir-tree-container');
   const paginationEl = document.getElementById('posts-pagination');
   const searchInput = document.getElementById('search-input');
+  const homeLayout = document.getElementById('home-layout');
+  const homeHero = document.getElementById('home-hero');
+  const heroMedia = document.getElementById('hero-media');
+  const scrollCue = document.getElementById('hero-scroll-cue');
 
   let pageSize = 10;
   let posts = [];
@@ -26,6 +30,58 @@
   function highlightCard(cardHtml, query) {
     if (!query) return cardHtml;
     return cardHtml.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<mark>$1</mark>');
+  }
+
+  function getHeroDisplayConfig() {
+    const hero = Blog.config?.display?.hero || {};
+    const background = hero.background || {};
+    return {
+      immersive: hero.immersive === true,
+      background: {
+        enabled: background.enabled === true,
+        image: String(background.image || '').trim(),
+        focalPoint: String(background.focalPoint || 'center center').trim() || 'center center',
+        fit: String(background.fit || 'cover').trim() || 'cover',
+        dimming: Number.isFinite(Number(background.dimming)) ? Number(background.dimming) : 0.42,
+        blur: Number.isFinite(Number(background.blur)) ? Number(background.blur) : 0
+      }
+    };
+  }
+
+  function isLocalAssetPath(value) {
+    if (!value) return false;
+    return !/^(https?:|data:|blob:|\/\/|[a-zA-Z]:)/i.test(String(value).trim());
+  }
+
+  function updateHeroExperience() {
+    if (!homeLayout || !homeHero) return;
+
+    const heroDisplay = getHeroDisplayConfig();
+    const { immersive, background } = heroDisplay;
+    const shouldShowImage = background.enabled && background.image && isLocalAssetPath(background.image);
+
+    homeLayout.classList.toggle('is-immersive-home', immersive);
+    document.body.classList.toggle('is-immersive-home', immersive);
+    homeHero.classList.toggle('has-hero-image', shouldShowImage);
+
+    if (scrollCue) scrollCue.style.display = immersive ? 'inline-flex' : 'none';
+
+    if (!heroMedia) return;
+
+    if (!shouldShowImage) {
+      heroMedia.style.backgroundImage = 'none';
+      homeHero.style.removeProperty('--hero-image-position');
+      homeHero.style.removeProperty('--hero-image-fit');
+      homeHero.style.removeProperty('--hero-image-dimming');
+      homeHero.style.removeProperty('--hero-image-blur');
+      return;
+    }
+
+    heroMedia.style.backgroundImage = `url("${Blog.resolveAsset(background.image)}")`;
+    homeHero.style.setProperty('--hero-image-position', background.focalPoint);
+    homeHero.style.setProperty('--hero-image-fit', background.fit);
+    homeHero.style.setProperty('--hero-image-dimming', String(Math.min(Math.max(background.dimming, 0), 0.82)));
+    homeHero.style.setProperty('--hero-image-blur', `${Math.max(background.blur, 0)}px`);
   }
 
   function syncUrlState(page = 1) {
@@ -297,6 +353,7 @@
     errorDetailEl: errorMsg,
     task: async () => {
       updatePageMeta();
+      updateHeroExperience();
       updateSiteInfo();
 
       if (filterEl) filterEl.innerHTML = Blog.renderCategoryFilter();
