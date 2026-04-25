@@ -16,10 +16,10 @@
   let displayedCount = 0;
   const perPage = 20;
 
-  function isImagePathSafe(path) {
-    if (!path || typeof path !== 'string') return false;
-    if (/^(javascript|data|vbscript|http:)/i.test(path)) return false;
-    if (path.includes('..')) return false;
+  function isImagePathSafe(filePath) {
+    if (!filePath || typeof filePath !== 'string') return false;
+    if (/^(javascript|data|vbscript|http:)/i.test(filePath)) return false;
+    if (filePath.includes('..')) return false;
     return true;
   }
 
@@ -35,7 +35,7 @@
   function renderGallery() {
     const groups = galleryData.groups || [];
     if (groups.length === 0) {
-      Blog.renderState(galleryContentEl, '暂无图库分组', '📁');
+      Blog.renderState(galleryContentEl, '暂无图集分组。', '图库');
       return;
     }
 
@@ -46,8 +46,8 @@
       const isActive = group.id === currentGroup;
       const images = galleryData.images?.[group.id] || [];
       const count = countAllImages(images);
-      html += `<button class="group-btn ${isActive ? 'active' : ''}" data-action="select-group" data-group-id="${Blog.escapeHtml(group.id)}">
-        <span>${Blog.escapeHtml(group.icon || '📁')}</span>
+      html += `<button class="group-btn ${isActive ? 'active' : ''}" type="button" data-action="select-group" data-group-id="${Blog.escapeHtml(group.id)}">
+        <span>${Blog.escapeHtml(group.icon || '图库')}</span>
         <span>${Blog.escapeHtml(group.name)}</span>
         <span class="count">${count}</span>
       </button>`;
@@ -65,7 +65,7 @@
 
     const groupImages = galleryData.images?.[currentGroup];
     if (!groupImages) {
-      Blog.renderState(galleryViewEl, '该分组暂无图片', '🖼');
+      Blog.renderState(galleryViewEl, '当前分组暂时没有图片。', '空');
       return;
     }
 
@@ -77,17 +77,17 @@
     }
 
     if (!currentData) {
-      Blog.renderState(galleryViewEl, '路径不存在');
+      Blog.renderState(galleryViewEl, '目录路径不存在。');
       return;
     }
 
     let html = '';
     if (currentPath) {
       html += '<div class="gallery-breadcrumb">';
-      html += `<span class="breadcrumb-item" data-action="navigate-path" data-path="">${Blog.escapeHtml(group.icon || '📁')} ${Blog.escapeHtml(group.name)}</span>`;
+      html += `<span class="breadcrumb-item" data-action="navigate-path" data-path="">${Blog.escapeHtml(group.icon || '图库')} ${Blog.escapeHtml(group.name)}</span>`;
       let buildPath = '';
       for (let i = 0; i < pathParts.length; i += 1) {
-        buildPath += (i > 0 ? '/' : '') + pathParts[i];
+        buildPath += `${i > 0 ? '/' : ''}${pathParts[i]}`;
         const isLast = i === pathParts.length - 1;
         html += '<span class="breadcrumb-sep">/</span>';
         if (isLast) {
@@ -105,13 +105,13 @@
       for (const [name, data] of Object.entries(subfolders)) {
         const subPath = currentPath ? `${currentPath}/${name}` : name;
         const count = countAllImages(data);
-        html += `<div class="folder-card" data-action="navigate-path" data-path="${Blog.escapeHtml(subPath)}">
-          <span class="folder-icon">📁</span>
+        html += `<button class="folder-card" type="button" data-action="navigate-path" data-path="${Blog.escapeHtml(subPath)}">
+          <span class="folder-icon">□</span>
           <div class="folder-info">
             <div class="folder-name">${Blog.escapeHtml(name)}</div>
             <div class="folder-count">${count} 张图片</div>
           </div>
-        </div>`;
+        </button>`;
       }
       html += '</div>';
     }
@@ -125,29 +125,31 @@
       html += '<div class="gallery-grid">';
       showImages.forEach((img, idx) => {
         const filename = img.split('/').pop();
-        html += `<div class="gallery-item" data-action="open-lightbox" data-index="${idx}">
-          <img src="${Blog.escapeHtml(img)}" alt="${Blog.escapeHtml(filename)}" class="loading" onload="this.classList.remove('loading');this.classList.add('loaded')" loading="lazy">
+        html += `<button class="gallery-item" type="button" data-action="open-lightbox" data-index="${idx}">
+          <img src="${Blog.escapeHtml(Blog.resolveAsset(img))}" alt="${Blog.escapeHtml(filename)}" class="loading" onload="this.classList.remove('loading');this.classList.add('loaded')" loading="lazy">
           <div class="gallery-item-overlay">
             <div class="gallery-item-name">${Blog.escapeHtml(filename)}</div>
           </div>
-        </div>`;
+        </button>`;
       });
       html += '</div>';
 
       if (displayedCount < images.length) {
-        html += `<button class="load-more" data-action="load-more">加载更多 (${images.length - displayedCount} 张)</button>`;
+        html += `<button class="load-more" type="button" data-action="load-more">加载更多（剩余 ${images.length - displayedCount} 张）</button>`;
       }
     } else if (Object.keys(subfolders).length === 0) {
-      html += '<div class="empty-state"><div class="icon">🖼</div><p>该目录暂无图片</p></div>';
+      html += '<div class="empty-state"><div class="icon">空</div><p>这个目录下还没有图片。</p></div>';
     }
 
     galleryViewEl.innerHTML = html;
+    Blog.setupCardAnimations();
   }
 
   function updateLightbox() {
     const img = currentImages[lightboxIndex];
+    if (!img) return;
     const filename = img.split('/').pop();
-    lightboxImgEl.src = img;
+    lightboxImgEl.src = Blog.resolveAsset(img);
     lightboxFileNameEl.textContent = filename;
     lightboxCounterEl.textContent = `${lightboxIndex + 1} / ${currentImages.length}`;
     lightboxPrevBtn.disabled = lightboxIndex === 0;
@@ -173,8 +175,8 @@
     updateLightbox();
   }
 
-  galleryContentEl.addEventListener('click', (e) => {
-    const actionEl = e.target.closest('[data-action]');
+  galleryContentEl.addEventListener('click', (event) => {
+    const actionEl = event.target.closest('[data-action]');
     if (!actionEl) return;
 
     const action = actionEl.dataset.action;
@@ -204,36 +206,36 @@
     }
   });
 
-  lightboxCloseBtn.addEventListener('click', () => closeLightbox());
+  lightboxCloseBtn.addEventListener('click', closeLightbox);
   lightboxPrevBtn.addEventListener('click', () => navLightbox(-1));
   lightboxNextBtn.addEventListener('click', () => navLightbox(1));
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', (event) => {
     if (!lightboxEl.classList.contains('active')) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') navLightbox(-1);
-    if (e.key === 'ArrowRight') navLightbox(1);
+    if (event.key === 'Escape') closeLightbox();
+    if (event.key === 'ArrowLeft') navLightbox(-1);
+    if (event.key === 'ArrowRight') navLightbox(1);
   });
 
-  lightboxEl.addEventListener('click', (e) => {
-    if (e.target.id === 'lightbox') closeLightbox();
+  lightboxEl.addEventListener('click', (event) => {
+    if (event.target.id === 'lightbox') closeLightbox();
   });
 
   (() => {
     let touchStartX = 0;
-    let touchStartY = 0;
     let touchEndX = 0;
+    let touchStartY = 0;
     let touchEndY = 0;
     const minSwipe = 50;
 
-    lightboxEl.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
+    lightboxEl.addEventListener('touchstart', (event) => {
+      touchStartX = event.changedTouches[0].screenX;
+      touchStartY = event.changedTouches[0].screenY;
     }, { passive: true });
 
-    lightboxEl.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      touchEndY = e.changedTouches[0].screenY;
+    lightboxEl.addEventListener('touchend', (event) => {
+      touchEndX = event.changedTouches[0].screenX;
+      touchEndY = event.changedTouches[0].screenY;
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipe) {
@@ -253,13 +255,14 @@
 
         galleryData = Blog.config?.features?.gallery;
         if (!galleryData || !galleryData.enabled) {
-          Blog.renderState(galleryContentEl, '图库功能未启用', '🖼️');
+          Blog.renderState(galleryContentEl, '图库功能未启用。', '图库');
           return;
         }
+
         renderGallery();
       } catch (error) {
         console.error('Failed to load gallery:', error);
-        Blog.renderState(galleryContentEl, '加载失败');
+        Blog.renderState(galleryContentEl, '图库内容加载失败。');
       }
     }
   });

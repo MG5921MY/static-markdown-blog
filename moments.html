@@ -4,138 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>瞬间</title>
-  <meta name="description" content="瞬间/说说" />
+  <meta name="description" content="短记录、想法与构建过程片段。" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
   <link rel="preconnect" href="./" />
   <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
-  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
-  <style>
-    /* 瞬间页面专用样式 - 使用主题变量 */
-    .moments-container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
-    .moments-header { text-align: center; margin-bottom: 40px; }
-    .moments-header h1 { font-size: 2rem; margin-bottom: 10px; }
-    .moments-header p { color: var(--text-secondary, #666); }
-    
-    .moments-timeline { position: relative; }
-    .moments-timeline::before {
-      content: '';
-      position: absolute;
-      left: 20px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--border, #eee);
-    }
-    
-    .moment-item {
-      position: relative;
-      padding-left: 50px;
-      padding-bottom: 30px;
-    }
-    .moment-item:last-child { padding-bottom: 0; }
-    
-    .moment-dot {
-      position: absolute;
-      left: 12px;
-      top: 5px;
-      width: 18px;
-      height: 18px;
-      background: var(--bg-secondary, #fff);
-      border: 3px solid var(--accent, #6366f1);
-      border-radius: 50%;
-      z-index: 1;
-    }
-    
-    .moment-card {
-      background: var(--bg-card, rgba(255,255,255,0.03));
-      border: 1px solid var(--border, #eee);
-      border-radius: 12px;
-      padding: 20px;
-      transition: all 0.3s ease;
-    }
-    .moment-card:hover {
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      border-color: var(--accent, #6366f1);
-    }
-    
-    .moment-meta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-      color: var(--text-secondary, #666);
-    }
-    .moment-mood { font-size: 1.2rem; }
-    
-    .moment-content {
-      font-size: 1rem;
-      line-height: 1.8;
-      color: var(--text-primary, #333);
-      white-space: pre-wrap;
-    }
-    .moment-content code {
-      background: var(--bg-card-hover, #f5f5f5);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.9em;
-    }
-    .moment-content pre {
-      background: var(--bg-secondary, #f5f5f5);
-      padding: 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin: 10px 0;
-    }
-    .moment-content pre code {
-      background: none;
-      padding: 0;
-    }
-    
-    .moment-images {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .moment-images img {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .moment-images img:hover { transform: scale(1.02); }
-    
-    .moment-tags {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .moment-tag {
-      font-size: 0.8rem;
-      padding: 2px 10px;
-      background: var(--bg-card-hover, #f0f0f0);
-      border-radius: 20px;
-      color: var(--text-secondary, #666);
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary, #666);
-    }
-    
-    @media (max-width: 640px) {
-      .moments-timeline::before { left: 15px; }
-      .moment-item { padding-left: 40px; }
-      .moment-dot { left: 7px; }
-    }
-  </style>
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
 </head>
-
 <body>
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
@@ -146,19 +21,22 @@
   </nav>
 
   <main class="main">
-    <div class="moments-container">
-      <div class="moments-header">
-        <h1>💭 瞬间</h1>
-        <p>记录生活中的点滴</p>
-      </div>
-      
-      <div id="moments-content">
-        <div class="loading-state" style="padding: 60px 0;">
-          <div class="loading-spinner"></div>
-          <p>正在加载...</p>
+    <section class="hero hero-compact moments-shell">
+      <div class="hero-kicker">Moments</div>
+      <h1 class="hero-title">瞬间</h1>
+      <p class="hero-subtitle">把重构过程中的判断、节奏和小结，留成可以回看的短记录。</p>
+    </section>
+
+    <section class="section">
+      <div class="moments-shell">
+        <div id="moments-content">
+          <div class="loading-state" style="padding: 60px 0;">
+            <div class="loading-spinner"></div>
+            <p>正在加载瞬间...</p>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <footer class="footer">
       <div class="container">

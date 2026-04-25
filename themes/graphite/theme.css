@@ -1,0 +1,16 @@
+@import "../base.css";
+
+:root {
+  --bg-primary: #090b10;
+  --bg-secondary: #10131a;
+  --bg-elevated: #161b24;
+  --text-primary: #f6f8fb;
+  --text-secondary: #b8c0ce;
+  --text-muted: #808796;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #6d78ff;
+  --accent-soft: rgba(109, 120, 255, 0.16);
+  --accent-strong: #8f98ff;
+  --font-display: "Segoe UI Semibold", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}

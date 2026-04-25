@@ -1,812 +1,574 @@
-/**
- * 博客构建脚本
- * - 支持主题系统
- * - 生成站点配置
- * - 扫描文章索引
- * 
- * 使用方法：node build.js
- */
-
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// 路径配置
-const CONFIG_PATH = './conf/config.yml';
-const OUTPUT_DIR = './posts';
-const THEMES_DIR = './usr/themes';
+const ROOT = process.cwd();
+const DIST_DIR = path.join(ROOT, 'dist');
+const NEW_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
+const LEGACY_CONFIG_PATH = path.join(ROOT, 'conf', 'config.yml');
+const NEW_THEMES_DIR = path.join(ROOT, 'themes');
+const LEGACY_THEMES_DIR = path.join(ROOT, 'usr', 'themes');
+const STATIC_FILES = [
+  'index.html',
+  'post.html',
+  'page.html',
+  'moments.html',
+  'links.html',
+  'gallery.html',
+  '404.html',
+  'disclaimer.html',
+  'blog.js',
+  'blog.core.js',
+  'blog.render.js',
+  'blog.ui.js',
+  'index.page.js',
+  '404.page.js',
+  'moments.page.js',
+  'links.page.js',
+  'gallery.page.js',
+  'disclaimer.page.js',
+  'favicon.ico'
+];
 
-/**
- * 生成短 hash ID
- */
-function generateId(str) {
-  return crypto.createHash('md5').update(str).digest('hex').slice(0, 8);
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
 }
 
-/**
- * 简单 YAML 解析器
- */
+function cleanDir(dirPath) {
+  if (fs.existsSync(dirPath)) fs.rmSync(dirPath, { recursive: true, force: true });
+  ensureDir(dirPath);
+}
+
+function readText(filePath) {
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function writeJson(filePath, value) {
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+}
+
+function copyFileSafe(src, dest) {
+  if (!fs.existsSync(src)) return;
+  ensureDir(path.dirname(dest));
+  fs.copyFileSync(src, dest);
+}
+
+function copyDirRecursive(src, dest) {
+  if (!fs.existsSync(src)) return;
+  ensureDir(dest);
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) copyDirRecursive(srcPath, destPath);
+    else fs.copyFileSync(srcPath, destPath);
+  }
+}
+
+function generateId(value) {
+  return crypto.createHash('md5').update(value).digest('hex').slice(0, 8);
+}
+
 function parseYaml(content) {
-  const result = {};
-  const lines = content.split('\n');
-  const stack = [{ obj: result, indent: -1, key: null }];
-  let currentArray = null;
-  let currentArrayIndent = -1;
-  
-  for (let i = 0; i < lines.length; i++) {
+  const root = {};
+  const lines = content.replace(/\r/g, '').split('\n');
+  const stack = [{ indent: -1, value: root }];
+
+  function parseScalar(raw) {
+    if (raw === undefined || raw === null) return '';
+    let value = String(raw).trim();
+    const commentIndex = value.indexOf(' #');
+    if (commentIndex > 0) value = value.slice(0, commentIndex).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      return value.slice(1, -1);
+    }
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    if (/^-?\d+$/.test(value)) return Number(value);
+    if (/^-?\d+\.\d+$/.test(value)) return Number(value);
+    if (value.startsWith('[') && value.endsWith(']')) {
+      const inner = value.slice(1, -1).trim();
+      if (!inner) return [];
+      return inner.split(',').map((item) => parseScalar(item));
+    }
+    return value;
+  }
+
+  function nextUsefulLine(index) {
+    for (let i = index + 1; i < lines.length; i += 1) {
+      const text = lines[i].trim();
+      if (!text || text.startsWith('#')) continue;
+      return { index: i, text, indent: lines[i].search(/\S/) };
+    }
+    return null;
+  }
+
+  for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const trimmed = line.trim();
-    
     if (!trimmed || trimmed.startsWith('#')) continue;
-    
     const indent = line.search(/\S/);
-    
-    // 处理数组项
+
+    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
+      stack.pop();
+    }
+
+    const parent = stack[stack.length - 1].value;
+
     if (trimmed.startsWith('- ')) {
-      const value = trimmed.slice(2).trim();
-      
-      // 检查是否是对象数组项（如 - name: xxx）
-      if (value.includes(':')) {
-        const obj = {};
-        const colonIdx = value.indexOf(':');
-        const key = value.slice(0, colonIdx).trim();
-        const val = value.slice(colonIdx + 1).trim();
-        obj[key] = parseValue(val);
-        
-        // 继续读取该对象的其他属性
-        let j = i + 1;
-        while (j < lines.length) {
-          const nextLine = lines[j];
-          const nextTrimmed = nextLine.trim();
-          const nextIndent = nextLine.search(/\S/);
-          
-          if (!nextTrimmed || nextTrimmed.startsWith('#')) { j++; continue; }
-          // 遇到同级或更低缩进的数组项，或者缩进更小的行，停止
-          if (nextIndent <= indent) break;
-          
-          if (nextTrimmed.includes(':') && !nextTrimmed.startsWith('- ')) {
-            const ci = nextTrimmed.indexOf(':');
-            const k = nextTrimmed.slice(0, ci).trim();
-            const v = nextTrimmed.slice(ci + 1).trim();
-            obj[k] = parseValue(v);
-          }
-          j++;
-        }
-        i = j - 1;
-        
-        if (currentArray) currentArray.push(obj);
-      } else {
-        // 简单值数组项
-        if (currentArray) currentArray.push(parseValue(value));
+      if (!Array.isArray(parent)) continue;
+      const itemText = trimmed.slice(2).trim();
+      if (!itemText) {
+        const next = nextUsefulLine(i);
+        const child = next && next.indent > indent && next.text.startsWith('- ') ? [] : {};
+        parent.push(child);
+        stack.push({ indent, value: child });
+        continue;
       }
+
+      if (itemText.includes(':')) {
+        const colonIndex = itemText.indexOf(':');
+        const key = itemText.slice(0, colonIndex).trim();
+        const rawValue = itemText.slice(colonIndex + 1).trim();
+        const item = {};
+        if (rawValue) {
+          item[key] = parseScalar(rawValue);
+        } else {
+          const next = nextUsefulLine(i);
+          item[key] = next && next.indent > indent && next.text.startsWith('- ') ? [] : {};
+          stack.push({ indent, value: item[key] });
+        }
+        parent.push(item);
+        if (!rawValue) continue;
+        stack.push({ indent, value: item });
+        continue;
+      }
+
+      parent.push(parseScalar(itemText));
       continue;
     }
-    
-    // 处理键值对
-    if (trimmed.includes(':')) {
-      const colonIndex = trimmed.indexOf(':');
-      const key = trimmed.slice(0, colonIndex).trim();
-      const value = trimmed.slice(colonIndex + 1).trim();
-      
-      // 回退栈到正确的层级
-      while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
-        stack.pop();
-      }
-      
-      const current = stack[stack.length - 1].obj;
-      
-      if (value === '' || value === '|' || value === '>') {
-        // 检查下一行是否是数组
-        let nextNonEmpty = i + 1;
-        while (nextNonEmpty < lines.length) {
-          const nl = lines[nextNonEmpty].trim();
-          if (nl && !nl.startsWith('#')) break;
-          nextNonEmpty++;
-        }
-        
-        if (nextNonEmpty < lines.length && lines[nextNonEmpty].trim().startsWith('-')) {
-          current[key] = [];
-          currentArray = current[key];
-          currentArrayIndent = indent;
-        } else {
-          current[key] = {};
-          stack.push({ obj: current[key], indent, key });
-          currentArray = null;
-        }
-      } else {
-        current[key] = parseValue(value);
-        currentArray = null;
-      }
+
+    const colonIndex = trimmed.indexOf(':');
+    if (colonIndex <= 0) continue;
+    const key = trimmed.slice(0, colonIndex).trim();
+    const rawValue = trimmed.slice(colonIndex + 1).trim();
+
+    if (rawValue) {
+      parent[key] = parseScalar(rawValue);
+      continue;
     }
+
+    const next = nextUsefulLine(i);
+    const child = next && next.indent > indent && next.text.startsWith('- ') ? [] : {};
+    parent[key] = child;
+    stack.push({ indent, value: child });
   }
-  
-  return result;
+
+  return root;
 }
 
-function parseValue(value) {
-  if (!value) return '';
-  
-  const commentIndex = value.indexOf(' #');
-  if (commentIndex > 0) value = value.slice(0, commentIndex).trim();
-  
-  if ((value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))) {
-    return value.slice(1, -1);
-  }
-  
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (/^-?\d+$/.test(value)) return parseInt(value, 10);
-  if (/^-?\d+\.\d+$/.test(value)) return parseFloat(value);
-  
-  return value;
-}
-
-/**
- * 解析 Front Matter
- */
 function parseFrontMatter(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (match) {
-    try {
-      const meta = parseYaml(match[1]);
-      const body = content.slice(match[0].length).trim();
-      return { meta, body };
-    } catch (e) {
-      return { meta: {}, body: content };
-    }
-  }
-  return { meta: {}, body: content };
+  if (!match) return { meta: {}, body: content.trim() };
+  return {
+    meta: parseYaml(match[1]),
+    body: content.slice(match[0].length).trim()
+  };
 }
 
-/**
- * 安全路径验证
- */
-function isPathSafe(filePath, basePath) {
-  const resolved = path.resolve(basePath, filePath);
-  const resolvedBase = path.resolve(basePath);
-  return resolved.startsWith(resolvedBase);
+function makeSummary(body, maxLength) {
+  const text = body
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]+`/g, ' ')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1 ')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1 ')
+    .replace(/^#+\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/[*_~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text;
 }
 
-/**
- * 检查是否排除
- */
-function isExcluded(filePath, excludePatterns) {
-  const fileName = path.basename(filePath);
-  for (const pattern of excludePatterns) {
-    if (pattern.startsWith('_') && fileName.startsWith('_')) return true;
-    if (pattern.endsWith('/*')) {
-      const dir = pattern.slice(0, -2);
-      if (filePath.includes(dir + '/') || filePath.includes(dir + '\\')) return true;
-    }
-    if (fileName === pattern) return true;
+function resolveFirstExisting(paths) {
+  for (const target of paths) {
+    if (target && fs.existsSync(target)) return target;
   }
-  return false;
+  return null;
 }
 
-/**
- * 递归扫描目录
- * @param {boolean} collectGroups - 是否收集分组（tree模式）
- * @param {string} groupPath - 当前分组路径（相对于分类根目录）
- */
-function scanDirectory(dirPath, basePath, currentDepth, maxDepth, excludePatterns, categoryId, collectGroups = false, groupPath = '') {
-  const results = [];
-  const groups = {};
-  
-  if (maxDepth !== -1 && currentDepth > maxDepth) return { posts: results, groups };
-  if (!fs.existsSync(dirPath)) {
-    console.warn(`  ⚠️ 目录不存在: ${dirPath}`);
-    return { posts: results, groups };
-  }
-  
-  const items = fs.readdirSync(dirPath);
-  const currentDirPosts = []; // 当前目录直接包含的文章
-  
-  for (const item of items) {
-    const fullPath = path.join(dirPath, item);
-    const relativePath = path.relative(basePath, fullPath).replace(/\\/g, '/');
-    
-    if (!isPathSafe(fullPath, basePath)) continue;
-    if (isExcluded(relativePath, excludePatterns)) continue;
-    
-    const stat = fs.statSync(fullPath);
-    
-    if (stat.isDirectory()) {
-      // 计算子目录的分组路径
-      const subGroupPath = groupPath ? `${groupPath}/${item}` : item;
-      
-      const subResult = scanDirectory(
-        fullPath, basePath, currentDepth + 1, maxDepth, 
-        excludePatterns, categoryId, collectGroups, subGroupPath
-      );
-      
-      // 收集子目录的文章和分组
-      results.push(...subResult.posts);
-      Object.assign(groups, subResult.groups);
-      
-    } else if (stat.isFile() && item.endsWith('.md')) {
-      try {
-        const content = fs.readFileSync(fullPath, 'utf8');
-        const { meta, body } = parseFrontMatter(content);
-        
-        const uniqueKey = `${categoryId}:${relativePath}`;
-        const id = generateId(uniqueKey);
-        
-        let summary = meta.summary || '';
-        if (!summary && body) {
-          const plainText = body
-            // 移除标题
-            .replace(/^#+\s+.*/gm, '')
-            // 移除代码块
-            .replace(/```[\s\S]*?```/g, '')
-            // 移除行内代码
-            .replace(/`[^`]+`/g, '')
-            // 移除链接，保留文字
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-            // 移除图片
-            .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
-            // 移除粗体/斜体/删除线
-            .replace(/\*\*([^*]+)\*\*/g, '$1')
-            .replace(/\*([^*]+)\*/g, '$1')
-            .replace(/__([^_]+)__/g, '$1')
-            .replace(/_([^_]+)_/g, '$1')
-            .replace(/~~([^~]+)~~/g, '$1')
-            // 移除引用标记
-            .replace(/^>\s*/gm, '')
-            // 移除列表标记
-            .replace(/^[\s]*[-*+]\s+/gm, '')
-            .replace(/^[\s]*\d+\.\s+/gm, '')
-            // 移除水平线
-            .replace(/^[-*_]{3,}$/gm, '')
-            // 移除表格分隔符
-            .replace(/\|/g, ' ')
-            .replace(/^[-:|\s]+$/gm, '')
-            // 清理多余空白
-            .replace(/\n+/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          summary = plainText.slice(0, 150) + (plainText.length > 150 ? '...' : '');
-        }
-        
-        let tags = meta.tags || [];
-        if (typeof tags === 'string') {
-          const m = tags.match(/\[(.*)\]/);
-          tags = m ? m[1].split(',').map(t => t.trim()) : [tags];
-        }
-        
-        const post = {
-          id,
-          _file: relativePath,
-          _groupPath: groupPath || null,  // 所属分组路径（空字符串表示根目录）
-          title: meta.title || item.replace('.md', ''),
-          date: meta.date ? formatDate(meta.date) : null,
-          tags,
-          summary,
-          _sortDate: meta.date ? new Date(meta.date).getTime() : 0
-        };
-        
-        results.push(post);
-        currentDirPosts.push(post);
-      } catch (e) {
-        console.warn(`  ⚠️ 读取失败: ${fullPath}`, e.message);
-      }
-    }
-  }
-  
-  // tree 模式：如果当前目录有文章，创建分组
-  if (collectGroups && groupPath && currentDirPosts.length > 0) {
-    const dirName = path.basename(groupPath);
-    groups[groupPath] = {
-      name: groupPath,
-      displayName: dirName,
-      depth: (groupPath.match(/\//g) || []).length,
-      posts: currentDirPosts
+function normalizePageRecords(pageRecords) {
+  if (Array.isArray(pageRecords)) return pageRecords;
+  if (pageRecords && typeof pageRecords === 'object') return Object.values(pageRecords);
+  return [];
+}
+
+function loadSiteConfigInput() {
+  if (fs.existsSync(NEW_CONFIG_PATH)) {
+    return {
+      mode: 'new',
+      filePath: NEW_CONFIG_PATH,
+      raw: parseYaml(readText(NEW_CONFIG_PATH))
     };
   }
-  
-  return { posts: results, groups };
-}
 
-function formatDate(date) {
-  if (date instanceof Date) return date.toISOString().split('T')[0];
-  return String(date);
-}
-
-function resolvePath(configPath, basePath) {
-  if (path.isAbsolute(configPath)) return configPath;
-  return path.join(basePath, configPath);
-}
-
-function isNonEmptyString(v) {
-  return typeof v === 'string' && v.trim().length > 0;
-}
-
-function isValidRefId(v) {
-  return isNonEmptyString(v) && /^[a-zA-Z0-9_-]+$/.test(v);
-}
-
-function validateConfigShape(config) {
-  const errors = [];
-  const warnings = [];
-
-  if (!config || typeof config !== 'object') {
-    errors.push('配置文件根节点必须是对象。');
-    return { errors, warnings };
+  if (!fs.existsSync(LEGACY_CONFIG_PATH)) {
+    throw new Error('No config found. Expected config/blog.config.yml or conf/config.yml');
   }
 
-  if (!isNonEmptyString(config.site?.name)) {
-    warnings.push('建议设置 site.name，避免页面标题为空。');
+  return {
+    mode: 'legacy',
+    filePath: LEGACY_CONFIG_PATH,
+    raw: parseYaml(readText(LEGACY_CONFIG_PATH))
+  };
+}
+
+function mapLegacyTheme(themeId) {
+  const map = {
+    default: 'graphite',
+    'dark-pro': 'graphite',
+    vercel: 'mono',
+    stripe: 'aurora',
+    notion: 'paper',
+    medium: 'paper',
+    minimal: 'mono',
+    github: 'mono',
+    retro: 'mono',
+    acid: 'graphite',
+    glass: 'aurora'
+  };
+  return map[themeId] || 'graphite';
+}
+
+function scanThemeDirectory(baseDir) {
+  if (!fs.existsSync(baseDir)) return [];
+  return fs.readdirSync(baseDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const themeDir = path.join(baseDir, entry.name);
+      const metaPath = path.join(themeDir, 'theme.yml');
+      const meta = fs.existsSync(metaPath) ? parseYaml(readText(metaPath)) : {};
+      return {
+        id: entry.name,
+        name: meta.name || entry.name,
+        version: meta.version || '1.0.0',
+        author: meta.author || 'Unknown',
+        description: meta.description || '',
+        path: `themes/${entry.name}`
+      };
+    });
+}
+
+function normalizeConfig(input) {
+  const { mode, raw } = input;
+  if (mode === 'new') {
+    const categories = raw.content?.categories || [];
+    const pages = normalizePageRecords(raw.content?.pages || []);
+    return {
+      mode,
+      site: raw.site || {},
+      deployment: raw.deployment || { basePath: 'auto' },
+      theme: raw.theme || {},
+      categories,
+      pages,
+      nav: raw.nav || [],
+      features: raw.features || {},
+      display: raw.display || {},
+      beian: raw.beian || { enabled: false }
+    };
   }
 
-  if (config.display?.postsPerPage !== undefined) {
-    const ppp = Number(config.display.postsPerPage);
-    if (!Number.isInteger(ppp) || ppp < 1) {
-      errors.push('display.postsPerPage 必须是大于等于 1 的整数。');
+  return {
+    mode,
+    site: raw.site || {},
+    deployment: { basePath: 'auto' },
+    theme: {
+      active: mapLegacyTheme(raw.theme?.active || 'default')
+    },
+    categories: raw.categories || [],
+    pages: normalizePageRecords(raw.pages || []),
+    nav: raw.nav || [],
+    features: raw.features || {},
+    display: raw.display || {},
+    beian: raw.beian || { enabled: false }
+  };
+}
+
+function readOptionalYaml(sourcePath) {
+  if (!sourcePath || !fs.existsSync(sourcePath)) return null;
+  return parseYaml(readText(sourcePath));
+}
+
+function loadFeatureData(sourcePath, kind) {
+  const parsed = readOptionalYaml(sourcePath);
+  if (!parsed) {
+    if (kind === 'moments') return { moments: [] };
+    if (kind === 'links') return { groups: [], links: [] };
+    if (kind === 'gallery') return { enabled: false, groups: [], images: {}, settings: {} };
+    return {};
+  }
+  return parsed;
+}
+
+function buildGalleryData(rawGallery, rootDir) {
+  if (!rawGallery) return { enabled: false, groups: [], images: {}, settings: {} };
+  const settings = rawGallery.settings || {};
+  const groups = rawGallery.groups || [];
+  const allowedFormats = new Set((settings.formats || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']).map((item) => String(item).toLowerCase()));
+
+  function scanImages(basePath, maxDepth, depth = 0) {
+    const node = { images: [], subfolders: {} };
+    if (!fs.existsSync(basePath)) return node;
+    for (const entry of fs.readdirSync(basePath, { withFileTypes: true })) {
+      const fullPath = path.join(basePath, entry.name);
+      if (entry.isDirectory()) {
+        if (maxDepth !== -1 && depth >= maxDepth) continue;
+        node.subfolders[entry.name] = scanImages(fullPath, maxDepth, depth + 1);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).slice(1).toLowerCase();
+        if (!allowedFormats.has(ext)) continue;
+        node.images.push(path.relative(ROOT, fullPath).replace(/\\/g, '/'));
+      }
+    }
+    node.images.sort();
+    return node;
+  }
+
+  const images = {};
+  for (const group of groups) {
+    const groupPath = group.path ? path.join(ROOT, group.path) : null;
+    const maxDepth = Number.isFinite(group.maxDepth) ? group.maxDepth : (Number.isFinite(settings.maxDepth) ? settings.maxDepth : 2);
+    images[group.id] = groupPath ? scanImages(groupPath, maxDepth) : { images: [], subfolders: {} };
+  }
+
+  return { enabled: groups.length > 0, groups, images, settings };
+}
+
+function buildPagesMap(pages) {
+  const pageMap = {};
+  for (const page of pages) {
+    if (!page?.id) continue;
+    pageMap[page.id] = { ...page };
+  }
+  return pageMap;
+}
+
+function resolveNav(navItems, pagesMap) {
+  return (navItems || []).map((item) => {
+    if (item.page === 'index') {
+      return { name: item.name || '首页', url: './index.html' };
+    }
+    if (item.page && pagesMap[item.page]) {
+      return { name: item.name || pagesMap[item.page].name || item.page, url: `./page.html?id=${item.page}` };
+    }
+    if (item.url) return { name: item.name || item.url, url: item.url };
+    return null;
+  }).filter(Boolean);
+}
+
+function buildPagesContent(pagesMap, summaryLength) {
+  for (const page of Object.values(pagesMap)) {
+    if (page.type !== 'markdown' || !page.source) continue;
+    const sourcePath = path.join(ROOT, page.source);
+    if (!fs.existsSync(sourcePath)) continue;
+    const parsed = parseFrontMatter(readText(sourcePath));
+    page.title = parsed.meta.title || page.title || page.name;
+    page.description = page.description || parsed.meta.description || makeSummary(parsed.body, summaryLength);
+    page.content = parsed.body;
+  }
+}
+
+function copyStaticFiles() {
+  for (const fileName of STATIC_FILES) {
+    copyFileSafe(path.join(ROOT, fileName), path.join(DIST_DIR, fileName));
+  }
+}
+
+function scanCategoryPosts(category, summaryLength) {
+  const sourceDir = path.join(ROOT, category.path);
+  const result = { posts: [], groups: {} };
+  if (!fs.existsSync(sourceDir)) return result;
+
+  function walk(currentDir) {
+    for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.md') continue;
+
+      const relative = path.relative(sourceDir, fullPath).replace(/\\/g, '/');
+      const parsed = parseFrontMatter(readText(fullPath));
+      const id = generateId(`${category.id}:${relative}`);
+      const groupPath = path.dirname(relative) === '.' ? null : path.dirname(relative).replace(/\\/g, '/');
+      const post = {
+        id,
+        title: parsed.meta.title || path.basename(relative, '.md'),
+        date: parsed.meta.date || '',
+        tags: Array.isArray(parsed.meta.tags) ? parsed.meta.tags : [],
+        summary: parsed.meta.summary || makeSummary(parsed.body, summaryLength),
+        groupPath
+      };
+      result.posts.push(post);
+      if (groupPath) {
+        if (!result.groups[groupPath]) result.groups[groupPath] = { posts: [] };
+        result.groups[groupPath].posts.push(post);
+      }
+
+      const distMarkdownPath = path.join(DIST_DIR, 'posts', category.id, relative);
+      ensureDir(path.dirname(distMarkdownPath));
+      fs.writeFileSync(distMarkdownPath, readText(fullPath), 'utf8');
     }
   }
 
-  const categories = config.categories || [];
-  const categoryIdSet = new Set();
-  if (!Array.isArray(categories)) {
-    errors.push('categories 必须是数组。');
-  } else {
-    categories.forEach((cat, idx) => {
-      const prefix = `categories[${idx}]`;
-      if (!cat || typeof cat !== 'object') {
-        errors.push(`${prefix} 必须是对象。`);
-        return;
-      }
-      if (!isValidRefId(cat.id)) {
-        errors.push(`${prefix}.id 必须是非空字符串，且仅允许字母/数字/_/-。`);
-      } else if (categoryIdSet.has(cat.id)) {
-        errors.push(`categories.id 出现重复值: ${cat.id}`);
-      } else {
-        categoryIdSet.add(cat.id);
-      }
-      if (!isNonEmptyString(cat.name)) {
-        errors.push(`${prefix}.name 必须是非空字符串。`);
-      }
-      if (!isNonEmptyString(cat.path)) {
-        errors.push(`${prefix}.path 必须是非空字符串。`);
-      }
-      if (cat.type !== undefined && !['flat', 'tree'].includes(cat.type)) {
-        errors.push(`${prefix}.type 仅支持 flat 或 tree。`);
-      }
-    });
-  }
-
-  const pages = config.pages || [];
-  if (pages !== undefined && !Array.isArray(pages)) {
-    errors.push('pages 必须是数组。');
-  } else if (Array.isArray(pages)) {
-    const pageIdSet = new Set();
-    pages.forEach((page, idx) => {
-      const prefix = `pages[${idx}]`;
-      if (!page || typeof page !== 'object') {
-        errors.push(`${prefix} 必须是对象。`);
-        return;
-      }
-      if (!isValidRefId(page.id)) {
-        errors.push(`${prefix}.id 必须是非空字符串，且仅允许字母/数字/_/-。`);
-      } else if (pageIdSet.has(page.id)) {
-        errors.push(`pages.id 出现重复值: ${page.id}`);
-      } else {
-        pageIdSet.add(page.id);
-      }
-
-      const type = page.type || 'html';
-      if (!['markdown', 'category', 'html'].includes(type)) {
-        errors.push(`${prefix}.type 仅支持 markdown/category/html。`);
-      }
-      if (type === 'markdown' && !isNonEmptyString(page.source)) {
-        errors.push(`${prefix}.source 在 markdown 页面中必须是非空字符串。`);
-      }
-      if (type === 'category' && !isValidRefId(page.categoryId)) {
-        errors.push(`${prefix}.categoryId 在 category 页面中必须是合法 ID。`);
-      }
-      if (type === 'category' && isValidRefId(page.categoryId) && !categoryIdSet.has(page.categoryId)) {
-        errors.push(`${prefix}.categoryId 引用不存在的分类: ${page.categoryId}`);
-      }
-    });
-  }
-
-  const nav = config.nav || [];
-  if (nav !== undefined && !Array.isArray(nav)) {
-    errors.push('nav 必须是数组。');
-  } else if (Array.isArray(nav)) {
-    nav.forEach((item, idx) => {
-      const prefix = `nav[${idx}]`;
-      if (!item || typeof item !== 'object') {
-        errors.push(`${prefix} 必须是对象。`);
-        return;
-      }
-      if (!isNonEmptyString(item.name)) {
-        errors.push(`${prefix}.name 必须是非空字符串。`);
-      }
-      if (!isNonEmptyString(item.url)) {
-        errors.push(`${prefix}.url 必须是非空字符串。`);
-      }
-    });
-  }
-
-  const features = config.features || {};
-  ['moments', 'links', 'gallery'].forEach((key) => {
-    const feature = features[key];
-    if (!feature || feature.enabled !== true) return;
-    if (!isNonEmptyString(feature.source)) {
-      errors.push(`features.${key}.enabled=true 时，source 必须是非空字符串。`);
-    }
-  });
-
-  return { errors, warnings };
-}
-
-/**
- * 扫描图库目录
- */
-function scanGalleryDir(dirPath, basePath, currentDepth, maxDepth, formats) {
-  const result = { images: [], subfolders: {} };
-  
-  if (maxDepth !== -1 && currentDepth > maxDepth) return result;
-  if (!fs.existsSync(dirPath)) return result;
-  
-  const items = fs.readdirSync(dirPath);
-  
-  for (const item of items) {
-    if (item.startsWith('.') || item.startsWith('_')) continue;
-    
-    const fullPath = path.join(dirPath, item);
-    const relativePath = path.relative('.', fullPath).replace(/\\/g, '/');
-    const stat = fs.statSync(fullPath);
-    
-    if (stat.isDirectory()) {
-      const subResult = scanGalleryDir(fullPath, basePath, currentDepth + 1, maxDepth, formats);
-      if (subResult.images.length > 0 || Object.keys(subResult.subfolders).length > 0) {
-        result.subfolders[item] = subResult;
-      }
-    } else if (stat.isFile()) {
-      const ext = path.extname(item).toLowerCase().slice(1);
-      if (formats.includes(ext)) {
-        result.images.push(relativePath);
-      }
-    }
-  }
-  
+  walk(sourceDir);
+  result.posts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   return result;
 }
 
-/**
- * 统计图库图片数量
- */
-function countGalleryImages(data) {
-  if (!data) return 0;
-  let count = (data.images || []).length;
-  for (const sub of Object.values(data.subfolders || {})) {
-    count += countGalleryImages(sub);
-  }
-  return count;
-}
+function buildContent(normalized, availableThemes) {
+  const pagesMap = buildPagesMap(normalized.pages);
+  buildPagesContent(pagesMap, normalized.display.summaryLength || 140);
 
-/**
- * 扫描可用主题
- */
-function scanThemes() {
-  const themes = [];
-  
-  if (!fs.existsSync(THEMES_DIR)) {
-    console.warn(`⚠️ 主题目录不存在: ${THEMES_DIR}`);
-    return themes;
-  }
-  
-  const items = fs.readdirSync(THEMES_DIR);
-  
-  for (const item of items) {
-    const themePath = path.join(THEMES_DIR, item);
-    const stat = fs.statSync(themePath);
-    
-    if (stat.isDirectory()) {
-      const stylePath = path.join(themePath, 'style.css');
-      const infoPath = path.join(themePath, 'theme.yml');
-      
-      if (fs.existsSync(stylePath)) {
-        let info = { name: item, version: '1.0.0', author: 'Unknown', description: '' };
-        
-        if (fs.existsSync(infoPath)) {
-          try {
-            const infoContent = fs.readFileSync(infoPath, 'utf8');
-            info = { ...info, ...parseYaml(infoContent) };
-          } catch (e) {}
-        }
-        
-        themes.push({
-          id: item,
-          ...info,
-          path: `usr/themes/${item}`
-        });
-      }
-    }
-  }
-  
-  return themes;
-}
-
-/**
- * 主函数
- */
-function build() {
-  console.log('🚀 开始构建博客...\n');
-  
-  // 检查配置文件
-  if (!fs.existsSync(CONFIG_PATH)) {
-    console.error(`❌ 配置文件不存在: ${CONFIG_PATH}`);
-    process.exit(1);
-  }
-  
-  const configContent = fs.readFileSync(CONFIG_PATH, 'utf8');
-  const config = parseYaml(configContent);
-
-  const validation = validateConfigShape(config);
-  if (validation.warnings.length > 0) {
-    console.warn('\n⚠️ 配置警告:');
-    validation.warnings.forEach(msg => console.warn(`   - ${msg}`));
-  }
-  if (validation.errors.length > 0) {
-    console.error('\n❌ 配置校验失败:');
-    validation.errors.forEach(msg => console.error(`   - ${msg}`));
-    process.exit(1);
-  }
-  
-  const scanConfig = config.scan || {};
-  const maxDepth = scanConfig.maxDepth !== undefined ? scanConfig.maxDepth : 2;
-  const excludePatterns = scanConfig.exclude || [];
-  
-  // 扫描主题
-  console.log('🎨 扫描主题...');
-  const themes = scanThemes();
-  themes.forEach(t => console.log(`   ✅ ${t.name} (${t.id})`));
-  
-  // 验证当前主题
-  const activeTheme = config.theme?.active || 'default';
-  const themeExists = themes.some(t => t.id === activeTheme);
-  if (!themeExists && themes.length > 0) {
-    console.warn(`⚠️ 主题 "${activeTheme}" 不存在，将使用 "${themes[0].id}"`);
-  }
-  
-  console.log(`\n📁 扫描文章 (深度: ${maxDepth === -1 ? '无限' : maxDepth})...`);
-  
-  const siteRoot = path.dirname(path.resolve(CONFIG_PATH));
-  
-  // 公开索引
-  const publicIndex = {
-    generated: new Date().toISOString(),
-    categories: {}
-  };
-  
-  // 路径映射
+  const categories = {};
   const pathMap = {};
-  
-  let totalPosts = 0;
-  const categories = config.categories || [];
-  
-  for (const category of categories) {
-    const categoryPath = resolvePath(category.path, path.dirname(siteRoot));
-    const displayType = category.type || 'flat';
-    
-    console.log(`   📂 ${category.name} (${category.path}) [${displayType}]`);
-    
-    const isTree = displayType === 'tree';
-    const { posts, groups } = scanDirectory(categoryPath, categoryPath, 0, maxDepth, excludePatterns, category.id, isTree, '');
-    posts.sort((a, b) => (b._sortDate || 0) - (a._sortDate || 0));
-    
-    // 处理分组内的排序
-    if (isTree) {
-      for (const groupPath of Object.keys(groups)) {
-        groups[groupPath].posts.sort((a, b) => (b._sortDate || 0) - (a._sortDate || 0));
-      }
-    }
-    
-    const publicPosts = posts.map(p => {
-      pathMap[p.id] = { category: category.id, file: p._file };
-      return { id: p.id, title: p.title, date: p.date, tags: p.tags, summary: p.summary, groupPath: p._groupPath };
-    });
-    
-    // 处理分组数据
-    const publicGroups = {};
-    for (const [groupPath, groupData] of Object.entries(groups)) {
-      publicGroups[groupPath] = {
-        name: groupData.name,
-        displayName: groupData.displayName,
-        depth: groupData.depth,
-        posts: groupData.posts.map(p => {
-          pathMap[p.id] = { category: category.id, file: p._file };
-          return { id: p.id, title: p.title, date: p.date, tags: p.tags, summary: p.summary };
-        })
+
+  for (const category of normalized.categories) {
+    if (!category.id || !category.path) continue;
+    const scanned = scanCategoryPosts(category, normalized.display.summaryLength || 140);
+    categories[category.id] = {
+      name: category.name || category.id,
+      icon: category.icon || '',
+      path: category.id,
+      description: category.description || '',
+      type: category.type || 'flat',
+      posts: scanned.posts,
+      groups: scanned.groups
+    };
+    for (const post of scanned.posts) {
+      const relativeFile = scanned.posts.find((item) => item.id === post.id);
+      pathMap[post.id] = {
+        category: category.id,
+        file: scanned.posts === scanned.posts ? null : null
       };
     }
-    
-    publicIndex.categories[category.id] = {
-      name: category.name,
-      icon: category.icon,
-      path: category.id,
-      description: category.description,
-      type: displayType,
-      posts: publicPosts,
-      groups: isTree ? publicGroups : undefined
-    };
-    
-    const groupCount = Object.keys(groups).length;
-    console.log(`      找到 ${posts.length} 篇文章${groupCount > 0 ? ` (${groupCount} 个分组)` : ''}`);
-    totalPosts += posts.length;
   }
-  
-  // 生成站点配置（供前端使用）
+
+  for (const category of normalized.categories) {
+    if (!category.id || !category.path) continue;
+    const sourceDir = path.join(ROOT, category.path);
+    if (!fs.existsSync(sourceDir)) continue;
+    function walk(currentDir) {
+      for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+        const fullPath = path.join(currentDir, entry.name);
+        if (entry.isDirectory()) {
+          walk(fullPath);
+          continue;
+        }
+        if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.md') continue;
+        const relative = path.relative(sourceDir, fullPath).replace(/\\/g, '/');
+        const id = generateId(`${category.id}:${relative}`);
+        pathMap[id] = {
+          category: category.id,
+          file: relative,
+          outputPath: `posts/${category.id}/${relative}`
+        };
+      }
+    }
+    walk(sourceDir);
+  }
+
+  const nav = resolveNav(normalized.nav, pagesMap);
+  const features = {};
+
+  const momentsSource = normalized.features?.moments?.source
+    ? path.join(ROOT, normalized.features.moments.source)
+    : null;
+  const linksSource = normalized.features?.links?.source
+    ? path.join(ROOT, normalized.features.links.source)
+    : null;
+  const gallerySource = normalized.features?.gallery?.source
+    ? path.join(ROOT, normalized.features.gallery.source)
+    : null;
+
+  if (normalized.features?.moments?.enabled) {
+    features.moments = loadFeatureData(momentsSource, 'moments');
+  }
+  if (normalized.features?.links?.enabled) {
+    features.links = loadFeatureData(linksSource, 'links');
+  }
+  if (normalized.features?.gallery?.enabled) {
+    features.gallery = buildGalleryData(loadFeatureData(gallerySource, 'gallery'), ROOT);
+  }
+
+  const activeTheme = availableThemes.some((theme) => theme.id === normalized.theme.active)
+    ? normalized.theme.active
+    : (availableThemes[0]?.id || 'graphite');
+
   const siteConfig = {
-    site: config.site || {},
+    site: normalized.site,
+    deployment: normalized.deployment,
     theme: {
-      active: themeExists ? activeTheme : (themes[0]?.id || 'default'),
-      available: themes,
-      config: config.theme?.config || {}
+      active: activeTheme,
+      available: availableThemes
     },
-    beian: config.beian || { enabled: false },
-    nav: config.nav || [],
-    display: config.display || {}
+    nav,
+    display: normalized.display,
+    pages: pagesMap,
+    features,
+    beian: normalized.beian
   };
-  
-  // 处理自定义页面
-  console.log('\n📄 处理自定义页面...');
-  const pages = config.pages || [];
-  const pagesData = {};
-  
-  for (const page of pages) {
-    if (!page.id) continue;
-    
-    const pageData = {
-      id: page.id,
-      name: page.name || page.id,
-      icon: page.icon || '',
-      description: page.description || '',
-      type: page.type || 'html'
-    };
-    
-    if (page.type === 'markdown' && page.source) {
-      // 读取 md 文件
-      const mdPath = page.source;
-      if (fs.existsSync(mdPath)) {
-        try {
-          const content = fs.readFileSync(mdPath, 'utf8');
-          const { meta, body } = parseFrontMatter(content);
-          pageData.title = meta.title || page.name;
-          pageData.content = body;
-          pageData.source = mdPath;
-          console.log(`   ✅ ${page.name} (markdown: ${mdPath})`);
-        } catch (e) {
-          console.warn(`   ⚠️ 读取失败: ${mdPath}`);
-          pageData.content = '';
-        }
-      } else {
-        console.warn(`   ⚠️ 文件不存在: ${mdPath}`);
-        pageData.content = '';
-      }
-    } else if (page.type === 'category' && page.categoryId) {
-      // 绑定分类
-      pageData.categoryId = page.categoryId;
-      const cat = publicIndex.categories[page.categoryId];
-      if (cat) {
-        console.log(`   ✅ ${page.name} (category: ${page.categoryId})`);
-      } else {
-        console.warn(`   ⚠️ 分类不存在: ${page.categoryId}`);
-      }
-    } else if (page.type === 'html') {
-      // 自定义 HTML
-      pageData.content = page.content || '';
-      console.log(`   ✅ ${page.name} (html)`);
-    }
-    
-    pagesData[page.id] = pageData;
-  }
-  
-  siteConfig.pages = pagesData;
-  
-  // 处理功能模块（瞬间、友链）
-  console.log('\n🔧 处理功能模块...');
-  const features = config.features || {};
-  siteConfig.features = {};
-  
-  // 瞬间
-  if (features.moments?.enabled && features.moments?.source) {
-    const momentsPath = features.moments.source;
-    if (fs.existsSync(momentsPath)) {
-      try {
-        const momentsContent = fs.readFileSync(momentsPath, 'utf8');
-        const momentsData = parseYaml(momentsContent);
-        siteConfig.features.moments = {
-          enabled: true,
-          moments: momentsData.moments || []
-        };
-        console.log(`   ✅ 瞬间 (${(momentsData.moments || []).length} 条)`);
-      } catch (e) {
-        console.warn(`   ⚠️ 瞬间配置读取失败: ${momentsPath}`);
-      }
-    } else {
-      console.warn(`   ⚠️ 瞬间配置不存在: ${momentsPath}`);
-    }
-  }
-  
-  // 友链
-  if (features.links?.enabled && features.links?.source) {
-    const linksPath = features.links.source;
-    if (fs.existsSync(linksPath)) {
-      try {
-        const linksContent = fs.readFileSync(linksPath, 'utf8');
-        const linksData = parseYaml(linksContent);
-        siteConfig.features.links = {
-          enabled: true,
-          groups: linksData.groups || [],
-          links: linksData.links || []
-        };
-        console.log(`   ✅ 友链 (${(linksData.links || []).length} 个)`);
-      } catch (e) {
-        console.warn(`   ⚠️ 友链配置读取失败: ${linksPath}`);
-      }
-    } else {
-      console.warn(`   ⚠️ 友链配置不存在: ${linksPath}`);
-    }
-  }
-  
-  // 图库
-  if (features.gallery?.enabled && features.gallery?.source) {
-    const galleryPath = features.gallery.source;
-    if (fs.existsSync(galleryPath)) {
-      try {
-        const galleryContent = fs.readFileSync(galleryPath, 'utf8');
-        const galleryConfig = parseYaml(galleryContent);
-        const settings = galleryConfig.settings || {};
-        const defaultMaxDepth = settings.maxDepth !== undefined ? settings.maxDepth : 2;
-        const formats = settings.formats || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-        
-        // 扫描各分组的图片
-        const groups = galleryConfig.groups || [];
-        const imagesData = {};
-        let totalImages = 0;
-        
-        for (const group of groups) {
-          if (!group.path) continue;
-          const groupMaxDepth = group.maxDepth !== undefined ? group.maxDepth : defaultMaxDepth;
-          const groupImages = scanGalleryDir(group.path, group.path, 0, groupMaxDepth, formats);
-          imagesData[group.id] = groupImages;
-          totalImages += countGalleryImages(groupImages);
-        }
-        
-        siteConfig.features.gallery = {
-          enabled: true,
-          settings: settings,
-          groups: groups,
-          images: imagesData
-        };
-        console.log(`   ✅ 图库 (${groups.length} 个分组, ${totalImages} 张图片)`);
-      } catch (e) {
-        console.warn(`   ⚠️ 图库配置读取失败: ${galleryPath}`, e.message);
-      }
-    } else {
-      console.warn(`   ⚠️ 图库配置不存在: ${galleryPath}`);
-    }
-  }
-  
-  // 确保输出目录存在
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-  }
-  
-  // 写入文件
-  fs.writeFileSync(path.join(OUTPUT_DIR, 'index.json'), JSON.stringify(publicIndex, null, 2), 'utf8');
-  fs.writeFileSync(path.join(OUTPUT_DIR, '_pathmap.json'), JSON.stringify(pathMap, null, 2), 'utf8');
-  fs.writeFileSync('./site-config.json', JSON.stringify(siteConfig, null, 2), 'utf8');
-  
-  console.log(`\n✨ 构建完成！`);
-  console.log(`   📄 文章: ${totalPosts} 篇`);
-  console.log(`   📑 页面: ${Object.keys(pagesData).length} 个`);
-  console.log(`   🎨 主题: ${themes.length} 个 (当前: ${siteConfig.theme.active})`);
-  console.log(`   📁 输出: posts/index.json, site-config.json`);
+
+  const contentIndex = {
+    generated: new Date().toISOString(),
+    categories
+  };
+
+  return { siteConfig, contentIndex, pathMap };
 }
 
-build();
+function writeOutputs(siteConfig, contentIndex, pathMap) {
+  writeJson(path.join(DIST_DIR, 'site-config.json'), siteConfig);
+  writeJson(path.join(DIST_DIR, 'content-index.json'), contentIndex);
+  writeJson(path.join(DIST_DIR, 'pathmap.json'), pathMap);
+
+  ensureDir(path.join(DIST_DIR, 'posts'));
+  writeJson(path.join(DIST_DIR, 'posts', 'index.json'), contentIndex);
+  writeJson(path.join(DIST_DIR, 'posts', '_pathmap.json'), pathMap);
+}
+
+function copyProjectAssets() {
+  const assetsSource = resolveFirstExisting([
+    path.join(ROOT, 'assets'),
+    path.join(ROOT, 'assets-example')
+  ]);
+  if (assetsSource) copyDirRecursive(assetsSource, path.join(DIST_DIR, 'assets'));
+
+  if (fs.existsSync(NEW_THEMES_DIR)) copyDirRecursive(NEW_THEMES_DIR, path.join(DIST_DIR, 'themes'));
+}
+
+function main() {
+  const configInput = loadSiteConfigInput();
+  const normalized = normalizeConfig(configInput);
+  const availableThemes = scanThemeDirectory(NEW_THEMES_DIR);
+
+  cleanDir(DIST_DIR);
+  copyStaticFiles();
+  copyProjectAssets();
+
+  const { siteConfig, contentIndex, pathMap } = buildContent(normalized, availableThemes);
+  writeOutputs(siteConfig, contentIndex, pathMap);
+
+  console.log('');
+  console.log('Build completed');
+  console.log(`  Config: ${path.relative(ROOT, configInput.filePath)}`);
+  console.log(`  Mode: ${configInput.mode}`);
+  console.log(`  Theme: ${siteConfig.theme.active}`);
+  console.log(`  Categories: ${Object.keys(contentIndex.categories).length}`);
+  console.log(`  Posts: ${Object.keys(pathMap).length}`);
+  console.log(`  Output: ${path.relative(ROOT, DIST_DIR)}`);
+  console.log('');
+}
+
+main();

@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>404 | 加载中...</title>
   <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
   <link rel="preconnect" href="./" />
   <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
-  <link rel="preload" as="fetch" href="./posts/index.json" crossorigin />
-  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
 </head>
-
 <body>
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
@@ -26,10 +26,10 @@
     <div class="error-page">
       <div class="error-code">404</div>
       <h1 class="error-title">页面未找到</h1>
-      <p class="error-desc">抱歉，您访问的页面不存在或已被移动。</p>
+      <p class="error-desc">这个地址没有对应内容，但你的博客还在。你可以直接搜索，也可以从最近文章继续浏览。</p>
 
       <div class="error-search">
-        <input type="text" id="error-search-input" class="search-input" placeholder="搜索文章..." autocomplete="off" />
+        <input type="text" id="error-search-input" class="search-input" placeholder="搜索文章标题或标签" autocomplete="off" />
       </div>
 
       <div class="error-actions">

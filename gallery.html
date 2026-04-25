@@ -4,230 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>图库</title>
-  <meta name="description" content="图库" />
+  <meta name="description" content="主题视觉资产、品牌标记和设计基线示意。" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
   <link rel="preconnect" href="./" />
   <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
-  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
-  <style>
-    .gallery-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
-    .gallery-header { text-align: center; margin-bottom: 40px; }
-    .gallery-header h1 { font-size: 2rem; margin-bottom: 10px; }
-    .gallery-header p { color: var(--text-secondary, #666); }
-
-    .gallery-groups {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 30px;
-      padding: 16px;
-      background: var(--bg-card, rgba(255,255,255,0.03));
-      border-radius: 12px;
-      border: 1px solid var(--border, #eee);
-    }
-    .group-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border: 1px solid var(--border, #eee);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text-secondary, #666);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .group-btn:hover {
-      background: var(--bg-card-hover, rgba(0,0,0,0.05));
-      border-color: var(--accent, #6366f1);
-      color: var(--text-primary, #333);
-    }
-    .group-btn.active {
-      background: var(--accent, #6366f1);
-      border-color: var(--accent, #6366f1);
-      color: #fff;
-    }
-    .group-btn .count {
-      font-size: 12px;
-      padding: 2px 8px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-    }
-    .group-btn.active .count { background: rgba(255,255,255,0.3); }
-
-    .gallery-breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-      padding: 12px 16px;
-      background: var(--bg-card, rgba(255,255,255,0.03));
-      border-radius: 8px;
-      font-size: 14px;
-      flex-wrap: wrap;
-    }
-    .breadcrumb-item {
-      color: var(--text-secondary, #666);
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .breadcrumb-item:hover { color: var(--accent, #6366f1); }
-    .breadcrumb-item.current { color: var(--text-primary, #333); font-weight: 500; cursor: default; }
-    .breadcrumb-sep { color: var(--text-muted, #999); }
-
-    .gallery-folders { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
-    .folder-card {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 20px;
-      background: var(--bg-card, rgba(255,255,255,0.03));
-      border: 1px solid var(--border, #eee);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .folder-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent, #6366f1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .folder-icon { font-size: 24px; }
-    .folder-name { font-weight: 500; font-size: 14px; }
-    .folder-count { font-size: 12px; color: var(--text-muted, #999); }
-
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 16px;
-    }
-    .gallery-item {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--bg-card, rgba(255,255,255,0.03));
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .gallery-item:hover { transform: scale(1.02); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-    .gallery-item img { width: 100%; display: block; transition: opacity 0.3s; }
-    .gallery-item img.loading { opacity: 0; min-height: 200px; }
-    .gallery-item img.loaded { opacity: 1; }
-
-    .gallery-item-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 40px 12px 12px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.7));
-      color: #fff;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .gallery-item:hover .gallery-item-overlay { opacity: 1; }
-    .gallery-item-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.95);
-      z-index: 9999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .lightbox.active { display: flex; opacity: 1; }
-    .lightbox-content { position: relative; max-width: 95vw; max-height: 95vh; }
-    .lightbox-content img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 4px; }
-
-    .lightbox-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 44px;
-      height: 44px;
-      border: none;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      transition: all 0.2s;
-      z-index: 10;
-    }
-    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
-
-    .lightbox-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 50px;
-      height: 50px;
-      border: none;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
-    .lightbox-nav.prev { left: 20px; }
-    .lightbox-nav.next { right: 20px; }
-    .lightbox-nav:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .lightbox-info {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #fff;
-      text-align: center;
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.5);
-      border-radius: 8px;
-    }
-    .lightbox-filename { font-size: 14px; margin-bottom: 4px; }
-    .lightbox-counter { font-size: 12px; color: rgba(255,255,255,0.7); }
-
-    .load-more {
-      display: block;
-      width: 100%;
-      max-width: 300px;
-      margin: 30px auto 0;
-      padding: 14px 24px;
-      border: 1px solid var(--border, #eee);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text-secondary, #666);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .load-more:hover { background: var(--accent, #6366f1); border-color: var(--accent, #6366f1); color: #fff; }
-
-    .empty-state { text-align: center; padding: 80px 20px; color: var(--text-secondary, #666); }
-    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
-
-    @media (max-width: 768px) {
-      .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .gallery-groups { gap: 8px; }
-      .group-btn { padding: 8px 14px; font-size: 13px; }
-      .lightbox-nav { width: 40px; height: 40px; font-size: 20px; }
-      .lightbox-nav.prev { left: 10px; }
-      .lightbox-nav.next { right: 10px; }
-    }
-    @media (max-width: 480px) {
-      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-  </style>
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
 </head>
-
 <body>
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
@@ -238,19 +21,29 @@
   </nav>
 
   <main class="main">
-    <div class="gallery-container">
-      <div class="gallery-header">
-        <h1>🖼️ 图库</h1>
-        <p>照片与图片收藏</p>
-      </div>
+    <section class="hero hero-compact gallery-shell">
+      <div class="hero-kicker">Gallery</div>
+      <h1 class="hero-title">图库</h1>
+      <p class="hero-subtitle">把默认视觉语言、标识和参考板块整理成一套可浏览、可继续扩展的静态资源视图。</p>
+    </section>
 
-      <div id="gallery-content">
-        <div class="loading-state" style="padding: 60px 0;">
-          <div class="loading-spinner"></div>
-          <p>正在加载...</p>
+    <section class="section" style="padding-top: 0;">
+      <div class="gallery-shell">
+        <div class="gallery-shell-header">
+          <div>
+            <h2 class="section-title">视觉资产</h2>
+            <p class="gallery-copy">当前图集读取 `content/data/gallery.yml` 中声明的目录，并沿用统一 token 与交互样式。</p>
+          </div>
+        </div>
+
+        <div id="gallery-content">
+          <div class="loading-state" style="padding: 60px 0;">
+            <div class="loading-spinner"></div>
+            <p>正在加载图库...</p>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <footer class="footer">
       <div class="container">
@@ -263,16 +56,16 @@
   </main>
 
   <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" id="lightbox-close-btn">×</button>
-    <button class="lightbox-nav prev" id="lightbox-prev-btn">‹</button>
-    <button class="lightbox-nav next" id="lightbox-next-btn">›</button>
+    <button class="lightbox-close" id="lightbox-close-btn" type="button" aria-label="关闭">×</button>
+    <button class="lightbox-nav prev" id="lightbox-prev-btn" type="button" aria-label="上一张">‹</button>
     <div class="lightbox-content">
-      <img id="lightbox-img" src="" alt="">
+      <img id="lightbox-img" alt="预览图" />
+      <div class="lightbox-info">
+        <div class="lightbox-filename" id="lightbox-filename"></div>
+        <div class="lightbox-counter" id="lightbox-counter"></div>
+      </div>
     </div>
-    <div class="lightbox-info">
-      <div class="lightbox-filename" id="lightbox-filename"></div>
-      <div class="lightbox-counter" id="lightbox-counter"></div>
-    </div>
+    <button class="lightbox-nav next" id="lightbox-next-btn" type="button" aria-label="下一张">›</button>
   </div>
 
   <script src="./blog.core.js"></script>

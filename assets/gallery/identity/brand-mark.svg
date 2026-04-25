@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Mijiao Notes identity board</title>
+  <desc id="desc">Dark identity composition for the rebuilt blog.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0d14"/>
+      <stop offset="100%" stop-color="#171c27"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6d78ff"/>
+      <stop offset="100%" stop-color="#92a0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="950" cy="170" r="220" fill="#6d78ff" opacity=".14"/>
+  <circle cx="180" cy="760" r="260" fill="#6d78ff" opacity=".08"/>
+  <rect x="96" y="90" width="1008" height="720" rx="42" fill="#10141d" stroke="rgba(255,255,255,.12)"/>
+  <rect x="152" y="154" width="240" height="14" rx="7" fill="url(#accent)"/>
+  <text x="152" y="280" fill="#f6f8fb" font-size="88" font-family="Segoe UI, Arial, sans-serif" font-weight="700">Mijiao Notes</text>
+  <text x="152" y="350" fill="#b8c0ce" font-size="30" font-family="Segoe UI, Arial, sans-serif">Markdown-first static publishing system</text>
+  <rect x="152" y="430" width="360" height="210" rx="28" fill="#171c27" stroke="rgba(255,255,255,.08)"/>
+  <rect x="548" y="430" width="500" height="110" rx="28" fill="#171c27" stroke="rgba(255,255,255,.08)"/>
+  <rect x="548" y="566" width="500" height="74" rx="24" fill="#171c27" stroke="rgba(255,255,255,.08)"/>
+  <text x="188" y="510" fill="#92a0ff" font-size="24" font-family="Consolas, monospace">graphite</text>
+  <text x="188" y="562" fill="#f6f8fb" font-size="46" font-family="Segoe UI, Arial, sans-serif" font-weight="700">Stable default</text>
+  <text x="188" y="606" fill="#b8c0ce" font-size="22" font-family="Segoe UI, Arial, sans-serif">Calm surfaces, tighter hierarchy, cleaner feed.</text>
+  <text x="586" y="500" fill="#f6f8fb" font-size="32" font-family="Segoe UI, Arial, sans-serif" font-weight="700">/blog deployment ready</text>
+  <text x="586" y="610" fill="#b8c0ce" font-size="22" font-family="Segoe UI, Arial, sans-serif">Theme tokens, docs baseline, legacy input compatibility.</text>
+</svg>

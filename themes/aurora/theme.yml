@@ -1,0 +1,6 @@
+name: Aurora
+version: 1.0.0
+author: MijiaoGame
+description: Brand-display theme inspired by Stripe.
+references:
+  - stripe

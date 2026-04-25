@@ -14,9 +14,10 @@
         if (/^(javascript|data|vbscript):/i.test(img)) return false;
         return true;
       });
+
       if (safeImages.length > 0) {
         imagesHtml = `<div class="moment-images">
-          ${safeImages.map((img) => `<img src="${Blog.escapeHtml(img)}" alt="图片" loading="lazy">`).join('')}
+          ${safeImages.map((img) => `<img src="${Blog.escapeHtml(Blog.resolveAsset(img))}" alt="瞬间配图" loading="lazy">`).join('')}
         </div>`;
       }
     }
@@ -28,7 +29,7 @@
       </div>`;
     }
 
-    return `<div class="moment-item">
+    return `<article class="moment-item">
       <div class="moment-dot"></div>
       <div class="moment-card">
         <div class="moment-meta">
@@ -39,7 +40,7 @@
         ${imagesHtml}
         ${tagsHtml}
       </div>
-    </div>`;
+    </article>`;
   }
 
   Blog.runPage({
@@ -52,21 +53,22 @@
 
         const momentsData = Blog.config?.features?.moments;
         if (!momentsData) {
-          Blog.renderState(contentEl, '瞬间功能未启用');
+          Blog.renderState(contentEl, '瞬间功能未启用。');
           return;
         }
 
         const moments = momentsData.moments || [];
         if (moments.length === 0) {
-          Blog.renderState(contentEl, '暂无瞬间');
+          Blog.renderState(contentEl, '还没有记录任何瞬间。');
           return;
         }
 
         moments.sort((a, b) => new Date(b.date) - new Date(a.date));
         contentEl.innerHTML = `<div class="moments-timeline">${moments.map(renderMoment).join('')}</div>`;
+        Blog.setupCardAnimations();
       } catch (error) {
         console.error('Failed to load moments:', error);
-        Blog.renderState(contentEl, '加载失败');
+        Blog.renderState(contentEl, '瞬间内容加载失败。');
       }
     }
   });

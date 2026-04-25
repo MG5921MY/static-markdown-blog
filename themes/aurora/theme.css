@@ -1,0 +1,17 @@
+@import "../base.css";
+
+:root {
+  --bg-primary: #f6f9fc;
+  --bg-secondary: #ffffff;
+  --bg-elevated: #ffffff;
+  --text-primary: #0b1f36;
+  --text-secondary: #5f7088;
+  --text-muted: #8090a4;
+  --border: #e4ebf5;
+  --accent: #5b3df5;
+  --accent-soft: rgba(91, 61, 245, 0.12);
+  --accent-strong: #735cff;
+  --shadow-sm: 0 18px 40px rgba(50, 50, 93, 0.12);
+  --shadow-md: 0 24px 60px rgba(50, 50, 93, 0.16);
+  --shadow-lg: 0 30px 80px rgba(50, 50, 93, 0.22);
+}

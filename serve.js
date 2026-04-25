@@ -1,84 +1,93 @@
-/**
- * 博客开发服务器
- * 启动前自动构建索引，然后启动静态文件服务器
- * 
- * 使用方法：node serve.js [端口号]
- * 示例：node serve.js 8080
- */
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const PORT = parseInt(process.argv[2]) || 8080;
+const PORT = Number(process.argv[2]) || 8080;
+const BASE_PATH_INPUT = process.argv[3] || process.env.BLOG_SERVE_BASE || '/';
+const ROOT = process.cwd();
+const DIST_DIR = path.join(ROOT, 'dist');
 
-// MIME 类型映射
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.md': 'text/markdown; charset=utf-8',
-  '.yml': 'text/yaml; charset=utf-8',
-  '.yaml': 'text/yaml; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8'
 };
 
-// 1. 先执行构建
-console.log('📦 构建索引...\n');
+function normalizeBasePath(input) {
+  const text = String(input || '/').trim();
+  if (!text || text === '/') return '/';
+  const withLeadingSlash = text.startsWith('/') ? text : `/${text}`;
+  return withLeadingSlash.endsWith('/') ? withLeadingSlash : `${withLeadingSlash}/`;
+}
+
+const BASE_PATH = normalizeBasePath(BASE_PATH_INPUT);
+
+function stripBasePath(urlPath) {
+  let requestPath = decodeURIComponent((urlPath || '/').split('?')[0]);
+  if (BASE_PATH !== '/') {
+    if (requestPath === BASE_PATH.slice(0, -1)) requestPath = BASE_PATH;
+    if (!requestPath.startsWith(BASE_PATH)) return null;
+    requestPath = `/${requestPath.slice(BASE_PATH.length)}`;
+  }
+  if (requestPath === '/' || requestPath === '') requestPath = '/index.html';
+  if (requestPath.endsWith('/')) requestPath += 'index.html';
+  return requestPath;
+}
+
+function getFilePath(urlPath) {
+  const requestPath = stripBasePath(urlPath);
+  if (!requestPath) return null;
+  return path.join(DIST_DIR, requestPath);
+}
+
+console.log('Building dist...\n');
 try {
   execSync('node build.js', { stdio: 'inherit' });
   console.log('');
-} catch (e) {
-  console.error('❌ 构建失败');
+} catch (error) {
+  console.error('Build failed');
   process.exit(1);
 }
 
-// 2. 启动服务器
 const server = http.createServer((req, res) => {
-  let filePath = '.' + decodeURIComponent(req.url.split('?')[0]);
-  
-  // 默认文件
-  if (filePath === './') filePath = './index.html';
-  if (filePath.endsWith('/')) filePath += 'index.html';
-  
-  // 安全检查
-  const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(path.resolve('.'))) {
+  const filePath = getFilePath(req.url);
+  if (!filePath) {
+    res.writeHead(404);
+    res.end('Not Found');
+    return;
+  }
+
+  if (!filePath.startsWith(DIST_DIR)) {
     res.writeHead(403);
     res.end('Forbidden');
     return;
   }
-  
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        // 404 - 尝试返回 404.html
-        fs.readFile('./404.html', (e, html) => {
-          res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.end(e ? 'Not Found' : html);
-        });
-      } else {
-        res.writeHead(500);
-        res.end('Server Error');
+
+  fs.readFile(filePath, (error, data) => {
+    if (error) {
+      const fallback404 = path.join(DIST_DIR, '404.html');
+      if (error.code === 'ENOENT' && fs.existsSync(fallback404)) {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(fs.readFileSync(fallback404));
+        return;
       }
+      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
+      res.end(error.code === 'ENOENT' ? 'Not Found' : 'Server Error');
       return;
     }
-    
+
     const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    
     res.writeHead(200, {
-      'Content-Type': contentType,
+      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
       'Cache-Control': 'no-cache'
     });
     res.end(data);
@@ -86,7 +95,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 服务器已启动`);
-  console.log(`   本地访问: http://localhost:${PORT}`);
-  console.log(`   按 Ctrl+C 停止\n`);
+  const previewUrl = BASE_PATH === '/' ? `http://localhost:${PORT}` : `http://localhost:${PORT}${BASE_PATH}`;
+  console.log(`Serving dist on ${previewUrl}`);
 });

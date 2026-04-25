@@ -105,8 +105,8 @@
     if (postList.length === 0) {
       if (gridEl) {
         gridEl.innerHTML = currentSearch
-          ? '<div class="empty-state"><p>没有找到匹配的文章</p></div>'
-          : '<div class="empty-state"><p>该目录暂无文章</p></div>';
+          ? '<div class="empty-state"><p>没有找到匹配的文章。</p></div>'
+          : '<div class="empty-state"><p>当前目录下还没有文章。</p></div>';
       }
       renderPagination(0, 1);
       syncUrlState(1);
@@ -147,10 +147,12 @@
   function updatePageMeta() {
     const site = Blog.config?.site || {};
     const display = Blog.config?.display || {};
+
     document.title = `${site.name || '博客'} | ${site.description || '个人博客'}`;
 
     const descMeta = document.querySelector('meta[name="description"]');
     if (descMeta) descMeta.content = site.description || '';
+
     Blog.setNavSiteName('nav-site-name', '博客');
 
     const heroBadge = document.getElementById('hero-badge');
@@ -160,13 +162,14 @@
     if (heroBadge) {
       if (display.heroBadge) {
         heroBadge.textContent = display.heroBadge;
-        heroBadge.style.display = 'inline-block';
+        heroBadge.style.display = 'inline-flex';
       } else {
         heroBadge.style.display = 'none';
       }
     }
+
     if (heroTitle) heroTitle.textContent = site.alias || site.name || '我的博客';
-    if (heroSubtitle) heroSubtitle.innerHTML = (display.heroSubtitle || site.description || '').replace(/\n/g, '<br/>');
+    if (heroSubtitle) heroSubtitle.innerHTML = (display.heroSubtitle || site.description || '').replace(/\n/g, '<br>');
   }
 
   function updateSiteInfo() {
@@ -199,6 +202,7 @@
         contactBox.style.display = 'none';
       }
     }
+
     siteInfoSection.style.display = (infoHtml || site.email) ? 'block' : 'none';
   }
 
@@ -212,8 +216,8 @@
 
   function bindEvents() {
     if (filterEl) {
-      filterEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('.filter-btn');
+      filterEl.addEventListener('click', (event) => {
+        const btn = event.target.closest('.filter-btn');
         if (!btn) return;
         setActiveCategoryButton(btn.dataset.category || 'all');
         currentSearch = '';
@@ -223,23 +227,23 @@
     }
 
     if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
+      searchInput.addEventListener('input', (event) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-          currentSearch = e.target.value.trim();
+          currentSearch = event.target.value.trim();
           updateDisplay(currentCategory, currentPath, 1);
-        }, 200);
+        }, 180);
       });
     }
 
     if (subdirContainer) {
-      subdirContainer.addEventListener('click', (e) => {
-        const dirBtn = e.target.closest('.dir-nav-btn');
+      subdirContainer.addEventListener('click', (event) => {
+        const dirBtn = event.target.closest('.dir-nav-btn');
         if (dirBtn) {
           updateDisplay(currentCategory, dirBtn.dataset.path || '', 1);
           return;
         }
-        if (e.target.closest('.dir-tree-toggle')) {
+        if (event.target.closest('.dir-tree-toggle')) {
           const panel = treeContainer?.querySelector('.dir-tree-panel');
           if (panel) panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
         }
@@ -247,14 +251,16 @@
     }
 
     if (treeContainer) {
-      treeContainer.addEventListener('click', (e) => {
-        if (e.target.closest('.dir-tree-close')) {
+      treeContainer.addEventListener('click', (event) => {
+        if (event.target.closest('.dir-tree-close')) {
           const panel = treeContainer.querySelector('.dir-tree-panel');
           if (panel) panel.style.display = 'none';
           return;
         }
-        const item = e.target.closest('.tree-item');
+
+        const item = event.target.closest('.tree-item');
         if (!item) return;
+
         updateDisplay(currentCategory, item.dataset.path || '', 1);
         treeContainer.querySelectorAll('.tree-item').forEach((node) => node.classList.remove('active'));
         item.classList.add('active');
@@ -262,8 +268,8 @@
     }
 
     if (paginationEl) {
-      paginationEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('.page-btn');
+      paginationEl.addEventListener('click', (event) => {
+        const btn = event.target.closest('.page-btn');
         if (!btn || btn.disabled) return;
         const page = Number(btn.dataset.page || '1');
         if (!Number.isFinite(page) || page < 1) return;

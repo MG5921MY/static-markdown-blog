@@ -1,0 +1,29 @@
+groups:
+  - id: inspiration
+    name: 设计参考
+    icon: "In"
+  - id: tooling
+    name: 工具链
+    icon: "Dev"
+
+links:
+  - name: Linear
+    url: https://linear.app
+    description: 克制、稳定、信息密度很高的产品界面参考。
+    icon: "L"
+    group: inspiration
+  - name: Vercel
+    url: https://vercel.com
+    description: 深色产品视觉和开发者表达的优秀样本。
+    icon: "V"
+    group: inspiration
+  - name: Stripe
+    url: https://stripe.com
+    description: 品牌展示型界面和层次控制的长期参考。
+    icon: "S"
+    group: inspiration
+  - name: Playwright
+    url: https://playwright.dev
+    description: 用于本地页面回归和子路径浏览器验收。
+    icon: "PW"
+    group: tooling

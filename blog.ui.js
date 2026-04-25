@@ -7,7 +7,8 @@ window.BlogUI = {
 
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'nav-toggle';
-    toggleBtn.setAttribute('aria-label', '菜单');
+    toggleBtn.type = 'button';
+    toggleBtn.setAttribute('aria-label', '打开菜单');
     toggleBtn.innerHTML = '<span></span><span></span><span></span>';
     navEl.appendChild(toggleBtn);
 
@@ -32,11 +33,11 @@ window.BlogUI = {
 
     toggleBtn.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', closeMenu);
-    navLinks.addEventListener('click', (e) => {
-      if (e.target.classList.contains('nav-link')) closeMenu();
+    navLinks.addEventListener('click', (event) => {
+      if (event.target.classList.contains('nav-link')) closeMenu();
     });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeMenu();
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeMenu();
     });
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) closeMenu();
@@ -45,8 +46,10 @@ window.BlogUI = {
 
   setupBackToTop() {
     if (document.querySelector('.back-to-top')) return;
+
     const btn = document.createElement('button');
     btn.className = 'back-to-top';
+    btn.type = 'button';
     btn.setAttribute('aria-label', '返回顶部');
     btn.innerHTML = '↑';
     btn.addEventListener('click', () => {
@@ -57,6 +60,7 @@ window.BlogUI = {
     const updateVisibility = () => {
       btn.classList.toggle('visible', window.scrollY > 300);
     };
+
     window.addEventListener('scroll', updateVisibility, { passive: true });
     updateVisibility();
   },
@@ -77,6 +81,7 @@ window.BlogUI = {
       const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       progressBar.style.width = `${progress}%`;
     };
+
     window.addEventListener('scroll', updateProgress, { passive: true });
     updateProgress();
   },
@@ -90,7 +95,7 @@ window.BlogUI = {
 
     const tocContainer = document.createElement('nav');
     tocContainer.className = 'toc-container';
-    tocContainer.innerHTML = '<div class="toc-header"><span>📚 目录</span><button class="toc-toggle">收起</button></div><div class="toc-list"></div>';
+    tocContainer.innerHTML = '<div class="toc-header"><span>目录</span><button type="button" class="toc-toggle">收起</button></div><div class="toc-list"></div>';
 
     const tocList = tocContainer.querySelector('.toc-list');
     headings.forEach((heading, index) => {
@@ -101,10 +106,10 @@ window.BlogUI = {
       link.href = `#${id}`;
       link.className = `toc-link${heading.tagName === 'H3' ? ' toc-h3' : ''}`;
       link.textContent = heading.textContent;
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
         heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        tocList.querySelectorAll('.toc-link').forEach((l) => l.classList.remove('active'));
+        tocList.querySelectorAll('.toc-link').forEach((item) => item.classList.remove('active'));
         link.classList.add('active');
       });
       tocList.appendChild(link);
@@ -120,14 +125,14 @@ window.BlogUI = {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const id = entry.target.id;
-          tocList.querySelectorAll('.toc-link').forEach((l) => {
-            l.classList.toggle('active', l.getAttribute('href') === `#${id}`);
+          tocList.querySelectorAll('.toc-link').forEach((item) => {
+            item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
           });
         }
       });
     }, { rootMargin: '-80px 0px -70% 0px' });
 
-    headings.forEach((h) => observer.observe(h));
+    headings.forEach((heading) => observer.observe(heading));
 
     const postArticle = document.querySelector('.post-article');
     if (postArticle) {
@@ -137,45 +142,38 @@ window.BlogUI = {
   },
 
   setupDirTreePanel() {
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (event) => {
       const panel = document.querySelector('.dir-tree-panel');
       if (!panel || panel.style.display === 'none') return;
 
-      if (!panel.contains(e.target) && !e.target.closest('.dir-tree-toggle')) {
+      if (!panel.contains(event.target) && !event.target.closest('.dir-tree-toggle')) {
         panel.style.display = 'none';
-        const overlay = document.querySelector('.dir-tree-overlay');
-        if (overlay) overlay.classList.remove('active');
       }
     });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        const panel = document.querySelector('.dir-tree-panel');
-        if (panel && panel.style.display !== 'none') {
-          panel.style.display = 'none';
-        }
-      }
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const panel = document.querySelector('.dir-tree-panel');
+      if (panel && panel.style.display !== 'none') panel.style.display = 'none';
     });
   },
 
   setupCardAnimations() {
     if (!('IntersectionObserver' in window)) return;
-    const cards = document.querySelectorAll('.post-card');
+    const cards = document.querySelectorAll('.post-card, .link-card, .moment-card, .gallery-item');
     if (cards.length === 0) return;
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-          entry.target.style.animationDelay = `${index * 0.05}s`;
+          entry.target.style.animationDelay = `${index * 0.04}s`;
           entry.target.classList.add('animate-in');
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.12 });
 
     cards.forEach((card) => {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(20px)';
       observer.observe(card);
     });
   },

@@ -6,54 +6,17 @@
   <title>加载中...</title>
   <meta name="description" content="" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
   <link rel="preconnect" href="./" />
   <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
-  <link rel="preload" as="fetch" href="./posts/index.json" crossorigin />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
   <link rel="preload" as="script" href="./blog.core.js" />
   <link rel="preload" as="script" href="./blog.render.js" />
   <link rel="preload" as="script" href="./blog.ui.js" />
   <link rel="preload" as="script" href="./blog.js" />
   <link rel="preload" as="script" href="./index.page.js" />
-  <link id="blog-theme" rel="stylesheet" href="./usr/themes/default/style.css" />
-  <style>
-    .posts-pagination {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    .page-btn {
-      border: 1px solid var(--border, #ccc);
-      background: var(--bg-card, #fff);
-      color: var(--text-secondary, #333);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .page-btn:hover:not(:disabled) {
-      border-color: var(--accent, #06b6d4);
-      color: var(--accent, #06b6d4);
-    }
-    .page-btn.active {
-      background: var(--accent, #06b6d4);
-      color: #fff;
-      border-color: var(--accent, #06b6d4);
-    }
-    .page-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .page-info {
-      font-size: 13px;
-      color: var(--text-muted, #666);
-      margin: 0 4px;
-    }
-  </style>
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
 </head>
-
 <body>
   <nav class="nav">
     <a href="./index.html" class="nav-brand">
@@ -71,41 +34,59 @@
         <div class="hero-badge" id="hero-badge"></div>
         <h1 class="hero-title" id="hero-title"></h1>
         <p class="hero-subtitle" id="hero-subtitle"></p>
+        <div class="hero-actions">
+          <a href="./page.html?id=about" class="btn btn-primary">了解项目</a>
+          <a href="./disclaimer.html" class="btn btn-secondary">查看说明</a>
+        </div>
+        <div class="hero-meta">
+          <span>Markdown 优先</span>
+          <span>主题 token 驱动</span>
+          <span>支持任意子路径部署</span>
+        </div>
       </section>
 
       <section class="section">
-        <div class="section-header">
-          <h2 class="section-title">最新文章</h2>
-          <div class="search-box">
-            <input type="text" id="search-input" class="search-input" placeholder="搜索文章..." autocomplete="off" />
-            <span class="search-icon">🔍</span>
+        <div class="section-surface">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">最新内容</h2>
+              <p class="section-copy">从新结构中的 Markdown 内容直接构建，默认保持稳定、克制、可长期维护的阅读体验。</p>
+            </div>
+            <div class="search-box">
+              <input type="text" id="search-input" class="search-input" placeholder="搜索文章、标签或分类" autocomplete="off" />
+              <span class="search-icon">⌕</span>
+            </div>
           </div>
+
+          <div class="filter-group" id="category-filter"></div>
+          <div id="subdir-filter-container"></div>
+          <div id="dir-tree-container"></div>
+
+          <div id="posts-loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>正在加载内容...</p>
+          </div>
+
+          <div id="posts-grid" class="posts-grid" style="display: none;"></div>
+          <div id="posts-pagination" class="posts-pagination"></div>
+          <div id="posts-empty" class="empty-state" style="display: none;"><p>还没有可展示的文章。</p></div>
+          <div id="posts-error" class="empty-state" style="display: none;"><p id="error-message">内容加载失败。</p></div>
         </div>
-        <div class="filter-group" id="category-filter"></div>
-
-        <div id="subdir-filter-container"></div>
-        <div id="dir-tree-container"></div>
-
-        <div id="posts-loading" class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>正在加载...</p>
-        </div>
-
-        <div id="posts-grid" class="posts-grid" style="display: none;"></div>
-        <div id="posts-pagination" class="posts-pagination"></div>
-        <div id="posts-empty" class="empty-state" style="display: none;"><p>暂无文章</p></div>
-        <div id="posts-error" class="empty-state" style="display: none;"><p id="error-message">加载失败</p></div>
       </section>
 
       <section class="section" id="site-info-section">
-        <div class="section-header">
-          <h2 class="section-title">站点信息</h2>
-        </div>
-        <div class="site-info" id="site-info"></div>
-        <div class="contact-box" id="contact-box" style="display: none;">
-          <span class="icon">📦</span>
-          <span>联系邮箱：</span>
-          <span class="email" id="contact-email"></span>
+        <div class="section-surface">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">站点信息</h2>
+              <p class="section-copy">这里展示当前博客的定位、内容方向和联系入口，方便把默认示例站点当成正式起点继续扩展。</p>
+            </div>
+          </div>
+          <div class="site-info" id="site-info"></div>
+          <div class="contact-box" id="contact-box" style="display: none;">
+            <span>联系邮箱</span>
+            <span class="email" id="contact-email"></span>
+          </div>
         </div>
       </section>
     </div>

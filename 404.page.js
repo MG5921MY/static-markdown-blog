@@ -17,9 +17,11 @@
         Blog.setupCardAnimations();
       }
 
-      searchInputEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && e.target.value.trim()) {
-          window.location.href = `./index.html?search=${encodeURIComponent(e.target.value.trim())}`;
+      searchInputEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.target.value.trim()) {
+          window.location.href = Blog.resolvePageUrl('index.html', {
+            search: event.target.value.trim()
+          });
         }
       });
     }

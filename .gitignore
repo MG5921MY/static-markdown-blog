@@ -2,10 +2,15 @@
 .vscode/
 logs/
 *.log
+*.tmp
 
 old/
-
-assets/
-posts/
-conf/
-pages/
+dist/
+output/playwright/
+.playwright-cli/
+.tmp/
+.cache/
+.tmp-cache/
+.npm-cache/
+.DS_Store
+Thumbs.db

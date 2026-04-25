@@ -1,0 +1,7 @@
+name: Paper
+version: 1.0.0
+author: MijiaoGame
+description: Reading-first theme inspired by Notion and Claude.
+references:
+  - notion
+  - claude

@@ -1,18 +1,19 @@
 window.BlogCore = {
   async init(options = {}) {
     const { needIndex = true, needPathMap = false } = options;
+
     try {
       const [config, index, pathMap] = await Promise.all([
-        this.config ? Promise.resolve(this.config) : this.loadJson('./site-config.json'),
+        this.config ? Promise.resolve(this.config) : this.loadJson(['./site-config.json']),
         needIndex
-          ? (this.index ? Promise.resolve(this.index) : this.loadJson('./posts/index.json'))
+          ? (this.index ? Promise.resolve(this.index) : this.loadJson(['./content-index.json', './posts/index.json']))
           : Promise.resolve(this.index),
         needPathMap
-          ? (this.pathMap ? Promise.resolve(this.pathMap) : this.loadJson('./posts/_pathmap.json'))
+          ? (this.pathMap ? Promise.resolve(this.pathMap) : this.loadJson(['./pathmap.json', './posts/_pathmap.json']))
           : Promise.resolve(this.pathMap)
       ]);
 
-      this.config = config;
+      this.config = config || {};
       if (needIndex) this.index = index || null;
       if (needPathMap) this.pathMap = pathMap || null;
 
@@ -27,55 +28,103 @@ window.BlogCore = {
     }
   },
 
-  async loadJson(url) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to load ${url}`);
-    return response.json();
+  async loadJson(urls) {
+    const candidates = Array.isArray(urls) ? urls : [urls];
+    let lastError = null;
+
+    for (const candidate of candidates) {
+      try {
+        const response = await fetch(this.resolveAsset(candidate));
+        if (!response.ok) throw new Error(`Failed to load ${candidate}`);
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('Failed to load JSON');
+  },
+
+  resolveBasePath() {
+    const explicitBase = String(window.BLOG_BASE_PATH || '').trim();
+    const metaBase = String(document.querySelector('meta[name="blog-base"]')?.content || '').trim();
+    const configuredBase = String(this.config?.deployment?.basePath || '').trim();
+    const candidate = explicitBase || metaBase || configuredBase;
+
+    if (candidate && candidate !== 'auto') {
+      return candidate.endsWith('/') ? candidate : `${candidate}/`;
+    }
+
+    const currentUrl = new URL(document.baseURI || window.location.href);
+    const basePath = currentUrl.pathname.endsWith('/')
+      ? currentUrl.pathname
+      : currentUrl.pathname.replace(/[^/]+$/, '');
+
+    return basePath || '/';
+  },
+
+  resolveAsset(assetPath = '') {
+    if (!assetPath) return '';
+    const text = String(assetPath).trim();
+    if (/^(https?:|data:|blob:)/i.test(text)) return text;
+
+    const normalized = text.replace(/^\.\//, '');
+    return new URL(normalized, document.baseURI || window.location.href).toString();
+  },
+
+  resolvePageUrl(page, params = {}) {
+    const target = new URL(page, document.baseURI || window.location.href);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      target.searchParams.set(key, value);
+    });
+
+    const query = target.search ? target.search : '';
+    return `./${target.pathname.split('/').pop()}${query}`;
   },
 
   async ensureIndexLoaded() {
     if (this.index) return this.index;
-    this.index = await this.loadJson('./posts/index.json');
+    this.index = await this.loadJson(['./content-index.json', './posts/index.json']);
     return this.index;
   },
 
   async ensurePathMapLoaded() {
     if (this.pathMap) return this.pathMap;
-    this.pathMap = await this.loadJson('./posts/_pathmap.json');
+    this.pathMap = await this.loadJson(['./pathmap.json', './posts/_pathmap.json']);
     return this.pathMap;
   },
 
   async loadTheme() {
     if (this.themeLoaded) return;
 
-    let themeName = this.config?.theme?.active || 'default';
-    if (!this.isValidId(themeName)) themeName = 'default';
-
     const availableThemes = this.config?.theme?.available || [];
-    if (!availableThemes.some((t) => t.id === themeName)) {
-      themeName = availableThemes.find((t) => t.id === 'default')
-        ? 'default'
-        : (availableThemes[0]?.id || 'default');
-    }
+    let themeName = this.config?.theme?.active || availableThemes[0]?.id || 'graphite';
+    if (!this.isValidId(themeName)) themeName = availableThemes[0]?.id || 'graphite';
+    if (!availableThemes.some((item) => item.id === themeName)) themeName = availableThemes[0]?.id || 'graphite';
 
-    const themePath = `./usr/themes/${themeName}/style.css`;
+    const themeMeta = availableThemes.find((item) => item.id === themeName);
+    const themeHref = themeMeta?.path
+      ? this.resolveAsset(`${themeMeta.path}/theme.css`)
+      : this.resolveAsset(`themes/${themeName}/theme.css`);
 
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       const oldTheme = document.getElementById('blog-theme');
       if (oldTheme) oldTheme.remove();
 
       const link = document.createElement('link');
       link.id = 'blog-theme';
       link.rel = 'stylesheet';
-      link.href = themePath;
-      link.onload = () => {
-        document.body.classList.add('theme-loaded');
-        resolve();
-      };
-      link.onerror = () => resolve();
+      link.href = themeHref;
+      link.onload = resolve;
+      link.onerror = resolve;
       document.head.appendChild(link);
-      this.themeLoaded = true;
     });
+
+    document.body.dataset.theme = themeName;
+    document.body.classList.add('theme-loaded');
+    this.themeLoaded = true;
   },
 
   setFavicon() {
@@ -88,7 +137,8 @@ window.BlogCore = {
       link.rel = 'icon';
       document.head.appendChild(link);
     }
-    link.href = favicon;
+
+    link.href = this.resolveAsset(favicon);
   },
 
   setNavLogo() {
@@ -97,18 +147,18 @@ window.BlogCore = {
     if (!logo || !navLogo) return;
 
     const img = document.createElement('img');
-    img.src = logo;
+    img.src = this.resolveAsset(logo);
     img.alt = this.config?.site?.name || 'Logo';
     img.className = 'nav-logo';
-    img.onerror = () => { img.style.display = 'none'; };
+    img.onerror = () => {
+      img.style.display = 'none';
+    };
     navLogo.parentNode.replaceChild(img, navLogo);
   },
 
   isSafeUrl(url) {
     if (!url || typeof url !== 'string') return false;
-    const lower = url.toLowerCase().trim();
-    if (/^(javascript|data|vbscript):/i.test(lower)) return false;
-    return true;
+    return !/^(javascript|data|vbscript):/i.test(url.trim());
   },
 
   renderBeian() {
@@ -116,35 +166,30 @@ window.BlogCore = {
     if (!container) return;
 
     const beian = this.config?.beian;
-    if (!beian || !beian.enabled) {
+    if (!beian?.enabled) {
       container.innerHTML = '';
       return;
     }
 
     const lines = [];
-    if (beian.displayName) {
-      let nameLine = `网站名称：${this.escapeHtml(beian.displayName)}`;
-      if (beian.aliasName) nameLine += `（${this.escapeHtml(beian.aliasName)}）`;
-      lines.push(`<div>${nameLine}</div>`);
-    }
+    if (beian.displayName) lines.push(`<div>${this.escapeHtml(beian.displayName)}</div>`);
 
-    if (beian.icp?.enabled) {
-      const icpText = beian.icp.number ? this.escapeHtml(beian.icp.number) : '备案中';
-      const icpUrl = this.isSafeUrl(beian.icp.url) ? beian.icp.url : 'https://beian.miit.gov.cn/';
-      lines.push(`<div>ICP备案：<a href="${this.escapeHtml(icpUrl)}" target="_blank" rel="noopener noreferrer">${icpText}</a></div>`);
+    if (beian.icp?.enabled && this.isSafeUrl(beian.icp.url)) {
+      lines.push(
+        `<div><a href="${this.escapeHtml(beian.icp.url)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(beian.icp.number || 'ICP')}</a></div>`
+      );
     }
 
     if (beian.police?.enabled) {
       if (beian.police.number && this.isSafeUrl(beian.police.url)) {
-        lines.push(`<div>公安备案：<a href="${this.escapeHtml(beian.police.url)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(beian.police.number)}</a></div>`);
+        lines.push(
+          `<div><a href="${this.escapeHtml(beian.police.url)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(beian.police.number)}</a></div>`
+        );
       } else if (beian.police.statusText) {
-        lines.push(`<div>公安备案：${this.escapeHtml(beian.police.statusText)}</div>`);
+        lines.push(`<div>${this.escapeHtml(beian.police.statusText)}</div>`);
       }
     }
 
-    const year = beian.year || new Date().getFullYear();
-    const name = beian.displayName || '';
-    lines.push(`<div>Copyright © ${year} ${this.escapeHtml(name)}</div>`);
     container.innerHTML = lines.join('\n');
   },
 
@@ -154,6 +199,7 @@ window.BlogCore = {
 
     for (const [categoryId, categoryData] of Object.entries(this.index.categories)) {
       if (!this.isValidId(categoryId)) continue;
+
       for (const post of categoryData.posts || []) {
         if (!this.isValidId(post.id)) continue;
         posts.push({
@@ -165,73 +211,54 @@ window.BlogCore = {
       }
     }
 
-    posts.sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA;
-    });
-
+    posts.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     this.posts = posts;
     return posts;
   },
 
   isValidId(id) {
-    if (!id || typeof id !== 'string') return false;
-    return /^[a-zA-Z0-9_-]+$/.test(id);
+    return Boolean(id) && typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id);
   },
 
   getPostPath(postId) {
-    if (!this.isValidId(postId)) return null;
-    if (!this.pathMap) return null;
-
+    if (!this.isValidId(postId) || !this.pathMap) return null;
     const mapping = this.pathMap[postId];
-    if (!mapping) return null;
-
-    if (this.isPathDangerous(mapping.file)) return null;
-    if (!this.isValidId(mapping.category)) return null;
+    if (!mapping || !this.isValidId(mapping.category)) return null;
+    if (!mapping.file || this.isPathDangerous(mapping.file)) return null;
     return mapping;
   },
 
   isPathDangerous(filePath) {
     if (!filePath || typeof filePath !== 'string') return true;
     if (filePath.includes('..')) return true;
-    if (filePath.includes('%2e') || filePath.includes('%2E')) return true;
     if (filePath.startsWith('/') || /^[a-zA-Z]:/.test(filePath)) return true;
-    if (filePath.includes('\\') || filePath.includes('%5c') || filePath.includes('%5C')) return true;
     if (/[<>:"|?*\x00-\x1f]/.test(filePath)) return true;
-    if (filePath.startsWith('.') || filePath.includes('/.')) return true;
-    if (!filePath.endsWith('.md')) return true;
-    if (filePath.length > 200) return true;
-    return false;
+    return !filePath.endsWith('.md');
   },
 
   async loadPostContent(postId) {
     await Promise.all([this.ensureIndexLoaded(), this.ensurePathMapLoaded()]);
     const mapping = this.getPostPath(postId);
-    if (!mapping) throw new Error('文章不存在');
+    if (!mapping) throw new Error('Post not found');
 
-    const categoryData = this.index.categories[mapping.category];
-    if (!categoryData) throw new Error('分类不存在');
-    const allowedCategories = Object.keys(this.index.categories);
-    if (!allowedCategories.includes(mapping.category)) {
-      throw new Error('无效的分类');
-    }
+    const categoryData = this.index?.categories?.[mapping.category];
+    if (!categoryData) throw new Error('Category not found');
 
-    const fullPath = `./posts/${mapping.category}/${mapping.file}`;
-    const response = await fetch(fullPath);
-    if (!response.ok) throw new Error('文章加载失败');
+    const outputPath = mapping.outputPath || `posts/${mapping.category}/${mapping.file}`;
+    const response = await fetch(this.resolveAsset(`./${outputPath}`));
+    if (!response.ok) throw new Error('Failed to load post content');
 
     const content = await response.text();
     const { meta, body } = this.parseFrontMatter(content);
-    const postInfo = categoryData.posts.find((p) => p.id === postId);
+    const postInfo = (categoryData.posts || []).find((item) => item.id === postId);
 
     return {
       id: postId,
       category: mapping.category,
       categoryName: categoryData.name,
       categoryIcon: categoryData.icon,
-      title: meta.title || postInfo?.title || '无标题',
-      date: meta.date || postInfo?.date,
+      title: meta.title || postInfo?.title || 'Untitled',
+      date: meta.date || postInfo?.date || '',
       tags: meta.tags || postInfo?.tags || [],
       content: body
     };
@@ -239,37 +266,45 @@ window.BlogCore = {
 
   parseFrontMatter(content) {
     if (!content || typeof content !== 'string') return { meta: {}, body: '' };
-
     const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
     if (!match) return { meta: {}, body: content };
 
     const meta = {};
-    const lines = match[1].split('\n');
-    for (const line of lines) {
-      const colonIndex = line.indexOf(':');
-      if (colonIndex <= 0) continue;
-      const key = line.slice(0, colonIndex).trim();
-      let value = line.slice(colonIndex + 1).trim();
-      if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) continue;
+    for (const line of match[1].split('\n')) {
+      const index = line.indexOf(':');
+      if (index <= 0) continue;
+      const key = line.slice(0, index).trim();
+      let value = line.slice(index + 1).trim();
       if (value.startsWith('[') && value.endsWith(']')) {
-        value = value.slice(1, -1).split(',').map((s) => s.trim());
+        value = value
+          .slice(1, -1)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
       }
       meta[key] = value;
     }
 
-    return { meta, body: content.slice(match[0].length).trim() };
+    return {
+      meta,
+      body: content.slice(match[0].length).trim()
+    };
   },
 
   formatDate(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return this.escapeHtml(String(dateStr));
-    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+    if (Number.isNaN(date.getTime())) return this.escapeHtml(String(dateStr));
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   },
 
-  escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
+  escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -290,64 +325,59 @@ window.BlogCore = {
   },
 
   getThemeConfig() {
-    return this.config?.theme?.config || {};
+    return this.config?.theme || {};
   },
 
   loadCDN(url) {
     if (this._cdnLoaded[url]) return this._cdnLoaded[url];
     this._cdnLoaded[url] = new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = url;
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
+      const script = document.createElement('script');
+      script.src = url;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
     });
     return this._cdnLoaded[url];
   },
 
   async loadMarkdownDeps() {
-    const deps = [
-      'https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js',
-      'https://cdn.jsdelivr.net/npm/marked@12/marked.min.js'
-    ];
-    await Promise.all(deps.map((d) => this.loadCDN(d)));
+    await Promise.all([
+      this.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js'),
+      this.loadCDN('https://cdn.jsdelivr.net/npm/marked@12/marked.min.js')
+    ]);
   },
 
   async loadHighlightDeps() {
-    await this.loadCDN('https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js');
-    const langs = ['javascript', 'bash', 'yaml', 'json', 'python', 'css', 'xml'];
-    await Promise.all(langs.map((l) => this.loadCDN(`https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/${l}.min.js`)));
+    return true;
   },
 
   showPageError(loadingEl, errorEl, errorDetailEl, message) {
     if (loadingEl) loadingEl.style.display = 'none';
-    if (errorDetailEl) errorDetailEl.textContent = message || '加载失败';
+    if (errorDetailEl) errorDetailEl.textContent = message || 'Failed to load page';
     if (errorEl) errorEl.style.display = 'block';
   },
 
-  getSiteName(fallback = '博客') {
+  getSiteName(fallback = 'Blog') {
     return this.config?.site?.name || fallback;
   },
 
-  setNavSiteName(elementId = 'nav-site-name', fallback = '博客') {
+  setNavSiteName(elementId = 'nav-site-name', fallback = 'Blog') {
     const siteName = this.getSiteName(fallback);
-    const el = document.getElementById(elementId);
-    if (el) el.textContent = siteName;
+    const target = document.getElementById(elementId);
+    if (target) target.textContent = siteName;
     return siteName;
   },
 
   setPageTitle(prefix = '', options = {}) {
-    const { separator = ' | ', fallback = '博客' } = options;
-    const siteName = this.getSiteName(fallback);
-    document.title = prefix ? `${prefix}${separator}${siteName}` : siteName;
+    const siteName = this.getSiteName(options.fallback || 'Blog');
+    document.title = prefix ? `${prefix}${options.separator || ' | '}${siteName}` : siteName;
     return siteName;
   },
 
   renderState(targetEl, message, icon = '') {
     if (!targetEl) return;
-    const safeMessage = this.escapeHtml(message || '加载失败');
     const safeIcon = icon ? `<div class="icon">${this.escapeHtml(icon)}</div>` : '';
-    targetEl.innerHTML = `<div class="empty-state">${safeIcon}<p>${safeMessage}</p></div>`;
+    targetEl.innerHTML = `<div class="empty-state">${safeIcon}<p>${this.escapeHtml(message || 'No content')}</p></div>`;
   },
 
   safeCssEscape(value) {
@@ -368,15 +398,11 @@ window.BlogCore = {
 
     try {
       const success = await this.init({ needIndex, needPathMap });
-      if (!success) throw new Error('初始化失败，请运行 node build.js');
+      if (!success) throw new Error('Please run node build.js first');
 
       this.renderNavLinks();
       this.setupCommonFeatures();
-
-      if (typeof task === 'function') {
-        await task();
-      }
-
+      if (typeof task === 'function') await task();
       return true;
     } catch (error) {
       console.error('Page bootstrap failed:', error);

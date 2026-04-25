@@ -1,0 +1,6 @@
+name: Mono
+version: 1.0.0
+author: MijiaoGame
+description: Compact monochrome developer theme.
+references:
+  - vercel
