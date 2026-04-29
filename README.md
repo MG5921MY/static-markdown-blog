@@ -1,40 +1,89 @@
-# 静态 Markdown 博客
+# Static Markdown Blog
 
-一个以 Markdown 为唯一正文来源的静态博客系统，当前版本已经完成新结构重构的核心落地：
+这是一个以 Markdown 为唯一正文来源的静态博客系统，当前正式模型已经切到：
 
-- 新结构优先，旧结构兼容读取
-- 配置模型收敛，默认更容易上手
-- 主题系统基于 token，而不是整页 CSS 复制
-- 构建产物统一输出到 `dist/`
-- 运行时支持任意子路径部署
+- `workspace/site/` 是唯一用户工作区
+- `examples/` 统一管理示例与 Docker seed
+- `legacy/` 只保留旧结构迁移输入
+- 根目录 `config/ + content/ + assets/ + themes/` 作为仓库内置基线与开发默认源
+
+## 目录模型
+
+```text
+config/                    # 仓库内置默认配置
+content/                   # 仓库内置默认内容
+assets/                    # 仓库内置默认资源
+themes/                    # 内置主题
+docs/                      # 正式文档
+scripts/                   # 维护脚本与迁移脚本
+examples/
+  starter-modern/site/     # 新结构示例站点
+  starter-legacy/          # 旧结构示例
+  docker-seed/site/        # Docker 首次启动种子
+legacy/
+  site/                    # 旧根目录结构迁移后的存档输入
+workspace/
+  site/                    # 用户真正编辑、挂载、备份的数据根
+dist/                      # 构建产物
+```
+
+正式用户数据根固定为：
+
+```text
+workspace/site/
+  config/blog.config.yml
+  content/posts/**/*.md
+  content/pages/*.md
+  content/data/{moments,links,gallery}.yml
+  assets/
+  themes/custom/
+```
 
 ## 快速开始
 
-### 1. 修改站点配置
+### 1. 初始化工作区
 
-编辑 `config/blog.config.yml`：
+Windows PowerShell:
 
-```yaml
-site:
-  name: Your Blog
-  alias: 静态 Markdown 博客
-  description: Markdown first, theme driven, base-path agnostic static blog.
-
-theme:
-  active: graphite
+```powershell
+.\init.ps1
 ```
 
-### 2. 写内容
+Node:
 
-- 文章：`content/posts/**/*.md`
-- 页面：`content/pages/*.md`
-- 数据页：`content/data/{moments,links,gallery}.yml`
+```bash
+node init.js
+```
+
+Linux / macOS:
+
+```bash
+chmod +x init.sh
+./init.sh
+```
+
+初始化会把 `examples/starter-modern/site/` 复制到 `workspace/site/`。
+
+### 2. 编辑内容
+
+- 站点配置：`workspace/site/config/blog.config.yml`
+- 文章：`workspace/site/content/posts/**/*.md`
+- 页面：`workspace/site/content/pages/*.md`
+- 数据页：`workspace/site/content/data/{moments,links,gallery}.yml`
+- 资源：`workspace/site/assets/`
+- 自定义主题：`workspace/site/themes/custom/<theme-id>/`
 
 ### 3. 构建
 
 ```bash
 node build.js
 ```
+
+构建器读取顺序：
+
+1. `workspace/site/config/blog.config.yml`
+2. `config/blog.config.yml`
+3. legacy 仅在显式开启 `BLOG_ENABLE_LEGACY=1` 时才作为兼容输入
 
 ### 4. 本地预览
 
@@ -50,48 +99,70 @@ node serve.js
 node serve.js 8080 /blog/
 ```
 
-默认地址：
+## Legacy 迁移
 
-- 根路径：`http://localhost:8080`
-- 子路径：`http://localhost:8080/blog/`
-
-## 当前目录结构
+旧目录结构不再作为根目录长期公开入口。仓库当前把旧输入收进：
 
 ```text
-config/
-  blog.config.yml
-content/
+legacy/site/
+  conf/
   posts/
   pages/
-  data/
-themes/
-  <theme-id>/
-docs/
-  architecture/
-dist/
+  usr/themes/
 ```
 
-## 兼容策略
-
-构建器仍兼容读取这些旧目录作为输入层：
-
-- `conf/`
-- `posts/`
-- `pages/`
-- `assets/`
-- `usr/themes/`
-
-兼容层的目标是平滑迁移，不是恢复旧结构为默认创作方式。新项目请直接使用 `config/ + content/ + themes/`。
-
-如需检查 legacy 输入里的中文内容是否出现实际乱码，可以执行：
+如需导入 legacy 内容到新工作区，执行：
 
 ```bash
-node scripts/encoding-audit.js
+node scripts/migrate-legacy-to-workspace.js
+```
+
+该脚本会：
+
+- 读取 `legacy/site/` 下的旧配置、文章、页面、数据和主题
+- 转换为 `workspace/site/` 新结构
+- 保留 legacy 原文件，不自动删除
+- 输出迁移报告到 `output/legacy-migration-report.json`
+
+## Docker
+
+Docker 已切到单一工作区挂载模型：
+
+- Host: `workspace/site`
+- Container: `/app/workspace/site`
+
+Compose 文件位于 `docker/` 目录，因此默认挂载写法是：
+
+```yaml
+volumes:
+  - ../workspace/site:/app/workspace/site
+```
+
+首次启动如果挂载目录为空，容器会自动使用 `examples/docker-seed/site/` 初始化。
+
+常用命令：
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+或使用辅助脚本：
+
+```bash
+./docker/deploy.sh init
+./docker/deploy.sh start
+```
+
+Windows:
+
+```powershell
+.\docker\deploy.ps1 init
+.\docker\deploy.ps1 start
 ```
 
 ## 主题系统
 
-主题接口固定为：
+内置主题接口固定为：
 
 ```text
 themes/<theme-id>/
@@ -101,55 +172,30 @@ themes/<theme-id>/
 
 当前内置主题：
 
-- `graphite`：默认主题，参考 Linear + Vercel，克制科技感
-- `aurora`：参考 Stripe，偏品牌展示
-- `paper`：参考 Notion + Claude，阅读优先
-- `mono`：黑白极简，偏开发者语境
+- `graphite`：默认，克制、偏开发者
+- `aurora`：更偏品牌展示
+- `paper`：阅读优先
+- `mono`：黑白极简
 
-首页支持可选的沉浸模式与背景图配置，默认关闭：
+工作区自定义主题放在：
 
-```yaml
-display:
-  hero:
-    immersive: false
-    background:
-      enabled: false
-      image: ""
-      focalPoint: "center center"
-      fit: "cover"
-      dimming: 0.42
-      blur: 0
+```text
+workspace/site/themes/custom/<theme-id>/
+  theme.yml
+  theme.css
 ```
-
-背景图仅支持本地资源路径，并通过 `Blog.resolveAsset()` 解析。
-
-`links` 页面默认定位为“参考与收藏”，更适合放长期阅读、设计来源和工具入口，而不是暗示互换友链或品牌背书。
-
-更完整的设计基线请见：
-
-- `docs/architecture/blog-rebuild-plan.md`
-- `docs/architecture/theme-design-baseline.md`
 
 ## 运行时约定
 
-以下 helper 是正式接口：
+以下 helper 是正式约定，不再改名：
 
 - `Blog.resolveBasePath()`
 - `Blog.resolveAsset(path)`
 - `Blog.resolvePageUrl(page, params?)`
 
-模板、导航、主题资源和文章跳转都应围绕这些 helper 保持路径无关性。
+模板、资源、JSON 数据与页面跳转都应围绕这组 helper 保持 base-path agnostic。
 
-## 构建产物
+## 相关文档
 
-构建后主要产物位于 `dist/`：
-
-- `dist/*.html`
-- `dist/site-config.json`
-- `dist/content-index.json`
-- `dist/pathmap.json`
-- `dist/posts/index.json`
-- `dist/posts/_pathmap.json`
-- `dist/themes/`
-
-保留 `dist/posts/index.json` 和 `dist/posts/_pathmap.json` 是为了兼容旧前端读取链路。
+- `docs/architecture/blog-rebuild-plan.md`
+- `docs/architecture/theme-design-baseline.md`

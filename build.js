@@ -4,10 +4,13 @@ const crypto = require('crypto');
 
 const ROOT = process.cwd();
 const DIST_DIR = path.join(ROOT, 'dist');
-const NEW_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
-const LEGACY_CONFIG_PATH = path.join(ROOT, 'conf', 'config.yml');
-const NEW_THEMES_DIR = path.join(ROOT, 'themes');
-const LEGACY_THEMES_DIR = path.join(ROOT, 'usr', 'themes');
+const WORKSPACE_SITE_DIR = path.join(ROOT, 'workspace', 'site');
+const WORKSPACE_CONFIG_PATH = path.join(WORKSPACE_SITE_DIR, 'config', 'blog.config.yml');
+const ROOT_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
+const LEGACY_SITE_DIR = path.join(ROOT, 'legacy', 'site');
+const LEGACY_SITE_CONFIG_PATH = path.join(LEGACY_SITE_DIR, 'conf', 'config.yml');
+const ROOT_LEGACY_CONFIG_PATH = path.join(ROOT, 'conf', 'config.yml');
+const BUILTIN_THEMES_DIR = path.join(ROOT, 'themes');
 const STATIC_FILES = [
   'index.html',
   'post.html',
@@ -43,9 +46,13 @@ function readText(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function writeJson(filePath, value) {
+function writeText(filePath, value) {
   ensureDir(path.dirname(filePath));
-  fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+  fs.writeFileSync(filePath, value, 'utf8');
+}
+
+function writeJson(filePath, value) {
+  writeText(filePath, JSON.stringify(value, null, 2));
 }
 
 function copyFileSafe(src, dest) {
@@ -248,24 +255,43 @@ function normalizePageRecords(pageRecords) {
   return [];
 }
 
-function loadSiteConfigInput() {
-  if (fs.existsSync(NEW_CONFIG_PATH)) {
+function getLegacyMode() {
+  return process.env.BLOG_ENABLE_LEGACY === '1';
+}
+
+function resolveConfigInput() {
+  if (fs.existsSync(WORKSPACE_CONFIG_PATH)) {
     return {
-      mode: 'new',
-      filePath: NEW_CONFIG_PATH,
-      raw: parseYaml(readText(NEW_CONFIG_PATH))
+      mode: 'workspace',
+      siteRoot: WORKSPACE_SITE_DIR,
+      filePath: WORKSPACE_CONFIG_PATH,
+      raw: parseYaml(readText(WORKSPACE_CONFIG_PATH))
     };
   }
 
-  if (!fs.existsSync(LEGACY_CONFIG_PATH)) {
-    throw new Error('No config found. Expected config/blog.config.yml or conf/config.yml');
+  if (fs.existsSync(ROOT_CONFIG_PATH)) {
+    return {
+      mode: 'root',
+      siteRoot: ROOT,
+      filePath: ROOT_CONFIG_PATH,
+      raw: parseYaml(readText(ROOT_CONFIG_PATH))
+    };
   }
 
-  return {
-    mode: 'legacy',
-    filePath: LEGACY_CONFIG_PATH,
-    raw: parseYaml(readText(LEGACY_CONFIG_PATH))
-  };
+  if (getLegacyMode()) {
+    const legacyConfigPath = resolveFirstExisting([LEGACY_SITE_CONFIG_PATH, ROOT_LEGACY_CONFIG_PATH]);
+    if (legacyConfigPath) {
+      const legacySiteRoot = legacyConfigPath === LEGACY_SITE_CONFIG_PATH ? LEGACY_SITE_DIR : ROOT;
+      return {
+        mode: 'legacy',
+        siteRoot: legacySiteRoot,
+        filePath: legacyConfigPath,
+        raw: parseYaml(readText(legacyConfigPath))
+      };
+    }
+  }
+
+  throw new Error('No config found. Expected workspace/site/config/blog.config.yml or config/blog.config.yml');
 }
 
 function mapLegacyTheme(themeId) {
@@ -285,7 +311,7 @@ function mapLegacyTheme(themeId) {
   return map[themeId] || 'graphite';
 }
 
-function scanThemeDirectory(baseDir) {
+function scanThemeDirectory(baseDir, pathPrefix) {
   if (!fs.existsSync(baseDir)) return [];
   return fs.readdirSync(baseDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -299,18 +325,31 @@ function scanThemeDirectory(baseDir) {
         version: meta.version || '1.0.0',
         author: meta.author || 'Unknown',
         description: meta.description || '',
-        path: `themes/${entry.name}`
+        path: `${pathPrefix}/${entry.name}`
       };
     });
 }
 
+function scanAvailableThemes() {
+  const builtins = scanThemeDirectory(BUILTIN_THEMES_DIR, 'themes');
+  const workspaceCustomDir = path.join(WORKSPACE_SITE_DIR, 'themes', 'custom');
+  const customThemes = scanThemeDirectory(workspaceCustomDir, 'themes/custom');
+  const merged = new Map();
+
+  for (const theme of builtins) merged.set(theme.id, theme);
+  for (const theme of customThemes) merged.set(theme.id, theme);
+
+  return Array.from(merged.values()).sort((a, b) => a.id.localeCompare(b.id));
+}
+
 function normalizeConfig(input) {
-  const { mode, raw } = input;
-  if (mode === 'new') {
+  const { mode, raw, siteRoot } = input;
+  if (mode !== 'legacy') {
     const categories = raw.content?.categories || [];
     const pages = normalizePageRecords(raw.content?.pages || []);
     return {
       mode,
+      siteRoot,
       site: raw.site || {},
       deployment: raw.deployment || { basePath: 'auto' },
       theme: raw.theme || {},
@@ -325,6 +364,7 @@ function normalizeConfig(input) {
 
   return {
     mode,
+    siteRoot,
     site: raw.site || {},
     deployment: { basePath: 'auto' },
     theme: {
@@ -337,6 +377,10 @@ function normalizeConfig(input) {
     display: raw.display || {},
     beian: raw.beian || { enabled: false }
   };
+}
+
+function resolveSitePath(siteRoot, relativePath = '') {
+  return path.join(siteRoot, relativePath);
 }
 
 function readOptionalYaml(sourcePath) {
@@ -355,7 +399,7 @@ function loadFeatureData(sourcePath, kind) {
   return parsed;
 }
 
-function buildGalleryData(rawGallery, rootDir) {
+function buildGalleryData(rawGallery, siteRoot) {
   if (!rawGallery) return { enabled: false, groups: [], images: {}, settings: {} };
   const settings = rawGallery.settings || {};
   const groups = rawGallery.groups || [];
@@ -372,7 +416,7 @@ function buildGalleryData(rawGallery, rootDir) {
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name).slice(1).toLowerCase();
         if (!allowedFormats.has(ext)) continue;
-        node.images.push(path.relative(ROOT, fullPath).replace(/\\/g, '/'));
+        node.images.push(path.relative(siteRoot, fullPath).replace(/\\/g, '/'));
       }
     }
     node.images.sort();
@@ -381,7 +425,7 @@ function buildGalleryData(rawGallery, rootDir) {
 
   const images = {};
   for (const group of groups) {
-    const groupPath = group.path ? path.join(ROOT, group.path) : null;
+    const groupPath = group.path ? resolveSitePath(siteRoot, group.path) : null;
     const maxDepth = Number.isFinite(group.maxDepth) ? group.maxDepth : (Number.isFinite(settings.maxDepth) ? settings.maxDepth : 2);
     images[group.id] = groupPath ? scanImages(groupPath, maxDepth) : { images: [], subfolders: {} };
   }
@@ -401,7 +445,7 @@ function buildPagesMap(pages) {
 function resolveNav(navItems, pagesMap) {
   return (navItems || []).map((item) => {
     if (item.page === 'index') {
-      return { name: item.name || '首页', url: './index.html' };
+      return { name: item.name || 'Home', url: './index.html' };
     }
     if (item.page && pagesMap[item.page]) {
       return { name: item.name || pagesMap[item.page].name || item.page, url: `./page.html?id=${item.page}` };
@@ -411,10 +455,10 @@ function resolveNav(navItems, pagesMap) {
   }).filter(Boolean);
 }
 
-function buildPagesContent(pagesMap, summaryLength) {
+function buildPagesContent(pagesMap, summaryLength, siteRoot) {
   for (const page of Object.values(pagesMap)) {
     if (page.type !== 'markdown' || !page.source) continue;
-    const sourcePath = path.join(ROOT, page.source);
+    const sourcePath = resolveSitePath(siteRoot, page.source);
     if (!fs.existsSync(sourcePath)) continue;
     const parsed = parseFrontMatter(readText(sourcePath));
     page.title = parsed.meta.title || page.title || page.name;
@@ -429,8 +473,8 @@ function copyStaticFiles() {
   }
 }
 
-function scanCategoryPosts(category, summaryLength) {
-  const sourceDir = path.join(ROOT, category.path);
+function scanCategoryPosts(category, summaryLength, siteRoot) {
+  const sourceDir = resolveSitePath(siteRoot, category.path);
   const result = { posts: [], groups: {} };
   if (!fs.existsSync(sourceDir)) return result;
 
@@ -462,8 +506,7 @@ function scanCategoryPosts(category, summaryLength) {
       }
 
       const distMarkdownPath = path.join(DIST_DIR, 'posts', category.id, relative);
-      ensureDir(path.dirname(distMarkdownPath));
-      fs.writeFileSync(distMarkdownPath, readText(fullPath), 'utf8');
+      writeText(distMarkdownPath, readText(fullPath));
     }
   }
 
@@ -474,14 +517,14 @@ function scanCategoryPosts(category, summaryLength) {
 
 function buildContent(normalized, availableThemes) {
   const pagesMap = buildPagesMap(normalized.pages);
-  buildPagesContent(pagesMap, normalized.display.summaryLength || 140);
+  buildPagesContent(pagesMap, normalized.display.summaryLength || 140, normalized.siteRoot);
 
   const categories = {};
   const pathMap = {};
 
   for (const category of normalized.categories) {
     if (!category.id || !category.path) continue;
-    const scanned = scanCategoryPosts(category, normalized.display.summaryLength || 140);
+    const scanned = scanCategoryPosts(category, normalized.display.summaryLength || 140, normalized.siteRoot);
     categories[category.id] = {
       name: category.name || category.id,
       icon: category.icon || '',
@@ -491,18 +534,11 @@ function buildContent(normalized, availableThemes) {
       posts: scanned.posts,
       groups: scanned.groups
     };
-    for (const post of scanned.posts) {
-      const relativeFile = scanned.posts.find((item) => item.id === post.id);
-      pathMap[post.id] = {
-        category: category.id,
-        file: scanned.posts === scanned.posts ? null : null
-      };
-    }
   }
 
   for (const category of normalized.categories) {
     if (!category.id || !category.path) continue;
-    const sourceDir = path.join(ROOT, category.path);
+    const sourceDir = resolveSitePath(normalized.siteRoot, category.path);
     if (!fs.existsSync(sourceDir)) continue;
     function walk(currentDir) {
       for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
@@ -528,13 +564,13 @@ function buildContent(normalized, availableThemes) {
   const features = {};
 
   const momentsSource = normalized.features?.moments?.source
-    ? path.join(ROOT, normalized.features.moments.source)
+    ? resolveSitePath(normalized.siteRoot, normalized.features.moments.source)
     : null;
   const linksSource = normalized.features?.links?.source
-    ? path.join(ROOT, normalized.features.links.source)
+    ? resolveSitePath(normalized.siteRoot, normalized.features.links.source)
     : null;
   const gallerySource = normalized.features?.gallery?.source
-    ? path.join(ROOT, normalized.features.gallery.source)
+    ? resolveSitePath(normalized.siteRoot, normalized.features.gallery.source)
     : null;
 
   if (normalized.features?.moments?.enabled) {
@@ -544,7 +580,7 @@ function buildContent(normalized, availableThemes) {
     features.links = loadFeatureData(linksSource, 'links');
   }
   if (normalized.features?.gallery?.enabled) {
-    features.gallery = buildGalleryData(loadFeatureData(gallerySource, 'gallery'), ROOT);
+    features.gallery = buildGalleryData(loadFeatureData(gallerySource, 'gallery'), normalized.siteRoot);
   }
 
   const requestedTheme = process.env.BLOG_THEME_OVERRIDE && /^[a-zA-Z0-9_-]+$/.test(process.env.BLOG_THEME_OVERRIDE)
@@ -587,24 +623,30 @@ function writeOutputs(siteConfig, contentIndex, pathMap) {
   writeJson(path.join(DIST_DIR, 'posts', '_pathmap.json'), pathMap);
 }
 
-function copyProjectAssets() {
-  const assetsSource = resolveFirstExisting([
-    path.join(ROOT, 'assets'),
-    path.join(ROOT, 'assets-example')
-  ]);
-  if (assetsSource) copyDirRecursive(assetsSource, path.join(DIST_DIR, 'assets'));
+function copySiteAssetsToDist() {
+  const builtinAssets = path.join(ROOT, 'assets');
+  if (fs.existsSync(builtinAssets)) copyDirRecursive(builtinAssets, path.join(DIST_DIR, 'assets'));
 
-  if (fs.existsSync(NEW_THEMES_DIR)) copyDirRecursive(NEW_THEMES_DIR, path.join(DIST_DIR, 'themes'));
+  const workspaceAssets = path.join(WORKSPACE_SITE_DIR, 'assets');
+  if (fs.existsSync(workspaceAssets)) copyDirRecursive(workspaceAssets, path.join(DIST_DIR, 'assets'));
+}
+
+function copyThemesToDist() {
+  if (fs.existsSync(BUILTIN_THEMES_DIR)) copyDirRecursive(BUILTIN_THEMES_DIR, path.join(DIST_DIR, 'themes'));
+
+  const workspaceCustomDir = path.join(WORKSPACE_SITE_DIR, 'themes', 'custom');
+  if (fs.existsSync(workspaceCustomDir)) copyDirRecursive(workspaceCustomDir, path.join(DIST_DIR, 'themes', 'custom'));
 }
 
 function main() {
-  const configInput = loadSiteConfigInput();
+  const configInput = resolveConfigInput();
   const normalized = normalizeConfig(configInput);
-  const availableThemes = scanThemeDirectory(NEW_THEMES_DIR);
+  const availableThemes = scanAvailableThemes();
 
   cleanDir(DIST_DIR);
   copyStaticFiles();
-  copyProjectAssets();
+  copySiteAssetsToDist();
+  copyThemesToDist();
 
   const { siteConfig, contentIndex, pathMap } = buildContent(normalized, availableThemes);
   writeOutputs(siteConfig, contentIndex, pathMap);
@@ -613,6 +655,7 @@ function main() {
   console.log('Build completed');
   console.log(`  Config: ${path.relative(ROOT, configInput.filePath)}`);
   console.log(`  Mode: ${configInput.mode}`);
+  console.log(`  Site root: ${path.relative(ROOT, normalized.siteRoot) || '.'}`);
   console.log(`  Theme: ${siteConfig.theme.active}`);
   console.log(`  Categories: ${Object.keys(contentIndex.categories).length}`);
   console.log(`  Posts: ${Object.keys(pathMap).length}`);

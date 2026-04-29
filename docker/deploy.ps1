@@ -1,207 +1,140 @@
-# ============================================
-# 静态博客 Docker 部署脚本 (Windows PowerShell)
-# 
-# 使用方法：
-#   .\deploy.ps1 [命令]
-#
-# 命令：
-#   init     - 首次初始化（从容器复制文件）
-#   start    - 启动服务
-#   stop     - 停止服务
-#   restart  - 重启服务
-#   build    - 重新构建镜像
-#   rebuild  - 仅重新构建索引
-#   logs     - 查看日志
-#   clean    - 清理容器和镜像
-# ============================================
-
 param(
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string]$Command = "help"
 )
 
-# 配置
+$ErrorActionPreference = "Stop"
+
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectDir = Split-Path -Parent $ScriptDir
+$WorkspaceDir = Join-Path $ProjectDir "workspace\site"
 $ImageName = "static-blog"
 $ContainerName = "static-blog"
 $Port = if ($env:PORT) { $env:PORT } else { "8080" }
 
-# 获取目录
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectDir = Split-Path -Parent $ScriptDir
+function Write-Info($Message) { Write-Host "[INFO] $Message" -ForegroundColor Green }
+function Write-Warn($Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
+function Write-Err($Message) { Write-Host "[ERROR] $Message" -ForegroundColor Red }
 
-Set-Location $ScriptDir
+function Build-Image {
+    Write-Info "Building Docker image..."
+    docker build -t $ImageName -f (Join-Path $ScriptDir "Dockerfile") $ProjectDir
+}
 
-function Write-Info { param($msg) Write-Host "[INFO] $msg" -ForegroundColor Green }
-function Write-Warn { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yellow }
-function Write-Err { param($msg) Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Initialize-Workspace {
+    Write-Info "Initializing workspace/site from container seed..."
+    New-Item -ItemType Directory -Path $WorkspaceDir -Force | Out-Null
 
-# 首次初始化
-function Init {
-    Write-Info "首次初始化..."
-    
-    if (Test-Path "$ProjectDir\conf\config.yml") {
-        Write-Warn "检测到已有配置文件，跳过初始化"
+    $existing = Get-ChildItem -LiteralPath $WorkspaceDir -Force | Where-Object { $_.Name -ne ".gitkeep" }
+    if ($existing.Count -gt 0) {
+        Write-Warn "workspace/site already has content. Skipping initialization."
         return
     }
-    
-    Write-Info "构建 Docker 镜像..."
-    docker build -t $ImageName -f Dockerfile $ProjectDir
-    
-    Write-Info "创建临时容器..."
-    docker create --name "${ContainerName}-init" $ImageName
-    
-    Write-Info "从容器复制初始文件..."
-    docker cp "${ContainerName}-init:/app/conf" "$ProjectDir\"
-    docker cp "${ContainerName}-init:/app/posts" "$ProjectDir\"
-    docker cp "${ContainerName}-init:/app/pages" "$ProjectDir\"
-    
-    if (-not (Test-Path "$ProjectDir\usr")) {
-        New-Item -ItemType Directory -Path "$ProjectDir\usr" | Out-Null
-    }
-    docker cp "${ContainerName}-init:/app/usr/themes" "$ProjectDir\usr\"
-    docker cp "${ContainerName}-init:/app/assets" "$ProjectDir\"
-    
-    docker rm "${ContainerName}-init"
-    
-    Write-Info "初始化完成！"
-    Write-Info "请编辑 $ProjectDir\conf\config.yml 配置站点信息"
+
+    Build-Image
+    docker create --name "${ContainerName}-init" $ImageName | Out-Null
+    docker cp "${ContainerName}-init:/app/examples/docker-seed/site/." "$WorkspaceDir\"
+    docker rm "${ContainerName}-init" | Out-Null
+    Write-Info "workspace/site initialized."
 }
 
-# 构建镜像
-function Build {
-    Write-Info "构建 Docker 镜像..."
-    docker build -t $ImageName -f Dockerfile $ProjectDir
-    Write-Info "构建完成"
-}
-
-# 启动服务
 function Start-Blog {
     $running = docker ps -q -f "name=$ContainerName"
     if ($running) {
-        Write-Warn "容器已在运行"
+        Write-Warn "Container is already running."
         return
     }
-    
-    $exists = docker ps -aq -f "name=$ContainerName"
-    if ($exists) {
-        Write-Info "启动已存在的容器..."
-        docker start $ContainerName
-    } else {
-        $imageExists = docker images -q $ImageName
-        if (-not $imageExists) {
-            Build
-        }
-        
-        Write-Info "创建并启动容器..."
-        docker run -d `
-            --name $ContainerName `
-            --restart unless-stopped `
-            -p "${Port}:8080" `
-            -v "${ProjectDir}\conf:/app/conf:ro" `
-            -v "${ProjectDir}\posts:/app/posts:ro" `
-            -v "${ProjectDir}\pages:/app/pages:ro" `
-            -v "${ProjectDir}\usr\themes:/app/usr/themes:ro" `
-            -v "${ProjectDir}\assets:/app/assets:ro" `
-            --security-opt no-new-privileges:true `
-            --read-only `
-            --tmpfs /tmp `
-            --memory 128m `
-            --cpus 0.5 `
-            $ImageName
+
+    if (-not (docker images -q $ImageName)) {
+        Build-Image
     }
-    
-    Write-Info "服务已启动: http://localhost:${Port}"
+
+    New-Item -ItemType Directory -Path $WorkspaceDir -Force | Out-Null
+
+    if (docker ps -aq -f "name=$ContainerName") {
+        docker rm -f $ContainerName | Out-Null
+    }
+
+    Write-Info "Starting container on http://localhost:$Port"
+    docker run -d `
+        --name $ContainerName `
+        --restart unless-stopped `
+        -p "${Port}:8080" `
+        -v "${WorkspaceDir}:/app/workspace/site" `
+        --security-opt no-new-privileges:true `
+        --tmpfs /tmp `
+        --memory 128m `
+        --cpus 0.5 `
+        $ImageName | Out-Null
 }
 
-# 停止服务
 function Stop-Blog {
-    $running = docker ps -q -f "name=$ContainerName"
-    if ($running) {
-        Write-Info "停止容器..."
-        docker stop $ContainerName
-        Write-Info "服务已停止"
+    if (docker ps -q -f "name=$ContainerName") {
+        docker stop $ContainerName | Out-Null
+        Write-Info "Container stopped."
     } else {
-        Write-Warn "容器未运行"
+        Write-Warn "Container is not running."
     }
 }
 
-# 重启服务
 function Restart-Blog {
     Stop-Blog
-    $exists = docker ps -aq -f "name=$ContainerName"
-    if ($exists) {
-        docker rm $ContainerName
-    }
     Start-Blog
 }
 
-# 重新构建索引
-function Rebuild {
-    $running = docker ps -q -f "name=$ContainerName"
-    if (-not $running) {
-        Write-Err "容器未运行，请先启动服务"
+function Rebuild-Site {
+    if (-not (docker ps -q -f "name=$ContainerName")) {
+        Write-Err "Container is not running."
         return
     }
-    
-    Write-Info "重新构建索引..."
     docker exec $ContainerName node build.js
-    Write-Info "索引构建完成"
 }
 
-# 查看日志
 function Show-Logs {
     docker logs -f $ContainerName
 }
 
-# 清理
-function Clean {
-    $confirm = Read-Host "这将删除容器和镜像，确定吗？[y/N]"
-    if ($confirm -eq "y" -or $confirm -eq "Y") {
-        Stop-Blog 2>$null
-        docker rm $ContainerName 2>$null
-        docker rmi $ImageName 2>$null
-        Write-Info "清理完成"
-    } else {
-        Write-Info "已取消"
+function Open-Shell {
+    docker exec -it $ContainerName /bin/sh
+}
+
+function Clean-Docker {
+    $confirm = (Read-Host "Remove the container and image? [y/N]").Trim().ToLower()
+    if ($confirm -eq "y" -or $confirm -eq "yes") {
+        docker rm -f $ContainerName 2>$null | Out-Null
+        docker rmi $ImageName 2>$null | Out-Null
+        Write-Info "Docker artifacts removed."
     }
 }
 
-# 显示帮助
 function Show-Help {
-    Write-Host @"
-静态博客 Docker 部署脚本
+    @"
+Static blog Docker helper
 
-使用方法: .\deploy.ps1 [命令]
+Usage: .\deploy.ps1 [command]
 
-命令:
-  init     - 首次初始化（从容器复制文件到宿主机）
-  start    - 启动服务
-  stop     - 停止服务
-  restart  - 重启服务（应用配置更改）
-  build    - 重新构建镜像
-  rebuild  - 仅重新构建索引
-  logs     - 查看日志
-  clean    - 清理容器和镜像
-
-环境变量:
-  `$env:PORT - 服务端口（默认: 8080）
-
-示例:
-  .\deploy.ps1 init           # 首次部署
-  .\deploy.ps1 start          # 启动服务
-  `$env:PORT=3000; .\deploy.ps1 start  # 指定端口启动
-"@
+Commands:
+  init     Seed workspace/site from the bundled starter
+  start    Start the container
+  stop     Stop the container
+  restart  Restart the container
+  build    Rebuild the image
+  rebuild  Run node build.js inside the container
+  logs     Follow container logs
+  shell    Open a shell in the container
+  clean    Remove the container and image
+"@ | Write-Host
 }
 
-# 主入口
 switch ($Command) {
-    "init"    { Init }
-    "start"   { Start-Blog }
-    "stop"    { Stop-Blog }
+    "init" { Initialize-Workspace }
+    "start" { Start-Blog }
+    "stop" { Stop-Blog }
     "restart" { Restart-Blog }
-    "build"   { Build }
-    "rebuild" { Rebuild }
-    "logs"    { Show-Logs }
-    "clean"   { Clean }
-    default   { Show-Help }
+    "build" { Build-Image }
+    "rebuild" { Rebuild-Site }
+    "logs" { Show-Logs }
+    "shell" { Open-Shell }
+    "clean" { Clean-Docker }
+    default { Show-Help }
 }
