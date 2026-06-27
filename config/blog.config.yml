@@ -11,7 +11,8 @@ deployment:
   basePath: auto
 
 theme:
-  active: graphite
+  active: terminal
+
 
 content:
   categories:
