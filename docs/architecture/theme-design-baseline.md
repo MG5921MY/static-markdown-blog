@@ -10,6 +10,7 @@
 - `aurora`：参考 Stripe，更偏品牌展示，但不过度装饰
 - `paper`：参考 Notion + Claude，阅读优先，正文层级更柔和
 - `mono`：黑白极简，强调排版、密度与节奏
+- `terminal`：参考 DiskScope CRT，赛博终端风格，霓虹绿 + 扫描线
 
 ## 统一接口
 
@@ -19,6 +20,7 @@
 themes/<theme-id>/
   theme.yml
   theme.css
+  fonts/            ← 可选，本地打包字体
 ```
 
 工作区自定义主题接口保持一致：
@@ -27,6 +29,7 @@ themes/<theme-id>/
 workspace/site/themes/custom/<theme-id>/
   theme.yml
   theme.css
+  fonts/            ← 可选，用户自定义字体
 ```
 
 ## Token 原则
@@ -63,6 +66,88 @@ workspace/site/themes/custom/<theme-id>/
 - `--code-accent-1`
 - `--code-accent-2`
 - `--code-accent-3`
+
+## 字体加载策略
+
+主题通过 `--font-display`、`--font-body`、`--font-mono` 三个 token 控制字体。base.css 提供系统字体栈作为默认值，主题可覆盖为自定义字体。
+
+### 加载方式
+
+主题作者在 `theme.css` 中选择以下任一方式声明字体：
+
+**方式 1：Google Fonts（适合快速原型）**
+
+```css
+@import "../base.css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --font-display: 'Inter', 'Segoe UI', 'PingFang SC', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', 'PingFang SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+```
+
+**方式 2：本地打包字体（适合生产部署、离线环境）**
+
+将字体文件放入主题目录的 `fonts/` 子目录：
+
+```text
+themes/graphite/
+  theme.yml
+  theme.css
+  fonts/
+    inter-latin.woff2
+    inter-latin-ext.woff2
+    jetbrains-mono-latin.woff2
+```
+
+在 theme.css 中通过 `@font-face` 引用：
+
+```css
+@import "../base.css";
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/inter-latin.woff2') format('woff2');
+}
+
+:root {
+  --font-display: 'Inter', 'Segoe UI', 'PingFang SC', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', 'PingFang SC', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+```
+
+构建时 `build.js` 自动将 `themes/*/fonts/` 和 `themes/custom/*/fonts/` 复制到 `dist/` 对应目录。浏览器通过相对路径加载。
+
+### theme.yml 字段
+
+主题可在 `theme.yml` 中声明字体元数据，供文档和工具链使用：
+
+```yaml
+name: Graphite
+version: 1.1.0
+author: MijiaoGame
+description: Default theme inspired by Linear and Vercel.
+fonts:
+  - name: Inter
+    source: bundled          # bundled | google | none
+    weights: [400, 500, 600, 700]
+  - name: JetBrains Mono
+    source: google
+    weights: [400, 500]
+```
+
+### 规则
+
+- 字体加载只在主题 CSS 内部声明，不修改 base.css
+- 回退字体栈必须覆盖中英文场景（PingFang SC / Microsoft YaHei / Segoe UI）
+- `font-display: swap` 是必须的，避免 FOIT（字体加载阻塞渲染）
+- 用户自定义主题使用完全相同的机制，无特殊路径
 
 ## 页面表达原则
 
