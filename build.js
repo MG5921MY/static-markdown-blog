@@ -6,6 +6,8 @@ const { marked } = require('./vendor/marked.min.js');
 const ROOT = process.cwd();
 const DIST_DIR = path.join(ROOT, 'dist');
 const INCLUDE_DRAFTS = process.argv.includes('--include-drafts');
+const INCREMENTAL = process.argv.includes('--incremental');
+const MANIFEST_PATH = path.join(DIST_DIR, '.build-manifest.json');
 const WORKSPACE_SITE_DIR = path.join(ROOT, 'workspace', 'site');
 const WORKSPACE_CONFIG_PATH = path.join(WORKSPACE_SITE_DIR, 'config', 'blog.config.yml');
 const ROOT_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
@@ -63,6 +65,24 @@ function copyFileSafe(src, dest) {
   if (!fs.existsSync(src)) return;
   ensureDir(path.dirname(dest));
   fs.copyFileSync(src, dest);
+}
+
+function fileHash(filePath) {
+  if (!fs.existsSync(filePath)) return '';
+  const content = fs.readFileSync(filePath);
+  return crypto.createHash('md5').update(content).digest('hex').slice(0, 12);
+}
+
+function loadManifest() {
+  if (!INCREMENTAL) return null;
+  try {
+    if (!fs.existsSync(MANIFEST_PATH)) return null;
+    return JSON.parse(readText(MANIFEST_PATH));
+  } catch (_) { return null; }
+}
+
+function saveManifest(manifest) {
+  writeJson(MANIFEST_PATH, manifest);
 }
 
 function copyDirRecursive(src, dest) {
@@ -484,7 +504,7 @@ function copyStaticFiles() {
   }
 }
 
-function scanCategoryPosts(category, summaryLength, siteRoot) {
+function scanCategoryPosts(category, summaryLength, siteRoot, manifest) {
   const sourceDir = resolveSitePath(siteRoot, category.path);
   const result = { posts: [], groups: {} };
   if (!fs.existsSync(sourceDir)) return result;
@@ -519,8 +539,14 @@ function scanCategoryPosts(category, summaryLength, siteRoot) {
         result.groups[groupPath].posts.push(post);
       }
 
-      const distMarkdownPath = path.join(DIST_DIR, 'posts', category.id, relative);
-      const distHtmlPath = distMarkdownPath.replace(/\.md$/, '.html');
+      // Incremental: skip rendering if file unchanged
+      const distHtmlPath = path.join(DIST_DIR, 'posts', category.id, relative.replace(/\.md$/, '.html'));
+      const currentHash = fileHash(fullPath);
+      const cachedHash = manifest?.files?.[id];
+      if (manifest && cachedHash === currentHash && fs.existsSync(distHtmlPath)) {
+        continue; // File unchanged, skip rendering
+      }
+
       const renderedHtml = renderMarkdownToHtml(parsed.body);
       writeText(distHtmlPath, renderedHtml);
     }
@@ -531,7 +557,7 @@ function scanCategoryPosts(category, summaryLength, siteRoot) {
   return result;
 }
 
-function buildContent(normalized, availableThemes) {
+function buildContent(normalized, availableThemes, manifest) {
   const pagesMap = buildPagesMap(normalized.pages);
   buildPagesContent(pagesMap, normalized.display.summaryLength || 140, normalized.siteRoot);
 
@@ -540,7 +566,7 @@ function buildContent(normalized, availableThemes) {
 
   for (const category of normalized.categories) {
     if (!category.id || !category.path) continue;
-    const scanned = scanCategoryPosts(category, normalized.display.summaryLength || 140, normalized.siteRoot);
+    const scanned = scanCategoryPosts(category, normalized.display.summaryLength || 140, normalized.siteRoot, manifest);
     categories[category.id] = {
       name: category.name || category.id,
       icon: category.icon || '',
@@ -895,23 +921,39 @@ function main() {
   const configInput = resolveConfigInput();
   const normalized = normalizeConfig(configInput);
   const availableThemes = scanAvailableThemes();
+  const manifest = loadManifest();
+  const isIncremental = INCREMENTAL && manifest;
 
-  cleanDir(DIST_DIR);
+  if (!isIncremental) {
+    cleanDir(DIST_DIR);
+  }
+
   copyStaticFiles();
   copySiteAssetsToDist();
   copyThemesToDist();
+  copyVendorToDist();
 
-  const { siteConfig, contentIndex, pathMap } = buildContent(normalized, availableThemes);
+  const { siteConfig, contentIndex, pathMap } = buildContent(normalized, availableThemes, manifest);
   writeOutputs(siteConfig, contentIndex, pathMap);
 
   const rssCount = generateRss(siteConfig, contentIndex, pathMap);
   const sitemapCount = generateSitemap(siteConfig, contentIndex, pathMap);
   const searchCount = generateSearchIndex(siteConfig, contentIndex, pathMap);
-  copyVendorToDist();
   const ssgCount = generateSSGPages(siteConfig, contentIndex, pathMap);
 
+  // Save build manifest for next incremental build
+  const newManifest = { timestamp: Date.now(), files: {} };
+  for (const [id, mapping] of Object.entries(pathMap || {})) {
+    const catDir = normalized.categories?.find((c) => c.id === mapping.category);
+    if (catDir) {
+      const src = path.join(normalized.siteRoot, catDir.path, mapping.file);
+      if (fs.existsSync(src)) newManifest.files[id] = fileHash(src);
+    }
+  }
+  saveManifest(newManifest);
+
   console.log('');
-  console.log('Build completed');
+  console.log(`Build completed${isIncremental ? ' (incremental)' : ''}`);
   console.log(`  Config: ${path.relative(ROOT, configInput.filePath)}`);
   console.log(`  Mode: ${configInput.mode}`);
   console.log(`  Site root: ${path.relative(ROOT, normalized.siteRoot) || '.'}`);

@@ -9,6 +9,12 @@ window.BlogRender = {
       renderer.code = function codeRenderer(codeBlock) {
         const code = typeof codeBlock === 'object' ? codeBlock.text : codeBlock;
         const lang = typeof codeBlock === 'object' ? codeBlock.lang : arguments[1];
+
+        // Mermaid: return placeholder div for async rendering
+        if (lang === 'mermaid') {
+          return `<div class="mermaid-placeholder" data-mermaid="${self.escapeHtml(code)}"></div>`;
+        }
+
         let highlighted = self.escapeHtml(code);
 
         if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
@@ -50,7 +56,7 @@ window.BlogRender = {
 
       html = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'em', 'strong', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'data-math-block', 'data-math-inline'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'data-math-block', 'data-math-inline', 'data-mermaid'],
         ALLOW_DATA_ATTR: true
       });
 
@@ -59,6 +65,11 @@ window.BlogRender = {
         this._pendingMath = this._pendingMath || [];
         this._pendingMath.push(...mathBlocks);
         this._scheduleMathRender();
+      }
+
+      // Schedule mermaid rendering
+      if (html.includes('mermaid-placeholder')) {
+        this._scheduleMermaidRender();
       }
     }
 
@@ -106,6 +117,48 @@ window.BlogRender = {
         catch (_) { el.textContent = item.tex; }
       }
     });
+  },
+
+  _mermaidScheduled: false,
+
+  _scheduleMermaidRender() {
+    if (this._mermaidScheduled) return;
+    this._mermaidScheduled = true;
+    setTimeout(() => this._renderMermaid(), 80);
+  },
+
+  async _renderMermaid() {
+    this._mermaidScheduled = false;
+    const placeholders = document.querySelectorAll('.mermaid-placeholder[data-mermaid]');
+    if (placeholders.length === 0) return;
+
+    if (typeof mermaid === 'undefined') {
+      try {
+        await Blog.loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js');
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
+          securityLevel: 'loose'
+        });
+      } catch (_) { return; }
+    }
+
+    for (let i = 0; i < placeholders.length; i++) {
+      const el = placeholders[i];
+      const code = el.getAttribute('data-mermaid');
+      if (!code) continue;
+      try {
+        const id = `mermaid-${Date.now()}-${i}`;
+        const { svg } = await mermaid.render(id, code);
+        el.innerHTML = svg;
+        el.classList.remove('mermaid-placeholder');
+        el.classList.add('mermaid');
+        el.removeAttribute('data-mermaid');
+      } catch (_) {
+        el.innerHTML = `<pre><code>${this.escapeHtml(code)}</code></pre>`;
+        el.classList.remove('mermaid-placeholder');
+      }
+    }
   },
 
   renderPostCard(post) {
