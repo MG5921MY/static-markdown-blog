@@ -68,6 +68,18 @@
 
 ---
 
+### P7 — 代码清理（✅）
+- ✅ 删除 output/playwright/（30+ 测试截图）
+- ✅ 删除冗余文档（blog-rebuild-plan / hot-reload-analysis / platform-analysis / theme-design-baseline）
+- ✅ 文档合并到 theme-engine-reference.md
+- ✅ 更新 README.md（完整功能列表 + 快速开始）
+- ✅ 更新 Dockerfile（添加 vendor/ bin/ package.json）
+- ✅ 更新 .gitignore（添加 output/）
+- ✅ build.js 删除 legacy 代码路径
+- ✅ 删除 examples/starter-legacy/
+- ✅ 删除 scripts/ 一次性工具
+- ✅ 清理未使用 locale keys（19 个）
+
 ## 未完成（未来可选）
 
 ### P5 — 生态

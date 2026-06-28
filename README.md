@@ -1,202 +1,132 @@
 # Static Markdown Blog
 
-这是一个以 Markdown 为唯一正文来源的静态博客系统，当前正式模型已经切到：
+零依赖、Token 驱动主题、支持任意子路径部署的静态博客平台。
 
-- `workspace/site/` 是唯一用户工作区
-- `examples/` 统一管理示例与 Docker seed
-- `legacy/` 只保留旧结构迁移输入
-- 根目录 `config/ + content/ + assets/ + themes/` 作为仓库内置基线与开发默认源
+## 特性
 
-## 目录模型
-
-```text
-config/                    # 仓库内置默认配置
-content/                   # 仓库内置默认内容
-assets/                    # 仓库内置默认资源
-themes/                    # 内置主题
-docs/                      # 正式文档
-scripts/                   # 维护脚本与迁移脚本
-examples/
-  starter-modern/site/     # 新结构示例站点
-  starter-legacy/          # 旧结构示例
-  docker-seed/site/        # Docker 首次启动种子
-legacy/
-  site/                    # 旧根目录结构迁移后的存档输入
-workspace/
-  site/                    # 用户真正编辑、挂载、备份的数据根
-dist/                      # 构建产物
-```
-
-正式用户数据根固定为：
-
-```text
-workspace/site/
-  config/blog.config.yml
-  content/posts/**/*.md
-  content/pages/*.md
-  content/data/{moments,links,gallery}.yml
-  assets/
-  themes/custom/
-```
+- **零依赖** — 无 npm install，纯 Node.js 内置模块构建
+- **构建时渲染** — Markdown → HTML，SEO 友好
+- **5 个内置主题** — graphite / aurora / paper / mono / terminal
+- **三态亮暗切换** — 自动/亮色/暗色，跟随系统或手动选择
+- **Token 驱动** — 45+ CSS 变量，主题只需覆盖值
+- **主题引擎** — 布局 token + theme.js + 模板覆盖
+- **i18n** — 中英双语，完整的 UI 翻译
+- **增量构建** — `--incremental` 跳过未变化文件
+- **SSG** — 构建时生成完整 HTML，搜索引擎可直接抓取
+- **全文搜索** — Lunr.js 离线索引，支持中文分词
+- **数学公式** — KaTeX 懒加载渲染
+- **流程图** — Mermaid 懒加载渲染
+- **评论** — Giscus / Cusdis 可选集成
+- **热重载** — 开发服务器 SSE 自动刷新
+- **Docker** — 原生支持，一键部署
 
 ## 快速开始
 
-### 1. 初始化工作区
-
-Windows PowerShell:
-
-```powershell
-.\init.ps1
-```
-
-Node:
-
 ```bash
+# 初始化工作区
 node init.js
-```
 
-Linux / macOS:
+# 编辑配置
+# workspace/site/config/blog.config.yml
 
-```bash
-chmod +x init.sh
-./init.sh
-```
-
-初始化会把 `examples/starter-modern/site/` 复制到 `workspace/site/`。
-
-### 2. 编辑内容
-
-- 站点配置：`workspace/site/config/blog.config.yml`
-- 文章：`workspace/site/content/posts/**/*.md`
-- 页面：`workspace/site/content/pages/*.md`
-- 数据页：`workspace/site/content/data/{moments,links,gallery}.yml`
-- 资源：`workspace/site/assets/`
-- 自定义主题：`workspace/site/themes/custom/<theme-id>/`
-
-### 3. 构建
-
-```bash
+# 构建
 node build.js
-```
 
-构建器读取顺序：
-
-1. `workspace/site/config/blog.config.yml`
-2. `config/blog.config.yml`
-3. legacy 仅在显式开启 `BLOG_ENABLE_LEGACY=1` 时才作为兼容输入
-
-### 4. 本地预览
-
-根路径预览：
-
-```bash
+# 预览
 node serve.js
 ```
 
-子路径预览：
+CLI 方式：
 
 ```bash
-node serve.js 8080 /blog/
+npm install -g .
+blog init
+blog build
+blog serve 8080
 ```
 
-## Legacy 迁移
-
-旧目录结构不再作为根目录长期公开入口。仓库当前把旧输入收进：
+## 目录结构
 
 ```text
-legacy/site/
-  conf/
-  posts/
-  pages/
-  usr/themes/
+build.js              构建脚本
+serve.js              开发服务器（热重载）
+bin/blog.js           CLI 入口
+package.json          npm 配置
+vendor/               第三方库（marked, lunr, katex）
+themes/               5 个内置主题 + base.css
+locales/              中英双语
+config/               默认配置
+content/              默认内容
+workspace/site/       用户工作区
+examples/             示例站点
+docker/               Dockerfile + compose
+.github/workflows/    GitHub Actions
+docs/architecture/    主题引擎参考文档
 ```
 
-如需导入 legacy 内容到新工作区，执行：
+## 内置主题
 
-```bash
-node scripts/migrate-legacy-to-workspace.js
+| 主题 | 风格 | 设计参考 |
+|------|------|----------|
+| graphite | 工业蓝图 | Linear + Vercel |
+| aurora | 品牌展示 | Stripe |
+| paper | 阅读优先 | Notion + Claude |
+| mono | 黑白极简 | Vercel |
+| terminal | CRT 赛博 | DiskScope |
+
+## 主题开发
+
+详见 `docs/architecture/theme-engine-reference.md`。
+
+核心概念：
+
+```css
+/* 主题只需覆盖 token */
+:root {
+  --bg-primary: #ffffff;
+  --accent: #0066ff;
+  --font-display: "Inter", sans-serif;
+}
+
+/* 暗色模式 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #0a0a0a;
+    --accent: #6b8aff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg-primary: #0a0a0a;
+  --accent: #6b8aff;
+}
 ```
 
-该脚本会：
+## 部署
 
-- 读取 `legacy/site/` 下的旧配置、文章、页面、数据和主题
-- 转换为 `workspace/site/` 新结构
-- 保留 legacy 原文件，不自动删除
-- 输出迁移报告到 `output/legacy-migration-report.json`
+### GitHub Pages
 
-## Docker
+推送到 main 分支自动构建部署（`.github/workflows/deploy.yml`）。
 
-Docker 已切到单一工作区挂载模型：
-
-- Host: `workspace/site`
-- Container: `/app/workspace/site`
-
-Compose 文件位于 `docker/` 目录，因此默认挂载写法是：
-
-```yaml
-volumes:
-  - ../workspace/site:/app/workspace/site
-```
-
-首次启动如果挂载目录为空，容器会自动使用 `examples/docker-seed/site/` 初始化。
-
-常用命令：
+### Docker
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build
 ```
 
-或使用辅助脚本：
+首次启动自动从 `examples/docker-seed/` 初始化。
+
+### 通用静态托管
+
+`dist/` 目录即完整产物，可直接部署到 Vercel / Netlify / Cloudflare Pages / Nginx。
+
+## 构建选项
 
 ```bash
-./docker/deploy.sh init
-./docker/deploy.sh start
+node build.js                    # 全量构建
+node build.js --incremental      # 增量构建（跳过未变化文件）
+node build.js --include-drafts   # 包含草稿
 ```
 
-Windows:
+## 文档
 
-```powershell
-.\docker\deploy.ps1 init
-.\docker\deploy.ps1 start
-```
-
-## 主题系统
-
-内置主题接口固定为：
-
-```text
-themes/<theme-id>/
-  theme.yml
-  theme.css
-```
-
-当前内置主题：
-
-- `graphite`：默认，克制、偏开发者
-- `aurora`：更偏品牌展示
-- `paper`：阅读优先
-- `mono`：黑白极简
-- `terminal`：CRT 风格，霓虹绿
-
-工作区自定义主题放在：
-
-```text
-workspace/site/themes/custom/<theme-id>/
-  theme.yml
-  theme.css
-```
-
-## 运行时约定
-
-以下 helper 是正式约定，不再改名：
-
-- `Blog.resolveBasePath()`
-- `Blog.resolveAsset(path)`
-- `Blog.resolvePageUrl(page, params?)`
-
-模板、资源、JSON 数据与页面跳转都应围绕这组 helper 保持 base-path agnostic。
-
-## 相关文档
-
-- `docs/architecture/blog-rebuild-plan.md`
-- `docs/architecture/theme-design-baseline.md`
+- `docs/architecture/theme-engine-reference.md` — 主题引擎完整参考

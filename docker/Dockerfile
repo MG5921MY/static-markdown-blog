@@ -4,10 +4,13 @@ WORKDIR /app
 
 COPY *.js ./
 COPY *.html ./
+COPY *.json ./
 COPY assets ./assets/
+COPY bin ./bin/
 COPY config ./config/
 COPY content ./content/
 COPY themes ./themes/
+COPY vendor ./vendor/
 COPY locales ./locales/
 COPY examples ./examples/
 COPY workspace ./workspace/

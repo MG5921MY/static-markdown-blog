@@ -6,6 +6,7 @@ logs/
 
 old/
 dist/
+output/
 site-config.json
 output/playwright/
 .playwright-cli/
