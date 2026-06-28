@@ -43,7 +43,7 @@ function run(script, args) {
   try {
     execFileSync(process.execPath, [scriptPath, ...args], {
       stdio: "inherit",
-      cwd: ROOT,
+      cwd: process.cwd(),
     });
   } catch (err) {
     process.exit(err.status || 1);

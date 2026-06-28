@@ -185,7 +185,6 @@ window.BlogUI = {
     this.setupProgressBar();
     this.setupDirTreePanel();
     this.setupThemeToggle();
-    this.setupCodeCopyButtons();
   },
 
   setupCodeCopyButtons() {

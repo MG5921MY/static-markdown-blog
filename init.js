@@ -3,9 +3,10 @@ const path = require('path');
 const readline = require('readline');
 
 const ROOT = process.cwd();
-const STARTER_DIR = path.join(ROOT, 'examples', 'starter-modern', 'site');
-const ROOT_CONTENT = path.join(ROOT, 'content');
-const ROOT_ASSETS = path.join(ROOT, 'assets');
+const PKG_ROOT = __dirname;
+const STARTER_DIR = path.join(PKG_ROOT, 'examples', 'starter-modern', 'site');
+const ROOT_CONTENT = path.join(PKG_ROOT, 'content');
+const ROOT_ASSETS = path.join(PKG_ROOT, 'assets');
 const TARGET_DIR = path.join(ROOT, 'workspace', 'site');
 
 function exists(targetPath) {

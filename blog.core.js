@@ -509,6 +509,7 @@ window.BlogCore = {
       this.renderNavLinks();
       this.setupCommonFeatures();
       if (typeof task === 'function') await task();
+      this.setupCodeCopyButtons();
       this.onPageLoad();
       return true;
     } catch (error) {
