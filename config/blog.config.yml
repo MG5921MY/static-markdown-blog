@@ -11,7 +11,7 @@ deployment:
   basePath: auto
 
 theme:
-  active: paper
+  active: mono
 
 
 content:

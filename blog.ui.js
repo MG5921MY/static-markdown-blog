@@ -187,10 +187,7 @@ window.BlogUI = {
     this.setupThemeToggle();
   },
 
-  /* ── Theme Toggle (auto / light / dark) ─────────────── */
-  _themeModes: ['auto', 'light', 'dark'],
-  _themeIcons: { auto: '\u25D0', light: '\u25CB', dark: '\u25CF' }, // ◐ ○ ●
-
+  /* ── Theme Toggle (panel: auto switch + manual light/dark) */
   _getSavedTheme() {
     try { return localStorage.getItem('blog-color-scheme') || 'auto'; } catch (_) { return 'auto'; }
   },
@@ -207,45 +204,118 @@ window.BlogUI = {
       root.setAttribute('data-theme', mode);
     }
     root.setAttribute('data-color-scheme', mode);
+
+    // Update color-scheme meta for browser status bar
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) {
+      if (mode === 'auto') {
+        meta.content = 'light dark';
+      } else {
+        meta.content = mode;
+      }
+    }
+
+    // Update theme-color meta with current background
+    const bg = getComputedStyle(root).getPropertyValue('--bg-primary').trim();
+    if (bg) {
+      let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (!themeColorMeta) {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        document.head.appendChild(themeColorMeta);
+      }
+      themeColorMeta.content = bg;
+    }
   },
 
-  _cycleTheme() {
-    const current = this._getSavedTheme();
-    const idx = this._themeModes.indexOf(current);
-    const next = this._themeModes[(idx + 1) % this._themeModes.length];
-    this._saveTheme(next);
-    this._applyTheme(next);
-    this._updateThemeButton(next);
+  _getEffectiveIcon(mode) {
+    if (mode !== 'auto') return mode === 'dark' ? '\u263E' : '\u2600'; // ☾ ☀
+    // auto: show icon matching current system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? '\u263E' : '\u2600';
   },
 
-  _updateThemeButton(mode) {
+  _updateThemeUI(mode) {
     const btn = document.querySelector('.theme-toggle-btn');
-    if (!btn) return;
-    const labels = {
-      auto: Blog.t ? Blog.t('ui.themeAuto') : '\u81EA\u52A8',
-      light: Blog.t ? Blog.t('ui.themeLight') : '\u4EAE\u8272',
-      dark: Blog.t ? Blog.t('ui.themeDark') : '\u6697\u8272'
-    };
-    btn.textContent = this._themeIcons[mode] || '';
-    btn.title = labels[mode] || mode;
-    btn.setAttribute('aria-label', labels[mode] || mode);
-    btn.setAttribute('data-theme-mode', mode);
+    if (btn) btn.textContent = this._getEffectiveIcon(mode);
+
+    const autoCheck = document.querySelector('.theme-auto-check');
+    if (autoCheck) autoCheck.checked = (mode === 'auto');
+
+    const manualPanel = document.querySelector('.theme-manual-panel');
+    if (manualPanel) manualPanel.classList.toggle('is-hidden', mode === 'auto');
+
+    document.querySelectorAll('.theme-manual-btn').forEach((el) => {
+      el.classList.toggle('is-active', el.dataset.value === mode);
+    });
+  },
+
+  _setTheme(mode) {
+    this._saveTheme(mode);
+    this._applyTheme(mode);
+    this._updateThemeUI(mode);
   },
 
   setupThemeToggle() {
-    if (document.querySelector('.theme-toggle-btn')) return;
+    if (document.querySelector('.theme-toggle')) return;
 
     const navLinks = document.querySelector('.nav-links');
     if (!navLinks) return;
 
+    // Container
+    const wrap = document.createElement('div');
+    wrap.className = 'theme-toggle';
+
+    // Icon button
     const btn = document.createElement('button');
     btn.className = 'theme-toggle-btn';
     btn.type = 'button';
-    btn.addEventListener('click', () => this._cycleTheme());
-    navLinks.appendChild(btn);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      wrap.classList.toggle('is-open');
+    });
 
+    // Dropdown panel
+    const panel = document.createElement('div');
+    panel.className = 'theme-toggle-panel';
+    panel.innerHTML = `
+      <label class="theme-toggle-row">
+        <span class="theme-toggle-label">${Blog.t ? Blog.t('ui.themeAuto') : '\u8DDF\u968F\u7CFB\u7EDF'}</span>
+        <input type="checkbox" class="theme-auto-check">
+      </label>
+      <div class="theme-manual-panel">
+        <button class="theme-manual-btn" data-value="light">${Blog.t ? Blog.t('ui.themeLight') : '\u4EAE\u8272'}</button>
+        <button class="theme-manual-btn" data-value="dark">${Blog.t ? Blog.t('ui.themeDark') : '\u6697\u8272'}</button>
+      </div>
+    `;
+
+    // Auto checkbox
+    const autoCheck = panel.querySelector('.theme-auto-check');
+    autoCheck.addEventListener('change', () => {
+      this._setTheme(autoCheck.checked ? 'auto' : 'light');
+    });
+
+    // Manual buttons
+    panel.querySelectorAll('.theme-manual-btn').forEach((el) => {
+      el.addEventListener('click', () => this._setTheme(el.dataset.value));
+    });
+
+    // Close on outside click
+    document.addEventListener('click', () => wrap.classList.remove('is-open'));
+    panel.addEventListener('click', (e) => e.stopPropagation());
+
+    wrap.appendChild(btn);
+    wrap.appendChild(panel);
+    navLinks.appendChild(wrap);
+
+    // Init
     const saved = this._getSavedTheme();
     this._applyTheme(saved);
-    this._updateThemeButton(saved);
+    this._updateThemeUI(saved);
+
+    // Listen for system theme changes when in auto mode
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (this._getSavedTheme() === 'auto') this._updateThemeUI('auto');
+    });
   }
 };

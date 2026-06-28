@@ -498,5 +498,10 @@ window.BlogCore = {
       document.documentElement.setAttribute('data-theme', mode);
     }
     document.documentElement.setAttribute('data-color-scheme', mode);
+
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) {
+      meta.content = mode === 'auto' ? 'light dark' : mode;
+    }
   }
 };

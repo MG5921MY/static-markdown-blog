@@ -77,7 +77,7 @@ body {
 
 /* nav：极简稿纸风 */
 .nav {
-  background: rgba(245, 241, 230, 0.85);
+  background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
   border-bottom: 1px solid var(--border);
   padding: 0 clamp(20px, 4vw, 40px);
 }
@@ -1085,6 +1085,10 @@ body {
     --code-accent-2: #7dd3b0;
     --code-accent-3: #ffb86c;
   }
+
+  body {
+    background: var(--bg-primary);
+  }
 }
 
 :root[data-theme="dark"] {
@@ -1112,4 +1116,8 @@ body {
   --code-accent-1: #8fb4ff;
   --code-accent-2: #7dd3b0;
   --code-accent-3: #ffb86c;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg-primary);
 }

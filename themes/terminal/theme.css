@@ -89,7 +89,7 @@ body::after {
 
 /* nav：terminal 顶栏 + 六边形 logo */
 .nav {
-  background: rgba(10, 15, 10, 0.92);
+  background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
   border-bottom: 1px solid var(--border);
   border-top: 1px solid var(--border);
   backdrop-filter: blur(8px);
@@ -2407,6 +2407,14 @@ mark {
     --code-accent-2: #006688;
     --code-accent-3: #886600;
   }
+
+  /* Disable terminal-specific dark effects in light mode */
+  body {
+    background: var(--bg-primary);
+  }
+  body::after {
+    display: none;
+  }
 }
 
 /* Explicit: user chose light */
@@ -2436,4 +2444,12 @@ mark {
   --code-accent-1: #008833;
   --code-accent-2: #006688;
   --code-accent-3: #886600;
+}
+
+/* Explicit light: disable terminal dark effects */
+:root[data-theme="light"] body {
+  background: var(--bg-primary);
+}
+:root[data-theme="light"] body::after {
+  display: none;
 }

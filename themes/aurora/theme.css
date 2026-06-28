@@ -58,7 +58,7 @@ body {
 
 /* nav：极简、字大 */
 .nav {
-  background: rgba(250, 248, 243, 0.85);
+  background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
   border-bottom: 1px solid var(--border);
   padding: 0 clamp(24px, 5vw, 64px);
 }

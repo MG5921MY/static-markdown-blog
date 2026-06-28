@@ -224,7 +224,13 @@ img.nav-logo {
   transform: scaleX(1);
 }
 
-/* ── Theme Toggle Button ─────────────────────────────── */
+/* ── Theme Toggle ─────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  margin-left: 8px;
+}
+
 .theme-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -241,12 +247,123 @@ img.nav-logo {
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   flex-shrink: 0;
   padding: 0;
-  margin-left: 8px;
 }
 
 .theme-toggle-btn:hover {
   background: var(--accent-soft);
   color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.theme-toggle-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  min-width: 200px;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+
+.theme-toggle.is-open .theme-toggle-panel {
+  display: block;
+}
+
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 4px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s ease;
+  white-space: nowrap;
+}
+
+.theme-toggle-row:hover {
+  background: var(--accent-soft);
+}
+
+.theme-toggle-label {
+  font-size: 13px;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.theme-auto-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-auto-check::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.theme-auto-check:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-auto-check:checked::after {
+  transform: translateX(16px);
+  background: #fff;
+}
+
+.theme-manual-panel {
+  display: flex;
+  gap: 6px;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+.theme-manual-panel.is-hidden {
+  display: none;
+}
+
+.theme-manual-btn {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  white-space: nowrap;
+}
+
+.theme-manual-btn:hover {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.theme-manual-btn.is-active {
+  background: var(--accent);
+  color: #fff;
   border-color: var(--accent);
 }
 

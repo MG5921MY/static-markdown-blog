@@ -1045,6 +1045,11 @@ body {
     --code-accent-2: #7dd3b0;
     --code-accent-3: #ffb86c;
   }
+
+  /* Hide light-mode decorative gradients in dark mode */
+  body {
+    background: var(--bg-primary);
+  }
 }
 
 /* Explicit: user chose dark */
@@ -1073,4 +1078,8 @@ body {
   --code-accent-1: #8fb4ff;
   --code-accent-2: #7dd3b0;
   --code-accent-3: #ffb86c;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg-primary);
 }
