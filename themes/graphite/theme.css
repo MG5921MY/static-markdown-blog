@@ -142,6 +142,21 @@ body {
 }
 
 .hero-kicker,
+.hero-title,
+.hero-subtitle,
+.hero-copy,
+.hero-actions,
+.hero-meta {
+  grid-column: 1;
+}
+
+.hero-specs {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: end;
+}
+
+.hero-kicker,
 .hero-badge {
   display: block;
   font-family: var(--font-mono);
@@ -170,7 +185,6 @@ body {
   letter-spacing: -0.03em;
   font-weight: 700;
   text-transform: none;
-  max-width: 14ch;
   margin: 0 0 24px;
 }
 
@@ -989,6 +1003,17 @@ body {
   .hero-content {
     grid-template-columns: 1fr;
     gap: 16px;
+  }
+
+  .hero-kicker,
+  .hero-title,
+  .hero-subtitle,
+  .hero-copy,
+  .hero-actions,
+  .hero-meta,
+  .hero-specs {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .hero-specs {
