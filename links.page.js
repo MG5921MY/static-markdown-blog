@@ -31,7 +31,7 @@
           domain = link.url;
         }
 
-        const groupName = groupMap.get(link.group) || '参考资源';
+        const groupName = groupMap.get(link.group) || (Blog.t ? Blog.t('links.defaultGroup') : '参考资源');
         const label = link.label || groupName;
 
         return `<a href="${Blog.escapeHtml(link.url)}" class="link-card" target="_blank" rel="noopener noreferrer">
@@ -54,19 +54,19 @@
     needPathMap: false,
     task: async () => {
       try {
-        Blog.setPageTitle('参考与收藏');
+        Blog.setPageTitle(Blog.t ? Blog.t('links.title') : '参考与收藏');
         Blog.setNavSiteName();
 
         const linksData = Blog.config?.features?.links;
         if (!linksData) {
-          Blog.renderState(contentEl, '参考页功能尚未启用。');
+          Blog.renderState(contentEl, Blog.t ? Blog.t('links.notEnabled') : '参考页功能尚未启用。');
           return;
         }
 
         const groups = linksData.groups || [];
         const links = linksData.links || [];
         if (links.length === 0) {
-          Blog.renderState(contentEl, '这里还没有配置任何参考资源。');
+          Blog.renderState(contentEl, Blog.t ? Blog.t('links.noLinks') : '这里还没有配置任何参考资源。');
           return;
         }
 
@@ -91,7 +91,7 @@
             html += `<section class="links-group">
               <div class="links-group-head">
                 <div class="links-group-kicker">More</div>
-                <h2 class="links-group-title">更多收藏</h2>
+                <h2 class="links-group-title">${Blog.t ? Blog.t('links.moreCollection') : '更多收藏'}</h2>
               </div>
               <div class="links-grid">${renderLinks(ungrouped, groupMap)}</div>
             </section>`;
@@ -104,7 +104,7 @@
         Blog.setupCardAnimations();
       } catch (error) {
         console.error('Failed to load links:', error);
-        Blog.renderState(contentEl, '参考资源加载失败。');
+        Blog.renderState(contentEl, Blog.t ? Blog.t('links.loadFailed') : '参考资源加载失败。');
       }
     }
   });

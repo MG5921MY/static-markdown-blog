@@ -6,19 +6,35 @@
   "bin": {
     "blog": "./bin/blog.js"
   },
+  "files": [
+    "build.js",
+    "serve.js",
+    "init.js",
+    "bin/",
+    "vendor/",
+    "themes/",
+    "locales/",
+    "content/",
+    "config/",
+    "assets/",
+    "examples/",
+    "workspace/",
+    "docker/",
+    "*.html",
+    "*.js",
+    "*.json",
+    "*.ico",
+    "*.svg"
+  ],
   "scripts": {
     "build": "node build.js",
     "serve": "node serve.js",
     "init": "node init.js"
   },
-  "keywords": ["blog", "static-site", "markdown", "themes"],
+  "keywords": ["blog", "static-site", "markdown", "themes", "zero-dependency"],
   "author": "MijiaoGame",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": ""
   }
 }

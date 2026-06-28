@@ -48,18 +48,18 @@
     needPathMap: false,
     task: async () => {
       try {
-        Blog.setPageTitle('瞬间');
+        Blog.setPageTitle(Blog.t ? Blog.t('moments.title') : '瞬间');
         Blog.setNavSiteName();
 
         const momentsData = Blog.config?.features?.moments;
         if (!momentsData) {
-          Blog.renderState(contentEl, '瞬间功能未启用。');
+          Blog.renderState(contentEl, Blog.t ? Blog.t('moments.notEnabled') : '瞬间功能未启用。');
           return;
         }
 
         const moments = momentsData.moments || [];
         if (moments.length === 0) {
-          Blog.renderState(contentEl, '还没有记录任何瞬间。');
+          Blog.renderState(contentEl, Blog.t ? Blog.t('moments.noMoments') : '还没有记录任何瞬间。');
           return;
         }
 
@@ -68,7 +68,7 @@
         Blog.setupCardAnimations();
       } catch (error) {
         console.error('Failed to load moments:', error);
-        Blog.renderState(contentEl, '瞬间内容加载失败。');
+        Blog.renderState(contentEl, Blog.t ? Blog.t('moments.loadFailed') : '瞬间内容加载失败。');
       }
     }
   });

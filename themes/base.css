@@ -1138,13 +1138,33 @@ img.nav-logo {
 .markdown-body pre .hljs-number,
 .markdown-body pre .hljs-tag,
 .markdown-body pre .hljs-built_in,
-.moment-content pre .hljs-title,
-.moment-content pre .hljs-section,
-.moment-content pre .hljs-type,
-.moment-content pre .hljs-number,
-.moment-content pre .hljs-tag,
 .moment-content pre .hljs-built_in {
   color: var(--code-accent-3);
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.markdown-body pre:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.code-copy-btn.copied {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .loading-state,
@@ -2085,6 +2105,33 @@ mark {
   .link-card,
   .gallery-shell-header {
     gap: 6px;
+  }
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-in,
+  .fade-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .loading-spinner {
+    animation: none !important;
+  }
+
+  .hero-media {
+    transition: none !important;
   }
 }
 

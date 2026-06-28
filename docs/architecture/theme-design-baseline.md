@@ -149,6 +149,51 @@ fonts:
 - `font-display: swap` 是必须的，避免 FOIT（字体加载阻塞渲染）
 - 用户自定义主题使用完全相同的机制，无特殊路径
 
+## 暗色模式规则
+
+平台支持三态切换（自动/亮色/暗色），通过 `data-theme` 属性控制。
+
+### CSS 结构
+
+**默认亮色主题**（如 graphite/aurora/paper/mono）：
+
+```css
+:root { /* 亮色 token */ }
+
+/* 自动：跟随系统暗色，除非用户选了亮色 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { /* 暗色 token */ }
+}
+
+/* 手动：用户选了暗色 */
+:root[data-theme="dark"] { /* 暗色 token（同上） */ }
+```
+
+**默认暗色主题**（如 terminal）：
+
+```css
+:root { /* 暗色 token */ }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { /* 亮色 token */ }
+}
+
+:root[data-theme="light"] { /* 亮色 token（同上） */ }
+```
+
+**单色主题**（不支持切换）：
+
+```css
+:root { /* 固定 token */ }
+/* 不加 media query，平台自动隐藏切换按钮 */
+```
+
+### 规则
+
+- 暗色/亮色 token 块必须完整，不能只覆盖部分变量
+- 主题特有的硬编码背景（如渐变、纹理）在暗色模式下必须覆盖为 `var(--bg-primary)` 或 `display: none`
+- 导航栏 `background` 必须使用 `color-mix(in srgb, var(--bg-primary) ...)` 而非硬编码颜色
+
 ## 页面表达原则
 
 - 首页维持“单一 Hero + 稳定 feed + 简洁 footer”

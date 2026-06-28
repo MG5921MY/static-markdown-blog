@@ -35,7 +35,7 @@
   function renderGallery() {
     const groups = galleryData.groups || [];
     if (groups.length === 0) {
-      Blog.renderState(galleryContentEl, '暂无图集分组。', '图库');
+      Blog.renderState(galleryContentEl, Blog.t ? Blog.t('gallery.noGroups') : '暂无图集分组。', Blog.t ? Blog.t('gallery.title') : '图库');
       return;
     }
 
@@ -47,7 +47,7 @@
       const images = galleryData.images?.[group.id] || [];
       const count = countAllImages(images);
       html += `<button class="group-btn ${isActive ? 'active' : ''}" type="button" data-action="select-group" data-group-id="${Blog.escapeHtml(group.id)}">
-        <span>${Blog.escapeHtml(group.icon || '图库')}</span>
+        <span>${Blog.escapeHtml(group.icon || (Blog.t ? Blog.t('gallery.title') : '图库'))}</span>
         <span>${Blog.escapeHtml(group.name)}</span>
         <span class="count">${count}</span>
       </button>`;
@@ -65,7 +65,7 @@
 
     const groupImages = galleryData.images?.[currentGroup];
     if (!groupImages) {
-      Blog.renderState(galleryViewEl, '当前分组暂时没有图片。', '空');
+      Blog.renderState(galleryViewEl, Blog.t ? Blog.t('gallery.noGroupImages') : '当前分组暂时没有图片。', '空');
       return;
     }
 
@@ -77,14 +77,14 @@
     }
 
     if (!currentData) {
-      Blog.renderState(galleryViewEl, '目录路径不存在。');
+      Blog.renderState(galleryViewEl, Blog.t ? Blog.t('gallery.pathNotExist') : '目录路径不存在。');
       return;
     }
 
     let html = '';
     if (currentPath) {
       html += '<div class="gallery-breadcrumb">';
-      html += `<span class="breadcrumb-item" data-action="navigate-path" data-path="">${Blog.escapeHtml(group.icon || '图库')} ${Blog.escapeHtml(group.name)}</span>`;
+      html += `<span class="breadcrumb-item" data-action="navigate-path" data-path="">${Blog.escapeHtml(group.icon || (Blog.t ? Blog.t('gallery.title') : '图库'))} ${Blog.escapeHtml(group.name)}</span>`;
       let buildPath = '';
       for (let i = 0; i < pathParts.length; i += 1) {
         buildPath += `${i > 0 ? '/' : ''}${pathParts[i]}`;
@@ -109,7 +109,7 @@
           <span class="folder-icon">□</span>
           <div class="folder-info">
             <div class="folder-name">${Blog.escapeHtml(name)}</div>
-            <div class="folder-count">${count} 张图片</div>
+            <div class="folder-count">${Blog.t ? Blog.t('gallery.imageCount', { count }) : `${count} 张图片`}</div>
           </div>
         </button>`;
       }
@@ -135,10 +135,10 @@
       html += '</div>';
 
       if (displayedCount < images.length) {
-        html += `<button class="load-more" type="button" data-action="load-more">加载更多（剩余 ${images.length - displayedCount} 张）</button>`;
+        html += `<button class="load-more" type="button" data-action="load-more">${Blog.t ? Blog.t('gallery.loadMore', { count: images.length - displayedCount }) : `加载更多（剩余 ${images.length - displayedCount} 张）`}</button>`;
       }
     } else if (Object.keys(subfolders).length === 0) {
-      html += '<div class="empty-state"><div class="icon">空</div><p>这个目录下还没有图片。</p></div>';
+      html += `<div class="empty-state"><div class="icon">空</div><p>${Blog.t ? Blog.t('gallery.noImagesInDir') : '这个目录下还没有图片。'}</p></div>`;
     }
 
     galleryViewEl.innerHTML = html;
@@ -250,19 +250,19 @@
     needPathMap: false,
     task: async () => {
       try {
-        Blog.setPageTitle('图库');
+        Blog.setPageTitle(Blog.t ? Blog.t('gallery.title') : '图库');
         Blog.setNavSiteName();
 
         galleryData = Blog.config?.features?.gallery;
         if (!galleryData || !galleryData.enabled) {
-          Blog.renderState(galleryContentEl, '图库功能未启用。', '图库');
+          Blog.renderState(galleryContentEl, Blog.t ? Blog.t('gallery.notEnabled') : '图库功能未启用。', Blog.t ? Blog.t('gallery.title') : '图库');
           return;
         }
 
         renderGallery();
       } catch (error) {
         console.error('Failed to load gallery:', error);
-        Blog.renderState(galleryContentEl, '图库内容加载失败。');
+        Blog.renderState(galleryContentEl, Blog.t ? Blog.t('gallery.loadFailed') : '图库内容加载失败。');
       }
     }
   });

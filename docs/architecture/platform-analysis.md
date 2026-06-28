@@ -110,8 +110,8 @@ node build.js
 | 子路径部署 | 自动检测 | 手动 baseURL | 手动 baseurl | 手动 root | 手动 pathPrefix | 手动 base |
 | 内置内容类型 | 博客+瞬间+友链+图库 | 博客 | 博客 | 博客 | 博客 | 博客 |
 | Docker 支持 | 原生 | 需自建 | 需自建 | 需自建 | 需自建 | 需自建 |
-| 构建时渲染 | ❌ 客户端 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| CLI 工具 | ❌ 无 | ✅ hugo | ✅ jekyll | ✅ hexo | ✅ eleventy | ✅ astro |
+| 构建时渲染 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| CLI 工具 | ✅ blog.js | ✅ hugo | ✅ jekyll | ✅ hexo | ✅ eleventy | ✅ astro |
 
 ### 3.2 本项目的差异化优势
 
@@ -161,128 +161,59 @@ volumes:
 
 | 劣势 | 说明 |
 |------|------|
-| 构建时不渲染 Markdown | SEO 致命缺陷，搜索引擎看到的是 `加载中...` |
-| 无 CLI / npm 包 | 用户必须克隆仓库，无法 `npx create-blog` |
-| 中文硬编码 | UI 字符串全部中文，无法国际化 |
-| 无 RSS / sitemap | 博客平台标配缺失 |
-| 无暗色模式 | 2026 年用户标配预期 |
-| 字体加载未生效 | 主题引用了字体但 CSS 中未声明 @font-face / @import（策略已定义，见第 6 节） |
+| 字体文件未打包 | 主题支持 @font-face/@import 机制，但内置主题未附带 .woff2 字体文件，仍依赖外部 CDN 或系统回退 |
+| 无增量构建 | 每次全量清理重建，大型站点构建慢 |
+| 无 OG / Twitter Card | 社交分享无预览卡片 |
 
 ---
 
 ## 4. 差距清单（按优先级）
 
-### P0 — 致命缺陷（不做就不是产品）
+### 已完成
 
-#### 4.1 构建时 Markdown → HTML 渲染
+以下功能已在当前版本中实现：
 
-**现状**：build.js 只生成 JSON 索引，Markdown 在浏览器端通过 CDN 加载的 marked.js 渲染。
+| 功能 | 原优先级 | 实现方式 |
+|------|----------|----------|
+| 构建时 Markdown → HTML 渲染 | P0 | vendor marked.js，build.js 生成 .html |
+| package.json + CLI 入口 | P0 | `bin/blog.js` CLI |
+| 国际化（i18n） | P1 | `locales/` + `blog.i18n.js` + `data-i18n` + `Blog.t()`，中英双语 |
+| RSS / Atom Feed | P1 | `dist/feed.xml` |
+| sitemap.xml | P1 | `dist/sitemap.xml` |
+| 暗色模式 | P1 | 5 主题三态切换（自动/亮色/暗色） |
+| 字体加载机制 | P1 | `@font-face` / `@import` 支持，build.js 复制 `fonts/` |
+| Watch 热重载 | P2 | serve.js SSE + `fs.watch` |
+| 草稿系统 | P2 | `draft: true` + `--include-drafts` |
+| 文章间导航 | P2 | 上一篇/下一篇 |
+| 主题引擎 | — | 布局 token + theme.js + 模板覆盖 |
+| 评论集成 | P3 | Giscus，可选开启 |
+| 搜索索引 | P3 | Lunr.js 离线索引 |
+| 数学公式 | P3 | KaTeX 支持 |
+| 打印样式 | P3 | `@media print` 规则 |
+| 备案信息 | — | ICP + 公安备案，默认关闭 |
 
-**影响**：
-- Google 等搜索引擎无法索引文章内容
-- 首屏有 `加载中...` 闪烁
-- 断网时 CDN 加载失败导致页面不可用
-- 无 RSS feed（需要构建时 HTML）
+### P1 — 仍需改进
 
-**建议**：在 build.js 中引入 marked.js 作为构建时依赖，将每篇文章预渲染为 HTML 写入 dist/。保持客户端渲染作为 fallback，但默认使用构建时产物。
+#### 4.1 字体文件实际打包
 
-#### 4.2 package.json + CLI 入口
+**现状**：字体加载机制已就绪（`@font-face` / `@import`，build.js 复制 `fonts/`），但内置主题未附带 .woff2 字体文件。主题引用的 Inter、JetBrains Mono、Playfair Display、Orbitron、Caveat 等字体仍依赖外部 Google Fonts CDN 或系统回退。
 
-**现状**：无 package.json，用户必须克隆整个仓库。
+**建议**：为每个内置主题打包必要的 .woff2 字体文件到 `themes/*/fonts/`，确保离线可用。
 
-**影响**：
-- 无法 `npm install` 或 `npx` 使用
-- 无法版本管理
-- 无法发布到 npm
-- 无法声明 Node.js 版本要求
+### P2 — 开发体验
 
-**建议**：创建 package.json，暴露 `blog init`、`blog build`、`blog serve` CLI 命令。
-
-### P1 — 严重缺失（影响采用率）
-
-#### 4.3 国际化（i18n）
-
-**现状**：所有 UI 字符串硬编码在 HTML 模板和 JS 文件中：
-
-```html
-<!-- index.html:24 -->
-<span id="nav-site-name">加载中...</span>
-
-<!-- index.html:74 -->
-<p>正在加载内容...</p>
-```
-
-```javascript
-// blog.render.js:198
-html += '<button class="filter-btn active" data-category="all">全部</button>';
-
-// blog.ui.js:54
-btn.setAttribute('aria-label', '返回顶部');
-
-// blog.ui.js:98
-tocContainer.innerHTML = '<div class="toc-header"><span>目录</span>...'
-```
-
-**建议**：提取所有 UI 字符串到 `locales/` 文件，运行时根据配置或浏览器语言加载。至少支持中英双语。
-
-#### 4.4 RSS / Atom Feed
-
-**现状**：无 RSS 生成。
-
-**建议**：构建时生成 `feed.xml`，包含最近 N 篇文章的标题、链接、摘要、日期。
-
-#### 4.5 sitemap.xml
-
-**现状**：无 sitemap 生成。
-
-**建议**：构建时扫描所有页面和文章，生成 `sitemap.xml`。
-
-#### 4.6 暗色模式
-
-**现状**：base.css 默认暗色（`--bg-primary: #0b0d12`），但所有新主题（graphite/aurora/paper/mono/terminal）只有亮色模式。无 `prefers-color-scheme: dark` 媒体查询。
-
-**建议**：
-- 为每个内置主题添加暗色 token 集
-- 在导航栏添加明暗切换按钮
-- 跟随系统偏好作为默认值
-
-#### 4.7 Web 字体加载
-
-**现状**：主题 CSS 引用了 Inter、JetBrains Mono、Playfair Display、Orbitron、Caveat 等字体，但没有 `@font-face` 或 `@import` 声明。用户看到的是系统回退字体，主题效果大打折扣。
-
-**建议**：见第 6 节「字体加载策略」。
-
-### P2 — 中等缺失（开发体验）
-
-#### 4.8 Watch 热重载
-
-**现状**：serve.js 只提供静态文件服务，不监听文件变化。每次编辑需手动 `node build.js`。
-
-**建议**：serve.js 添加 `fs.watch` 监听 workspace 变化，自动重建。
-
-#### 4.9 草稿系统
-
-**现状**：front-matter 只支持 `title`、`date`、`tags`、`summary`，无 `draft` 字段。
-
-**建议**：支持 `draft: true`，构建时跳过草稿（可通过 `--include-drafts` 参数覆盖）。
-
-#### 4.10 文章间导航
-
-**现状**：文章详情页无上一篇/下一篇链接。
-
-**建议**：根据发布日期排序，在文章底部渲染前后导航。
+| 功能 | 说明 |
+|------|------|
+| 增量构建 | 当前每次全量清理重建，大型站点构建慢 |
+| source maps | 无 source maps，调试不便 |
 
 ### P3 — 锦上添花
 
 | 功能 | 说明 |
 |------|------|
 | Open Graph / Twitter Card | 社交分享时的预览卡片 |
-| 评论系统 | Giscus / Disqus 集成 |
 | 代码块复制按钮 | 一键复制代码 |
-| 搜索索引优化 | 当前是前端字符串匹配，可改为 Lunr.js 离线索引 |
-| 打印样式 | `@media print` 规则 |
 | reduced-motion | `@media (prefers-reduced-motion: reduce)` 无障碍支持 |
-| 数学公式 | KaTeX / MathJax 支持 |
 | 流程图 | Mermaid 支持 |
 | 多作者 | front-matter 支持 `author` 字段 |
 | 部署助手 | GitHub Pages / Vercel / Netlify 一键部署脚本 |
@@ -362,12 +293,9 @@ themes/
 
 | 缺陷 | 严重度 | 说明 |
 |------|--------|------|
-| 无暗色模式 | 高 | 所有新主题只有亮色 |
-| 字体不加载 | 高 | 引用的字体没有 @font-face |
+| 字体文件未打包 | 中 | 主题支持 @font-face/@import，但内置主题未附带 .woff2 字体文件 |
 | 无 transition 统一 | 中 | 各主题 timing 不一致，无共享 --transition-* token |
 | terminal 主题 !important 泛滥 | 中 | 30+ 处 !important，特异性冲突风险 |
-| 无打印样式 | 低 | 无 @media print |
-| 无 reduced-motion | 低 | 动画对前庭障碍用户不友好 |
 | legacy 主题仍在打包 | 低 | 11 个旧主题不使用 token 系统，维护负担 |
 
 ---
@@ -575,7 +503,6 @@ summary: 自定义摘要（可选，不填则自动截取正文）
 
 | 字段 | 用途 | 优先级 |
 |------|------|--------|
-| `draft: true` | 标记草稿，构建时跳过 | P2 |
 | `author` | 多作者支持 | P3 |
 | `cover` / `thumbnail` | 文章封面图 | P2 |
 | `slug` | 自定义 URL slug | P3 |
@@ -606,10 +533,8 @@ node serve.js 8080 /blog/  # 子路径预览
 
 | 痛点 | 说明 |
 |------|------|
-| 无 watch 模式 | 每次编辑需手动 build |
 | 无增量构建 | 每次全量清理重建 |
 | 无 source maps | 调试不便 |
-| 无 package.json | 无 scripts 快捷命令 |
 
 ---
 
@@ -656,36 +581,29 @@ services:
 
 ## 10. 演进路线图
 
-### 阶段一：产品化基础
+### 阶段一：字体打包
 
 | 任务 | 优先级 | 估工作量 | 说明 |
 |------|--------|----------|------|
-| 构建时 Markdown → HTML | P0 | 中 | 消除 SEO 致命缺陷 |
-| package.json + CLI | P0 | 中 | 让用户能 npm install 使用 |
-| RSS feed 生成 | P1 | 低 | build.js 中输出 feed.xml |
-| sitemap.xml | P1 | 低 | build.js 中输出 sitemap.xml |
+| 内置主题打包 .woff2 字体文件 | P1 | 中 | 确保离线可用，消除外部 CDN 依赖 |
 
-### 阶段二：体验补全
+### 阶段二：开发体验
 
 | 任务 | 优先级 | 估工作量 | 说明 |
 |------|--------|----------|------|
-| i18n 提取 | P1 | 中 | 至少中英双语 |
-| 字体加载机制 | P1 | 低 | 支持 @font-face + @import（见第 6 节） |
-| 暗色模式 | P1 | 高 | 每个主题需新增暗色 token 集 |
-| Watch 模式 | P2 | 低 | serve.js 加入 fs.watch |
-| 草稿系统 | P2 | 低 | front-matter 支持 draft: true |
-| 文章间导航 | P2 | 低 | 上一篇/下一篇 |
+| 增量构建 | P2 | 中 | 只重建变化的文件 |
+| source maps | P2 | 低 | 调试便利 |
 
 ### 阶段三：生态扩展
 
 | 任务 | 优先级 | 估工作量 | 说明 |
 |------|--------|----------|------|
 | OG / Twitter Card | P3 | 低 | 社交分享预览 |
-| 评论集成 | P3 | 中 | Giscus / Disqus |
-| 搜索优化 | P3 | 中 | Lunr.js 离线索引 |
-| 打印样式 | P3 | 低 | @media print |
-| 数学公式 | P3 | 低 | KaTeX 支持 |
+| 代码块复制按钮 | P3 | 低 | 一键复制代码 |
+| reduced-motion | P3 | 低 | 无障碍支持 |
 | 流程图 | P3 | 低 | Mermaid 支持 |
+| 多作者 | P3 | 低 | front-matter 支持 author 字段 |
+| 部署助手 | P3 | 低 | 一键部署脚本 |
 
 ---
 

@@ -123,7 +123,30 @@
       const resp = await fetch(Blog.resolveAsset('./search-index.json'));
       if (!resp.ok) return;
       const docs = await resp.json();
+
+      // CJK tokenizer: split Chinese/Japanese/Korean into individual characters
+      const cjkTokenizer = (str) => {
+        if (!str) return [];
+        const tokens = [];
+        let latin = '';
+        for (const char of str) {
+          if (char.charCodeAt(0) > 0x2E7F) {
+            if (latin) { tokens.push(latin.toLowerCase()); latin = ''; }
+            tokens.push(char);
+          } else if (/\s/.test(char)) {
+            if (latin) { tokens.push(latin.toLowerCase()); latin = ''; }
+          } else {
+            latin += char;
+          }
+        }
+        if (latin) tokens.push(latin.toLowerCase());
+        return tokens;
+      };
+
       lunrIndex = lunr(function () {
+        this.pipeline.reset();
+        this.pipeline.add(cjkTokenizer);
+        this.searchPipeline.add(cjkTokenizer);
         this.ref('id');
         this.field('title', { boost: 10 });
         this.field('tags', { boost: 5 });
@@ -165,7 +188,7 @@
 
     const safePage = Math.min(Math.max(1, page), totalPages);
     const buttons = [];
-    buttons.push(`<button class="page-btn" data-page="${safePage - 1}" ${safePage === 1 ? 'disabled' : ''}>上一页</button>`);
+    buttons.push(`<button class="page-btn" data-page="${safePage - 1}" ${safePage === 1 ? 'disabled' : ''}>${Blog.t ? Blog.t('ui.prevPage') : '上一页'}</button>`);
 
     const windowSize = 5;
     const start = Math.max(1, safePage - Math.floor(windowSize / 2));
@@ -174,9 +197,9 @@
     for (let i = normalizedStart; i <= end; i += 1) {
       buttons.push(`<button class="page-btn ${i === safePage ? 'active' : ''}" data-page="${i}">${i}</button>`);
     }
-    buttons.push(`<button class="page-btn" data-page="${safePage + 1}" ${safePage === totalPages ? 'disabled' : ''}>下一页</button>`);
+    buttons.push(`<button class="page-btn" data-page="${safePage + 1}" ${safePage === totalPages ? 'disabled' : ''}>${Blog.t ? Blog.t('ui.nextPage') : '下一页'}</button>`);
 
-    paginationEl.innerHTML = `<span class="page-info">第 ${safePage} / ${totalPages} 页，共 ${totalItems} 篇</span>${buttons.join('')}`;
+    paginationEl.innerHTML = `<span class="page-info">${Blog.t ? Blog.t('index.pagination', { current: safePage, total: totalPages, count: totalItems }) : `第 ${safePage} / ${totalPages} 页，共 ${totalItems} 篇`}</span>${buttons.join('')}`;
     paginationEl.style.display = 'flex';
   }
 
@@ -192,8 +215,8 @@
     if (postList.length === 0) {
       if (gridEl) {
         gridEl.innerHTML = currentSearch
-          ? '<div class="empty-state"><p>没有找到匹配的文章。</p></div>'
-          : '<div class="empty-state"><p>当前目录下还没有文章。</p></div>';
+          ? `<div class="empty-state"><p>${Blog.t ? Blog.t('index.noSearchResults') : '没有找到匹配的文章。'}</p></div>`
+          : `<div class="empty-state"><p>${Blog.t ? Blog.t('index.noPostsInDir') : '当前目录下还没有文章。'}</p></div>`;
       }
       renderPagination(0, 1);
       syncUrlState(1);
@@ -278,9 +301,9 @@
 
     let infoHtml = '';
     const siteName = site.alias ? `${site.name}（${site.alias}）` : site.name;
-    if (siteName) infoHtml += `<div class="info-item"><div class="label">站点名称</div><div class="value">${Blog.escapeHtml(siteName)}</div></div>`;
-    if (display.siteType) infoHtml += `<div class="info-item"><div class="label">站点类型</div><div class="value">${Blog.escapeHtml(display.siteType)}</div></div>`;
-    if (display.contentDirection) infoHtml += `<div class="info-item"><div class="label">内容方向</div><div class="value">${Blog.escapeHtml(display.contentDirection)}</div></div>`;
+    if (siteName) infoHtml += `<div class="info-item"><div class="label">${Blog.t ? Blog.t('index.siteName') : '站点名称'}</div><div class="value">${Blog.escapeHtml(siteName)}</div></div>`;
+    if (display.siteType) infoHtml += `<div class="info-item"><div class="label">${Blog.t ? Blog.t('index.siteType') : '站点类型'}</div><div class="value">${Blog.escapeHtml(display.siteType)}</div></div>`;
+    if (display.contentDirection) infoHtml += `<div class="info-item"><div class="label">${Blog.t ? Blog.t('index.contentDirection') : '内容方向'}</div><div class="value">${Blog.escapeHtml(display.contentDirection)}</div></div>`;
 
     siteInfoEl.innerHTML = infoHtml;
     if (contactBox && contactEmail) {

@@ -185,6 +185,28 @@ window.BlogUI = {
     this.setupProgressBar();
     this.setupDirTreePanel();
     this.setupThemeToggle();
+    this.setupCodeCopyButtons();
+  },
+
+  setupCodeCopyButtons() {
+    document.querySelectorAll('.markdown-body pre').forEach((pre) => {
+      if (pre.querySelector('.code-copy-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'code-copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+        try {
+          await navigator.clipboard.writeText(code.textContent);
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+        } catch (_) { btn.textContent = 'Failed'; }
+      });
+      pre.style.position = 'relative';
+      pre.appendChild(btn);
+    });
   },
 
   /* ── Theme Toggle (panel: auto switch + manual light/dark) */

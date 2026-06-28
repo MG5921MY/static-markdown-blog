@@ -825,6 +825,72 @@ function copyVendorToDist() {
   }
 }
 
+function generateSSGPages(siteConfig, contentIndex, pathMap) {
+  const templatePath = path.join(ROOT, 'post.html');
+  if (!fs.existsSync(templatePath)) return 0;
+  const template = readText(templatePath);
+  const siteName = escapeHtml(siteConfig.site?.name || 'Blog');
+  const siteDescription = escapeHtml(siteConfig.site?.description || '');
+  let count = 0;
+
+  for (const [id, mapping] of Object.entries(pathMap || {})) {
+    const htmlPath = path.join(DIST_DIR, mapping.outputPath);
+    if (!fs.existsSync(htmlPath)) continue;
+
+    const category = contentIndex.categories?.[mapping.category];
+    const postInfo = (category?.posts || []).find((p) => p.id === id);
+    if (!postInfo) continue;
+
+    const contentHtml = readText(htmlPath);
+    const postTitle = escapeHtml(postInfo.title || 'Untitled');
+    const postSummary = escapeHtml(postInfo.summary || '');
+    const postDate = postInfo.date || '';
+    const postTags = (postInfo.tags || []).map(escapeHtml).join(', ');
+    const postUrl = `/${mapping.outputPath}`;
+
+    // Inject metadata into template
+    let page = template
+      .replace(/<title>.*?<\/title>/, `<title>${postTitle} | ${siteName}</title>`)
+      .replace(/content=""/, `content="${postSummary}"`)
+      .replace(/property="og:title" content=""/, `property="og:title" content="${postTitle}"`)
+      .replace(/property="og:description" content=""/, `property="og:description" content="${postSummary}"`)
+      .replace(/property="og:url" content=""/, `property="og:url" content="${postUrl}"`)
+      .replace(/property="og:site_name" content=""/, `property="og:site_name" content="${siteName}"`)
+      .replace(/name="twitter:title" content=""/, `name="twitter:title" content="${postTitle}"`)
+      .replace(/name="twitter:description" content=""/, `name="twitter:description" content="${postSummary}"`);
+
+    // Embed post data as JSON for client-side hydration
+    const postData = JSON.stringify({
+      id, title: postInfo.title, date: postDate, tags: postInfo.tags || [],
+      category: mapping.category, categoryName: category?.name || mapping.category,
+      categoryIcon: category?.icon || '', summary: postSummary,
+      content: contentHtml, rendered: true
+    });
+
+    // Insert noscript fallback + JSON data before closing </body>
+    const ssgBlock = [
+      '<noscript>',
+      `<article class="post-article"><header class="post-header">`,
+      `<h1 class="post-title">${postTitle}</h1>`,
+      `<div class="post-meta"><span>${postDate}</span></div>`,
+      `</header><div class="post-body markdown-body">${contentHtml}</div></article>`,
+      '</noscript>',
+      `<script type="application/json" id="ssg-post-data">${postData}</script>`
+    ].join('\n');
+
+    page = page.replace('</body>', `${ssgBlock}\n</body>`);
+
+    // Write as index.html for clean URLs (posts/guide/getting-started/index.html)
+    const slug = path.basename(htmlPath, '.html');
+    const postDir = path.join(path.dirname(htmlPath), slug);
+    fs.mkdirSync(postDir, { recursive: true });
+    writeText(path.join(postDir, 'index.html'), page);
+    count++;
+  }
+
+  return count;
+}
+
 function main() {
   const configInput = resolveConfigInput();
   const normalized = normalizeConfig(configInput);
@@ -842,6 +908,7 @@ function main() {
   const sitemapCount = generateSitemap(siteConfig, contentIndex, pathMap);
   const searchCount = generateSearchIndex(siteConfig, contentIndex, pathMap);
   copyVendorToDist();
+  const ssgCount = generateSSGPages(siteConfig, contentIndex, pathMap);
 
   console.log('');
   console.log('Build completed');
@@ -854,6 +921,7 @@ function main() {
   console.log(`  RSS: ${rssCount} items`);
   console.log(`  Sitemap: ${sitemapCount} urls`);
   console.log(`  Search: ${searchCount} docs`);
+  console.log(`  SSG: ${ssgCount} pages`);
   console.log(`  Output: ${path.relative(ROOT, DIST_DIR)}`);
   console.log('');
 }

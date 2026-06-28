@@ -176,6 +176,7 @@ themes/<theme-id>/
 - `aurora`：更偏品牌展示
 - `paper`：阅读优先
 - `mono`：黑白极简
+- `terminal`：CRT 风格，霓虹绿
 
 工作区自定义主题放在：
 

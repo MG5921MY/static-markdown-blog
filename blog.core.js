@@ -293,6 +293,15 @@ window.BlogCore = {
   },
 
   async loadPostContent(postId) {
+    // SSG hydration: check for embedded post data
+    const ssgEl = document.getElementById('ssg-post-data');
+    if (ssgEl) {
+      try {
+        const ssgData = JSON.parse(ssgEl.textContent);
+        if (ssgData.id === postId) return ssgData;
+      } catch (_) { /* fall through to fetch */ }
+    }
+
     await Promise.all([this.ensureIndexLoaded(), this.ensurePathMapLoaded()]);
     const mapping = this.getPostPath(postId);
     if (!mapping) throw new Error('Post not found');
@@ -438,13 +447,13 @@ window.BlogCore = {
 
   async loadMarkdownDeps() {
     await Promise.all([
-      this.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js'),
-      this.loadCDN('https://cdn.jsdelivr.net/npm/marked@12/marked.min.js')
+      this.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js'),
+      this.loadCDN('https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js')
     ]);
   },
 
   async loadHighlightDeps() {
-    await this.loadCDN('https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js');
+    await this.loadCDN('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/lib/common.min.js');
     return true;
   },
 
@@ -585,6 +594,24 @@ window.BlogCore = {
       });
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     }
-    // Other providers can be added here
+
+    // Cusdis example (self-hosted, no GitHub required)
+    // Uncomment and configure in blog.config.yml:
+    // comments:
+    //   enabled: true
+    //   provider: cusdis
+    //   cusdis:
+    //     host: "https://cusdis.example.com"
+    //     appId: "your-app-id"
+    //
+    // if (provider === 'cusdis') {
+    //   const c = comments.cusdis || {};
+    //   if (!c.host || !c.appId) return;
+    //   const iframe = document.createElement('iframe');
+    //   iframe.src = `${c.host}/iframe?appId=${c.appId}&pageUrl=${encodeURIComponent(location.href)}&pageTitle=${encodeURIComponent(document.title)}`;
+    //   iframe.style.cssText = 'width:100%;border:none;min-height:300px;';
+    //   container.style.display = 'block';
+    //   container.appendChild(iframe);
+    // }
   }
 };
