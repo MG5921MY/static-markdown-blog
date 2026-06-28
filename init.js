@@ -3,7 +3,9 @@ const path = require('path');
 const readline = require('readline');
 
 const ROOT = process.cwd();
-const SOURCE_DIR = path.join(ROOT, 'examples', 'starter-modern', 'site');
+const STARTER_DIR = path.join(ROOT, 'examples', 'starter-modern', 'site');
+const ROOT_CONTENT = path.join(ROOT, 'content');
+const ROOT_ASSETS = path.join(ROOT, 'assets');
 const TARGET_DIR = path.join(ROOT, 'workspace', 'site');
 
 function exists(targetPath) {
@@ -69,16 +71,18 @@ async function main() {
   console.log('');
   console.log('Static blog workspace initializer');
   console.log('');
-  console.log(`Source : ${path.relative(ROOT, SOURCE_DIR)}`);
-  console.log(`Target : ${path.relative(ROOT, TARGET_DIR)}`);
+  console.log(`Starter : ${path.relative(ROOT, STARTER_DIR)}`);
+  console.log(`Content : ${path.relative(ROOT, ROOT_CONTENT)}`);
+  console.log(`Assets  : ${path.relative(ROOT, ROOT_ASSETS)}`);
+  console.log(`Target  : ${path.relative(ROOT, TARGET_DIR)}`);
   console.log('');
 
-  if (!exists(SOURCE_DIR)) {
-    throw new Error(`Starter site not found: ${SOURCE_DIR}`);
+  if (!exists(STARTER_DIR)) {
+    throw new Error(`Starter site not found: ${STARTER_DIR}`);
   }
 
   const prompt = createPrompt();
-  const start = await ask(prompt, 'Initialize workspace/site from the modern starter? [Y/n]: ');
+  const start = await ask(prompt, 'Initialize workspace/site from the starter? [Y/n]: ');
   if (start === 'n' || start === 'no') {
     prompt.close();
     console.log('\nInitialization cancelled.');
@@ -96,7 +100,13 @@ async function main() {
   }
 
   ensureDir(TARGET_DIR);
-  copyRecursive(SOURCE_DIR, TARGET_DIR);
+
+  // Copy starter (config + custom themes)
+  copyRecursive(STARTER_DIR, TARGET_DIR);
+
+  // Copy repo baseline content and assets
+  if (exists(ROOT_CONTENT)) copyRecursive(ROOT_CONTENT, path.join(TARGET_DIR, 'content'));
+  if (exists(ROOT_ASSETS)) copyRecursive(ROOT_ASSETS, path.join(TARGET_DIR, 'assets'));
 
   prompt.close();
 
