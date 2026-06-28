@@ -1,9 +1,5 @@
 {
   "loading": "Loading...",
-  "nav": {
-    "home": "Home",
-    "openMenu": "Open menu"
-  },
   "hero": {
     "learnMore": "Learn More",
     "viewDisclaimer": "View Disclaimer",
@@ -27,13 +23,8 @@
     "contentDirection": "Content Direction",
     "contactEmail": "Contact Email",
     "pagination": "Page {current} / {total}, {count} posts total",
-    "prevPage": "Previous",
-    "nextPage": "Next",
     "noSearchResults": "No matching articles found.",
-    "noPostsInDir": "No posts in this directory yet.",
-    "myBlog": "My Blog",
-    "blog": "Blog",
-    "personalBlog": "Personal Blog"
+    "noPostsInDir": "No posts in this directory yet."
   },
   "post": {
     "loading": "Loading article...",
@@ -47,10 +38,7 @@
     "notFound": "Page Not Found",
     "notFoundDetail": "The page you're looking for doesn't exist.",
     "backHome": "Back to Home",
-    "missingParam": "Missing page parameter.",
-    "notExist": "Page does not exist.",
-    "categoryNotExist": "Category does not exist.",
-    "noCategoryPosts": "No posts in this category yet."
+    "missingParam": "Missing page parameter."
   },
   "ui": {
     "backToTop": "Back to Top",
@@ -58,8 +46,6 @@
     "toc": "Table of Contents",
     "collapse": "Collapse",
     "expand": "Expand",
-    "continueReading": "Continue Reading",
-    "readMore": "Read More",
     "backToParent": "Back",
     "rootDir": "Root",
     "showDirTree": "Show Directory Tree",
@@ -70,8 +56,7 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "prevPost": "Previous",
-    "nextPost": "Next",
-    "comments": "Comments"
+    "nextPost": "Next"
   },
   "gallery": {
     "title": "Gallery",
@@ -79,7 +64,6 @@
     "visualAssets": "Visual Assets",
     "galleryCopy": "This gallery reads directories declared in `content/data/gallery.yml` and uses unified tokens and interaction styles.",
     "loading": "Loading gallery...",
-    "noImages": "No images",
     "noGroups": "No gallery groups available.",
     "noGroupImages": "No images in this group yet.",
     "pathNotExist": "Directory path does not exist.",
@@ -95,7 +79,6 @@
   },
   "moments": {
     "title": "Moments",
-    "description": "Short notes, thoughts, and build process snippets.",
     "subtitle": "Capturing the judgments, rhythms, and reflections from the refactoring process as short records to revisit.",
     "loading": "Loading moments...",
     "notEnabled": "Moments feature is not enabled.",
@@ -104,7 +87,6 @@
   },
   "links": {
     "title": "References & Collections",
-    "description": "Long-term reference sites, reading entry points, and development tools.",
     "subtitle": "Preserving design leads, reading entry points, and tool resources worth keeping as part of the repository.",
     "loading": "Loading resources...",
     "notEnabled": "References page is not enabled.",
@@ -116,7 +98,6 @@
   "disclaimer": {
     "title": "Disclaimer",
     "subtitle": "This page clarifies content nature, risk boundaries, and citation principles to avoid misinterpreting personal notes as professional commitments.",
-    "loading": "Loading disclaimer...",
     "item1Title": "Content Nature",
     "item1Desc": "Content on this site is primarily for personal learning notes, design organization, and engineering experience archiving, and may have limitations in timeliness or simplified expressions.",
     "item2Title": "Not Professional Advice",
@@ -136,10 +117,6 @@
     "searchPlaceholder": "Search article titles or tags",
     "backHome": "Back to Home",
     "aboutSite": "About This Site",
-    "recommendedReading": "Recommended Reading",
-    "notFound": "The page you're looking for doesn't exist."
-  },
-  "about": {
-    "redirecting": "Redirecting to about page..."
+    "recommendedReading": "Recommended Reading"
   }
 }

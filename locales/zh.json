@@ -1,9 +1,5 @@
 {
   "loading": "加载中...",
-  "nav": {
-    "home": "首页",
-    "openMenu": "打开菜单"
-  },
   "hero": {
     "learnMore": "了解项目",
     "viewDisclaimer": "查看说明",
@@ -27,13 +23,8 @@
     "contentDirection": "内容方向",
     "contactEmail": "联系邮箱",
     "pagination": "第 {current} / {total} 页，共 {count} 篇",
-    "prevPage": "上一页",
-    "nextPage": "下一页",
     "noSearchResults": "没有找到匹配的文章。",
-    "noPostsInDir": "当前目录下还没有文章。",
-    "myBlog": "我的博客",
-    "blog": "博客",
-    "personalBlog": "个人博客"
+    "noPostsInDir": "当前目录下还没有文章。"
   },
   "post": {
     "loading": "正在加载文章...",
@@ -47,10 +38,7 @@
     "notFound": "页面未找到",
     "notFoundDetail": "你访问的页面不存在。",
     "backHome": "返回首页",
-    "missingParam": "缺少页面参数。",
-    "notExist": "页面不存在。",
-    "categoryNotExist": "分类不存在。",
-    "noCategoryPosts": "当前分类下暂无文章。"
+    "missingParam": "缺少页面参数。"
   },
   "ui": {
     "backToTop": "返回顶部",
@@ -58,8 +46,6 @@
     "toc": "目录",
     "collapse": "收起",
     "expand": "展开",
-    "continueReading": "继续阅读",
-    "readMore": "阅读全文",
     "backToParent": "返回上一级",
     "rootDir": "根目录",
     "showDirTree": "显示目录树",
@@ -70,8 +56,7 @@
     "themeLight": "亮色",
     "themeDark": "暗色",
     "prevPost": "上一篇",
-    "nextPost": "下一篇",
-    "comments": "评论"
+    "nextPost": "下一篇"
   },
   "gallery": {
     "title": "图库",
@@ -79,7 +64,6 @@
     "visualAssets": "视觉资产",
     "galleryCopy": "当前图集读取 `content/data/gallery.yml` 中声明的目录，并沿用统一 token 与交互样式。",
     "loading": "正在加载图库...",
-    "noImages": "暂无图片",
     "noGroups": "暂无图集分组。",
     "noGroupImages": "当前分组暂时没有图片。",
     "pathNotExist": "目录路径不存在。",
@@ -95,7 +79,6 @@
   },
   "moments": {
     "title": "瞬间",
-    "description": "短记录、想法与构建过程片段。",
     "subtitle": "把重构过程中的判断、节奏和小结，留成可以回看的短记录。",
     "loading": "正在加载瞬间...",
     "notEnabled": "瞬间功能未启用。",
@@ -104,7 +87,6 @@
   },
   "links": {
     "title": "参考与收藏",
-    "description": "长期保留的参考站点、阅读入口和开发工具。",
     "subtitle": "把值得长期保留的设计线索、阅读入口和工具资源，沉淀成仓库的一部分。",
     "loading": "正在加载资源...",
     "notEnabled": "参考页功能尚未启用。",
@@ -116,7 +98,6 @@
   "disclaimer": {
     "title": "免责声明",
     "subtitle": "这里用来明确内容性质、风险边界和引用原则，避免把个人记录误读成专业承诺。",
-    "loading": "正在加载免责声明...",
     "item1Title": "内容性质",
     "item1Desc": "本站内容主要用于个人学习记录、设计整理和工程经验归档，可能存在时效性限制或表达上的局部简化。",
     "item2Title": "不构成专业建议",
@@ -136,10 +117,6 @@
     "searchPlaceholder": "搜索文章标题或标签",
     "backHome": "返回首页",
     "aboutSite": "关于本站",
-    "recommendedReading": "推荐阅读",
-    "notFound": "你访问的页面不存在。"
-  },
-  "about": {
-    "redirecting": "正在跳转到关于页面..."
+    "recommendedReading": "推荐阅读"
   }
 }

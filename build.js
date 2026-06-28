@@ -11,9 +11,6 @@ const MANIFEST_PATH = path.join(DIST_DIR, '.build-manifest.json');
 const WORKSPACE_SITE_DIR = path.join(ROOT, 'workspace', 'site');
 const WORKSPACE_CONFIG_PATH = path.join(WORKSPACE_SITE_DIR, 'config', 'blog.config.yml');
 const ROOT_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
-const LEGACY_SITE_DIR = path.join(ROOT, 'legacy', 'site');
-const LEGACY_SITE_CONFIG_PATH = path.join(LEGACY_SITE_DIR, 'conf', 'config.yml');
-const ROOT_LEGACY_CONFIG_PATH = path.join(ROOT, 'conf', 'config.yml');
 const BUILTIN_THEMES_DIR = path.join(ROOT, 'themes');
 const STATIC_FILES = [
   'index.html',
@@ -270,21 +267,10 @@ function renderMarkdownToHtml(body) {
   return marked(body, { gfm: true, breaks: true });
 }
 
-function resolveFirstExisting(paths) {
-  for (const target of paths) {
-    if (target && fs.existsSync(target)) return target;
-  }
-  return null;
-}
-
 function normalizePageRecords(pageRecords) {
   if (Array.isArray(pageRecords)) return pageRecords;
   if (pageRecords && typeof pageRecords === 'object') return Object.values(pageRecords);
   return [];
-}
-
-function getLegacyMode() {
-  return process.env.BLOG_ENABLE_LEGACY === '1';
 }
 
 function resolveConfigInput() {
@@ -306,37 +292,7 @@ function resolveConfigInput() {
     };
   }
 
-  if (getLegacyMode()) {
-    const legacyConfigPath = resolveFirstExisting([LEGACY_SITE_CONFIG_PATH, ROOT_LEGACY_CONFIG_PATH]);
-    if (legacyConfigPath) {
-      const legacySiteRoot = legacyConfigPath === LEGACY_SITE_CONFIG_PATH ? LEGACY_SITE_DIR : ROOT;
-      return {
-        mode: 'legacy',
-        siteRoot: legacySiteRoot,
-        filePath: legacyConfigPath,
-        raw: parseYaml(readText(legacyConfigPath))
-      };
-    }
-  }
-
   throw new Error('No config found. Expected workspace/site/config/blog.config.yml or config/blog.config.yml');
-}
-
-function mapLegacyTheme(themeId) {
-  const map = {
-    default: 'graphite',
-    'dark-pro': 'graphite',
-    vercel: 'mono',
-    stripe: 'aurora',
-    notion: 'paper',
-    medium: 'paper',
-    minimal: 'mono',
-    github: 'mono',
-    retro: 'mono',
-    acid: 'graphite',
-    glass: 'aurora'
-  };
-  return map[themeId] || 'graphite';
 }
 
 function scanThemeDirectory(baseDir, pathPrefix) {
@@ -371,36 +327,16 @@ function scanAvailableThemes() {
 }
 
 function normalizeConfig(input) {
-  const { mode, raw, siteRoot } = input;
-  if (mode !== 'legacy') {
-    const categories = raw.content?.categories || [];
-    const pages = normalizePageRecords(raw.content?.pages || []);
-    return {
-      mode,
-      siteRoot,
-      site: raw.site || {},
-      deployment: raw.deployment || { basePath: 'auto' },
-      theme: raw.theme || {},
-      categories,
-      pages,
-      nav: raw.nav || [],
-      features: raw.features || {},
-      display: raw.display || {},
-      beian: raw.beian || { enabled: false },
-      comments: raw.comments || { enabled: false }
-    };
-  }
-
+  const { raw, siteRoot } = input;
+  const categories = raw.content?.categories || [];
+  const pages = normalizePageRecords(raw.content?.pages || []);
   return {
-    mode,
     siteRoot,
     site: raw.site || {},
-    deployment: { basePath: 'auto' },
-    theme: {
-      active: mapLegacyTheme(raw.theme?.active || 'default')
-    },
-    categories: raw.categories || [],
-    pages: normalizePageRecords(raw.pages || []),
+    deployment: raw.deployment || { basePath: 'auto' },
+    theme: raw.theme || {},
+    categories,
+    pages,
     nav: raw.nav || [],
     features: raw.features || {},
     display: raw.display || {},
