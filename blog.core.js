@@ -30,6 +30,7 @@ window.BlogCore = {
       this.renderBeian();
       this.setFavicon();
       this.setNavLogo();
+      this.onInit();
       return true;
     } catch (error) {
       console.error('Blog init failed:', error);
@@ -134,6 +135,41 @@ window.BlogCore = {
     document.body.dataset.theme = themeName;
     document.body.classList.add('theme-loaded');
     this.themeLoaded = true;
+
+    const themeJsPath = themeMeta?.path
+      ? `${themeMeta.path}/theme.js`
+      : `themes/${themeName}/theme.js`;
+
+    try {
+      const response = await fetch(this.resolveAsset(themeJsPath));
+      if (response.ok) {
+        const jsCode = await response.text();
+        const script = document.createElement('script');
+        script.textContent = jsCode;
+        script.setAttribute('data-theme-script', themeName);
+        document.head.appendChild(script);
+      }
+    } catch (_) {}
+
+    // Load theme template partials
+    const themeBase = themeMeta?.path || `themes/${themeName}`;
+    await this.applyThemeTemplates(themeBase);
+  },
+
+  async applyThemeTemplates(themeBase) {
+    const templateNames = ['hero', 'footer', 'post-card'];
+    for (const name of templateNames) {
+      const target = document.querySelector(`[data-template="${name}"]`);
+      if (!target) continue;
+      try {
+        const url = this.resolveAsset(`${themeBase}/templates/${name}.html`);
+        const response = await fetch(url);
+        if (response.ok) {
+          const html = await response.text();
+          if (html.trim()) target.innerHTML = html;
+        }
+      } catch (_) { /* template not found, use default */ }
+    }
   },
 
   setFavicon() {
@@ -433,6 +469,7 @@ window.BlogCore = {
       this.renderNavLinks();
       this.setupCommonFeatures();
       if (typeof task === 'function') await task();
+      this.onPageLoad();
       return true;
     } catch (error) {
       console.error('Page bootstrap failed:', error);

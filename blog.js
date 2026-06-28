@@ -4,7 +4,10 @@ const Blog = {
   pathMap: null,
   posts: [],
   themeLoaded: false,
-  _cdnLoaded: {}
+  _cdnLoaded: {},
+  onInit() {},
+  onPageLoad() {},
+  onThemeChange(newThemeId) {}
 };
 
 if (!window.BlogCore || !window.BlogRender || !window.BlogUI) {

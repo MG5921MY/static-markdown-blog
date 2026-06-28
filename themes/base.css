@@ -1,4 +1,5 @@
 :root {
+  /* ── Colors ─────────────────────────────────────────── */
   --bg-primary: #0b0d12;
   --bg-secondary: #11141b;
   --bg-elevated: #161b24;
@@ -12,25 +13,52 @@
   --brand-start: #6f7cff;
   --brand-end: #8c95ff;
   --brand-shadow: rgba(111, 124, 255, 0.18);
+
+  /* ── Shadows ────────────────────────────────────────── */
   --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.12);
   --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.18);
   --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.24);
+
+  /* ── Radius ─────────────────────────────────────────── */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 18px;
+
+  /* ── Spacing ────────────────────────────────────────── */
   --space-xs: 6px;
   --space-sm: 12px;
   --space-md: 20px;
   --space-lg: 32px;
   --space-xl: 56px;
+
+  /* ── Typography ─────────────────────────────────────── */
   --font-display: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: Consolas, "SFMono-Regular", "JetBrains Mono", monospace;
+
+  /* ── Layout ─────────────────────────────────────────── */
   --layout-width: 1120px;
   --layout-nav-height: 64px;
   --layout-hero: 64vh;
   --layout-prose: 760px;
+
+  /* ── Layout Extended (Phase 1: Theme Engine) ──────── */
+  --layout-sidebar-width: 0px;
+  --layout-sidebar-position: right;
+  --card-columns: auto;
+  --card-min-width: 280px;
+  --card-gap: var(--space-md);
+  --card-direction: column;
+  --card-padding: var(--space-md);
+  --card-radius: 0;
+  --hero-align: center;
+  --hero-min-height: min(var(--layout-hero), 720px);
+  --post-article-width: 880px;
+  --post-article-padding: clamp(20px, 4vw, 42px);
+  --nav-justify: space-between;
+
+  /* ── Code Blocks ────────────────────────────────────── */
   --code-bg: #121722;
   --code-border: rgba(255, 255, 255, 0.08);
   --code-text: #eaf1ff;
@@ -118,7 +146,7 @@ button {
   z-index: 40;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: var(--nav-justify);
   gap: var(--space-md);
   min-height: var(--layout-nav-height);
   padding: 0 clamp(16px, 4vw, 40px);
@@ -241,8 +269,9 @@ img.nav-logo {
   position: relative;
   display: grid;
   align-content: center;
+  justify-items: var(--hero-align);
   gap: 18px;
-  min-height: min(var(--layout-hero), 720px);
+  min-height: var(--hero-min-height);
   padding: 48px 0 24px;
 }
 
@@ -265,6 +294,7 @@ img.nav-logo {
   display: grid;
   gap: 18px;
   width: min(100%, 760px);
+  text-align: var(--hero-align);
 }
 
 .hero-rule {
@@ -479,7 +509,7 @@ img.nav-logo {
 }
 
 .home-layout:not(.is-immersive-home) .home-hero {
-  min-height: min(var(--layout-hero), 720px);
+  min-height: var(--hero-min-height);
 }
 
 .home-site-section .section-surface {
@@ -657,6 +687,13 @@ img.nav-logo {
   gap: 18px;
 }
 
+/* Posts grid: responsive by default, themes can override grid-template-columns */
+.posts-grid {
+  --_card-min: var(--card-min-width, 280px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--_card-min)), 1fr));
+  gap: var(--card-gap);
+}
+
 .post-card,
 .link-card,
 .moment-card,
@@ -681,12 +718,13 @@ img.nav-logo {
 .folder-card,
 .info-item,
 .links-group {
-  padding: 20px;
+  padding: var(--card-padding);
 }
 
 .post-card {
   min-height: 100%;
-  display: grid;
+  display: flex;
+  flex-direction: var(--card-direction);
   gap: 12px;
   align-content: start;
   transition: border-color 0.18s ease, background-color 0.18s ease;
@@ -845,9 +883,9 @@ img.nav-logo {
 }
 
 .post-article {
-  padding: clamp(20px, 4vw, 42px);
+  padding: var(--post-article-padding);
   margin: 24px auto 48px;
-  width: min(100%, 880px);
+  width: min(100%, var(--post-article-width));
 }
 
 .post-header {

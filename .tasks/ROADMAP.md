@@ -23,6 +23,12 @@
 - ✅ 文章间导航（上一篇/下一篇，pathMap 含 prev/next）
 - ✅ i18n 模板集成（核心 UI 字符串已用 BlogI18n.t()）
 
+### P2.5 — 主题引擎（✅ 已完成）
+- ✅ Phase 1: 布局 token（--card-columns, --card-direction, --hero-align, --post-article-width, --nav-justify, --layout-sidebar-width 等）
+- ✅ Phase 2: 选择器文档化（docs/architecture/theme-engine-reference.md）
+- ✅ Phase 3: theme.js 支持（生命周期钩子：onInit/onPageLoad/onThemeChange）
+- ✅ Phase 4: 模板覆盖（data-template 属性 + templates/ 目录）
+
 ## 剩余工作
 
 ### P3 — 锦上添花
