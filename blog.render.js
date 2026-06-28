@@ -37,14 +37,75 @@ window.BlogRender = {
     }
 
     if (typeof DOMPurify !== 'undefined') {
+      // Extract math expressions before sanitization
+      const mathBlocks = [];
+      html = html.replace(/\$\$([\s\S]+?)\$\$/g, (match, tex) => {
+        mathBlocks.push({ tex: tex.trim(), display: true });
+        return `<span data-math-block="${mathBlocks.length - 1}"></span>`;
+      });
+      html = html.replace(/\$([^\$\n]+?)\$/g, (match, tex) => {
+        mathBlocks.push({ tex: tex.trim(), display: false });
+        return `<span data-math-inline="${mathBlocks.length - 1}"></span>`;
+      });
+
       html = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'em', 'strong', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
-        ALLOW_DATA_ATTR: false
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'data-math-block', 'data-math-inline'],
+        ALLOW_DATA_ATTR: true
       });
+
+      // Store math blocks for async rendering
+      if (mathBlocks.length > 0) {
+        this._pendingMath = this._pendingMath || [];
+        this._pendingMath.push(...mathBlocks);
+        this._scheduleMathRender();
+      }
     }
 
     return html;
+  },
+
+  _scheduleMathRender() {
+    if (this._mathScheduled) return;
+    this._mathScheduled = true;
+    setTimeout(() => this._renderMath(), 50);
+  },
+
+  async _renderMath() {
+    this._mathScheduled = false;
+    const blocks = document.querySelectorAll('[data-math-block]');
+    const inlines = document.querySelectorAll('[data-math-inline]');
+    if (blocks.length === 0 && inlines.length === 0) return;
+
+    if (typeof katex === 'undefined') {
+      try {
+        // Load KaTeX CSS
+        if (!document.querySelector('link[href*="katex"]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = Blog.resolveAsset('./vendor/katex.min.css');
+          document.head.appendChild(link);
+        }
+        await Blog.loadScript('./vendor/katex.min.js');
+      } catch (_) { return; }
+    }
+
+    blocks.forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-math-block'), 10);
+      const item = this._pendingMath?.[idx];
+      if (item) {
+        try { katex.render(item.tex, el, { displayMode: true, throwOnError: false }); }
+        catch (_) { el.textContent = item.tex; }
+      }
+    });
+    inlines.forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-math-inline'), 10);
+      const item = this._pendingMath?.[idx];
+      if (item) {
+        try { katex.render(item.tex, el, { displayMode: false, throwOnError: false }); }
+        catch (_) { el.textContent = item.tex; }
+      }
+    });
   },
 
   renderPostCard(post) {

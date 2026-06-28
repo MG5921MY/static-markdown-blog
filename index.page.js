@@ -112,9 +112,40 @@
     }));
   }
 
+  let lunrIndex = null;
+  let lunrReady = false;
+
+  async function ensureLunr() {
+    if (lunrReady) return;
+    lunrReady = true;
+    try {
+      await Blog.loadScript('./vendor/lunr.min.js');
+      const resp = await fetch(Blog.resolveAsset('./search-index.json'));
+      if (!resp.ok) return;
+      const docs = await resp.json();
+      lunrIndex = lunr(function () {
+        this.ref('id');
+        this.field('title', { boost: 10 });
+        this.field('tags', { boost: 5 });
+        this.field('summary', { boost: 3 });
+        this.field('category', { boost: 2 });
+        for (const doc of docs) this.add(doc);
+      });
+    } catch (_) { /* lunr not available, fall back to simple search */ }
+  }
+
   function filterPosts(postList, query) {
     if (!query) return postList;
     const lower = query.toLowerCase();
+
+    if (lunrIndex) {
+      try {
+        const results = lunrIndex.search(query + '*');
+        const refSet = new Set(results.map((r) => r.ref));
+        return postList.filter((post) => refSet.has(post.id));
+      } catch (_) { /* fall through to simple search */ }
+    }
+
     return postList.filter((post) =>
       (post.title || '').toLowerCase().includes(lower) ||
       (post.summary || '').toLowerCase().includes(lower) ||
@@ -287,8 +318,9 @@
     if (searchInput) {
       searchInput.addEventListener('input', (event) => {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
+        searchTimeout = setTimeout(async () => {
           currentSearch = event.target.value.trim();
+          if (currentSearch) await ensureLunr();
           updateDisplay(currentCategory, currentPath, 1);
         }, 180);
       });

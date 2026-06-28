@@ -70,7 +70,8 @@
     "themeLight": "亮色",
     "themeDark": "暗色",
     "prevPost": "上一篇",
-    "nextPost": "下一篇"
+    "nextPost": "下一篇",
+    "comments": "评论"
   },
   "gallery": {
     "title": "图库",

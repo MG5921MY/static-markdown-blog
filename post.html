@@ -53,6 +53,8 @@
         </nav>
       </article>
 
+      <div id="comments" class="comments-section" style="display: none;"></div>
+
       <div id="post-error" class="error-state" style="display: none; padding: 100px 0;">
         <h2 data-i18n="post.notFound">文章未找到</h2>
         <p id="error-detail" data-i18n="post.notFoundDetail">你访问的文章不存在，或者已经被移动。</p>
@@ -135,6 +137,9 @@
             }
             navEl.style.display = 'flex';
           }
+
+          // Comments
+          Blog.loadComments();
 
           loadingEl.style.display = 'none';
           contentEl.style.display = 'block';

@@ -63,6 +63,31 @@ features:
     enabled: true
     source: content/data/gallery.yml
 
+beian:
+  enabled: false
+  displayName: ""
+  icp:
+    enabled: false
+    number: ""
+    url: "https://beian.miit.gov.cn/"
+  police:
+    enabled: false
+    number: ""
+    url: ""
+    statusText: ""
+
+comments:
+  enabled: false
+  provider: giscus
+  giscus:
+    repo: ""
+    repoId: ""
+    category: ""
+    categoryId: ""
+    mapping: pathname
+    reactionsEnabled: true
+    emitMetadata: false
+
 display:
   postsPerPage: 6
   summaryLength: 140

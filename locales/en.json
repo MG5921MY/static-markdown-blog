@@ -70,7 +70,8 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "prevPost": "Previous",
-    "nextPost": "Next"
+    "nextPost": "Next",
+    "comments": "Comments"
   },
   "gallery": {
     "title": "Gallery",

@@ -366,7 +366,8 @@ function normalizeConfig(input) {
       nav: raw.nav || [],
       features: raw.features || {},
       display: raw.display || {},
-      beian: raw.beian || { enabled: false }
+      beian: raw.beian || { enabled: false },
+      comments: raw.comments || { enabled: false }
     };
   }
 
@@ -383,7 +384,8 @@ function normalizeConfig(input) {
     nav: raw.nav || [],
     features: raw.features || {},
     display: raw.display || {},
-    beian: raw.beian || { enabled: false }
+    beian: raw.beian || { enabled: false },
+    comments: raw.comments || { enabled: false }
   };
 }
 
@@ -635,7 +637,8 @@ function buildContent(normalized, availableThemes) {
     display: normalized.display,
     pages: pagesMap,
     features,
-    beian: normalized.beian
+    beian: normalized.beian,
+    comments: normalized.comments
   };
 
   const contentIndex = {
@@ -789,6 +792,39 @@ ${urlEntries}
   return urls.length;
 }
 
+function generateSearchIndex(siteConfig, contentIndex, pathMap) {
+  const docs = [];
+  for (const [categoryId, category] of Object.entries(contentIndex.categories || {})) {
+    for (const post of (category.posts || [])) {
+      const mapping = pathMap[post.id];
+      if (!mapping) continue;
+      docs.push({
+        id: post.id,
+        title: post.title || '',
+        summary: post.summary || '',
+        tags: (post.tags || []).join(' '),
+        category: category.name || categoryId,
+        url: mapping.outputPath
+      });
+    }
+  }
+  writeJson(path.join(DIST_DIR, 'search-index.json'), docs);
+  return docs.length;
+}
+
+function copyVendorToDist() {
+  const vendorDir = path.join(ROOT, 'vendor');
+  if (!fs.existsSync(vendorDir)) return;
+  const destDir = path.join(DIST_DIR, 'vendor');
+  fs.mkdirSync(destDir, { recursive: true });
+  for (const entry of fs.readdirSync(vendorDir)) {
+    const src = path.join(vendorDir, entry);
+    if (fs.statSync(src).isFile()) {
+      fs.copyFileSync(src, path.join(destDir, entry));
+    }
+  }
+}
+
 function main() {
   const configInput = resolveConfigInput();
   const normalized = normalizeConfig(configInput);
@@ -804,6 +840,8 @@ function main() {
 
   const rssCount = generateRss(siteConfig, contentIndex, pathMap);
   const sitemapCount = generateSitemap(siteConfig, contentIndex, pathMap);
+  const searchCount = generateSearchIndex(siteConfig, contentIndex, pathMap);
+  copyVendorToDist();
 
   console.log('');
   console.log('Build completed');
@@ -815,6 +853,7 @@ function main() {
   console.log(`  Posts: ${Object.keys(pathMap).length}`);
   console.log(`  RSS: ${rssCount} items`);
   console.log(`  Sitemap: ${sitemapCount} urls`);
+  console.log(`  Search: ${searchCount} docs`);
   console.log(`  Output: ${path.relative(ROOT, DIST_DIR)}`);
   console.log('');
 }

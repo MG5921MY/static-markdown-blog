@@ -95,6 +95,16 @@ window.BlogCore = {
     return `./${target.pathname.split('/').pop()}${query}`;
   },
 
+  async loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = this.resolveAsset(url);
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  },
+
   async ensureIndexLoaded() {
     if (this.index) return this.index;
     this.index = await this.loadJson(['./content-index.json', './posts/index.json']);
@@ -524,5 +534,57 @@ window.BlogCore = {
     if (meta) {
       meta.content = mode === 'auto' ? 'light dark' : mode;
     }
+  },
+
+  loadComments() {
+    const container = document.getElementById('comments');
+    if (!container) return;
+
+    const comments = this.config?.comments;
+    if (!comments || !comments.enabled) return;
+
+    const provider = comments.provider || 'giscus';
+
+    if (provider === 'giscus') {
+      const g = comments.giscus || {};
+      if (!g.repo || !g.repoId || !g.categoryId) {
+        console.warn('Giscus comments: repo, repoId, and categoryId are required.');
+        return;
+      }
+
+      const theme = document.documentElement.getAttribute('data-theme') || 'auto';
+      const giscusTheme = theme === 'dark' ? 'dark' : theme === 'light' ? 'light' : 'preferred_color_scheme';
+
+      const script = document.createElement('script');
+      script.src = 'https://giscus.app/client.js';
+      script.setAttribute('data-repo', g.repo);
+      script.setAttribute('data-repo-id', g.repoId);
+      script.setAttribute('data-category', g.category || '');
+      script.setAttribute('data-category-id', g.categoryId);
+      script.setAttribute('data-mapping', g.mapping || 'pathname');
+      script.setAttribute('data-strict', '0');
+      script.setAttribute('data-reactions-enabled', g.reactionsEnabled !== false ? '1' : '0');
+      script.setAttribute('data-emit-metadata', g.emitMetadata ? '1' : '0');
+      script.setAttribute('data-input-position', 'bottom');
+      script.setAttribute('data-theme', giscusTheme);
+      script.setAttribute('data-lang', 'zh-CN');
+      script.setAttribute('data-loading', 'lazy');
+      script.crossOrigin = 'anonymous';
+      script.async = true;
+
+      container.style.display = 'block';
+      container.appendChild(script);
+
+      // Update giscus theme when user toggles dark mode
+      const observer = new MutationObserver(() => {
+        const frame = container.querySelector('iframe');
+        if (!frame) return;
+        const newTheme = document.documentElement.getAttribute('data-theme') || 'auto';
+        const newGiscusTheme = newTheme === 'dark' ? 'dark' : newTheme === 'light' ? 'light' : 'preferred_color_scheme';
+        frame.contentWindow.postMessage({ giscus: { setConfig: { theme: newGiscusTheme } } }, 'https://giscus.app');
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+    // Other providers can be added here
   }
 };
