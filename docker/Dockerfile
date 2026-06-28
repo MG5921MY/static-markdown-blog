@@ -8,6 +8,7 @@ COPY assets ./assets/
 COPY config ./config/
 COPY content ./content/
 COPY themes ./themes/
+COPY locales ./locales/
 COPY examples ./examples/
 COPY workspace ./workspace/
 COPY docker/entrypoint.sh /entrypoint.sh

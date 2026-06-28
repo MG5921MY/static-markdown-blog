@@ -66,9 +66,11 @@
     "dirTree": "Directory Tree",
     "close": "Close",
     "directory": "Directory",
-    "themeAuto": "Auto (follow system)",
+    "themeAuto": "Follow System",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "prevPost": "Previous",
+    "nextPost": "Next"
   },
   "gallery": {
     "title": "Gallery",

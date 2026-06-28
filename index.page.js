@@ -225,8 +225,10 @@
     }
 
     if (heroTitle) heroTitle.textContent = site.alias || site.name || '我的博客';
-    if (heroSubtitle) heroSubtitle.innerHTML = (display.heroSubtitle || site.description || '').replace(/\n/g, '<br>');
-  }
+    if (heroSubtitle) {
+      const subtitleText = display.heroSubtitle || site.description || '';
+      heroSubtitle.innerHTML = Blog.escapeHtml(subtitleText).replace(/\n/g, '<br>');
+    }  }
 
   function updateSiteInfo() {
     const site = Blog.config?.site || {};

@@ -43,20 +43,20 @@
         <div class="post-body markdown-body" id="post-body"></div>
         <nav class="post-nav" id="post-nav" style="display: none;">
           <a class="post-nav-link post-nav-prev" id="post-nav-prev" href="#">
-            <span class="post-nav-label">上一篇</span>
+            <span class="post-nav-label" data-i18n="ui.prevPost">上一篇</span>
             <span class="post-nav-title" id="post-nav-prev-title"></span>
           </a>
           <a class="post-nav-link post-nav-next" id="post-nav-next" href="#">
-            <span class="post-nav-label">下一篇</span>
+            <span class="post-nav-label" data-i18n="ui.nextPost">下一篇</span>
             <span class="post-nav-title" id="post-nav-next-title"></span>
           </a>
         </nav>
       </article>
 
       <div id="post-error" class="error-state" style="display: none; padding: 100px 0;">
-        <h2>文章未找到</h2>
-        <p id="error-detail">你访问的文章不存在，或者已经被移动。</p>
-        <a href="./index.html" class="btn btn-primary" style="margin-top: 20px;">返回首页</a>
+        <h2 data-i18n="post.notFound">文章未找到</h2>
+        <p id="error-detail" data-i18n="post.notFoundDetail">你访问的文章不存在，或者已经被移动。</p>
+        <a href="./index.html" class="btn btn-primary" style="margin-top: 20px;" data-i18n="post.backHome">返回首页</a>
       </div>
     </div>
 

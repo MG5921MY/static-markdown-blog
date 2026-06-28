@@ -66,9 +66,11 @@
     "dirTree": "目录树",
     "close": "关闭",
     "directory": "目录",
-    "themeAuto": "自动（跟随系统）",
+    "themeAuto": "跟随系统",
     "themeLight": "亮色",
-    "themeDark": "暗色"
+    "themeDark": "暗色",
+    "prevPost": "上一篇",
+    "nextPost": "下一篇"
   },
   "gallery": {
     "title": "图库",

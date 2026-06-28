@@ -22,6 +22,7 @@ const STATIC_FILES = [
   'gallery.html',
   '404.html',
   'disclaimer.html',
+  'about.html',
   'blog.js',
   'blog.core.js',
   'blog.render.js',

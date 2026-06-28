@@ -23,7 +23,8 @@ window.BlogCore = {
         await BlogI18n.load(configuredLocale);
       }
 
-      // Apply saved color scheme preference
+      // Apply i18n to DOM and saved color scheme
+      this.applyI18n();
       this.applyColorScheme();
 
       await this.loadTheme();
@@ -360,11 +361,31 @@ window.BlogCore = {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     if (Number.isNaN(date.getTime())) return this.escapeHtml(String(dateStr));
-    return date.toLocaleDateString('zh-CN', {
+    const locale = (window.BlogI18n && BlogI18n.locale) || 'zh';
+    const localeMap = { zh: 'zh-CN', en: 'en-US' };
+    return date.toLocaleDateString(localeMap[locale] || 'zh-CN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+  },
+
+  applyI18n() {
+    if (!window.BlogI18n || !BlogI18n.strings || Object.keys(BlogI18n.strings).length === 0) return;
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (!key) return;
+      const text = BlogI18n.t(key);
+      if (text && text !== key) {
+        if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+          el.placeholder = text;
+        } else {
+          el.textContent = text;
+        }
+      }
+    });
+    // Update HTML lang attribute
+    document.documentElement.lang = BlogI18n.locale === 'en' ? 'en' : 'zh-CN';
   },
 
   escapeHtml(value) {

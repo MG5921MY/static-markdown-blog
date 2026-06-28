@@ -9,6 +9,7 @@ site:
 
 deployment:
   basePath: auto
+  siteUrl: ""
 
 theme:
   active: mono
