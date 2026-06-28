@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { marked } = require('./vendor/marked.min.js');
 
 const ROOT = process.cwd();
+const PKG_ROOT = __dirname;
 const DIST_DIR = path.join(ROOT, 'dist');
 const INCLUDE_DRAFTS = process.argv.includes('--include-drafts');
 const INCREMENTAL = process.argv.includes('--incremental');
@@ -11,7 +12,8 @@ const MANIFEST_PATH = path.join(DIST_DIR, '.build-manifest.json');
 const WORKSPACE_SITE_DIR = path.join(ROOT, 'workspace', 'site');
 const WORKSPACE_CONFIG_PATH = path.join(WORKSPACE_SITE_DIR, 'config', 'blog.config.yml');
 const ROOT_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
-const BUILTIN_THEMES_DIR = path.join(ROOT, 'themes');
+const PKG_CONFIG_PATH = path.join(PKG_ROOT, 'config', 'blog.config.yml');
+const BUILTIN_THEMES_DIR = path.join(PKG_ROOT, 'themes');
 const STATIC_FILES = [
   'index.html',
   'post.html',
@@ -292,6 +294,15 @@ function resolveConfigInput() {
     };
   }
 
+  if (fs.existsSync(PKG_CONFIG_PATH)) {
+    return {
+      mode: 'package',
+      siteRoot: PKG_ROOT,
+      filePath: PKG_CONFIG_PATH,
+      raw: parseYaml(readText(PKG_CONFIG_PATH))
+    };
+  }
+
   throw new Error('No config found. Expected workspace/site/config/blog.config.yml or config/blog.config.yml');
 }
 
@@ -436,7 +447,9 @@ function buildPagesContent(pagesMap, summaryLength, siteRoot) {
 
 function copyStaticFiles() {
   for (const fileName of STATIC_FILES) {
-    copyFileSafe(path.join(ROOT, fileName), path.join(DIST_DIR, fileName));
+    const src = path.join(PKG_ROOT, fileName);
+    const dest = path.join(DIST_DIR, fileName);
+    copyFileSafe(src, dest);
   }
 }
 
@@ -622,13 +635,13 @@ function writeOutputs(siteConfig, contentIndex, pathMap) {
 }
 
 function copySiteAssetsToDist() {
-  const builtinAssets = path.join(ROOT, 'assets');
+  const builtinAssets = path.join(PKG_ROOT, 'assets');
   if (fs.existsSync(builtinAssets)) copyDirRecursive(builtinAssets, path.join(DIST_DIR, 'assets'));
 
   const workspaceAssets = path.join(WORKSPACE_SITE_DIR, 'assets');
   if (fs.existsSync(workspaceAssets)) copyDirRecursive(workspaceAssets, path.join(DIST_DIR, 'assets'));
 
-  const localesDir = path.join(ROOT, 'locales');
+  const localesDir = path.join(PKG_ROOT, 'locales');
   if (fs.existsSync(localesDir)) copyDirRecursive(localesDir, path.join(DIST_DIR, 'locales'));
 }
 
@@ -775,7 +788,7 @@ function generateSearchIndex(siteConfig, contentIndex, pathMap) {
 }
 
 function copyVendorToDist() {
-  const vendorDir = path.join(ROOT, 'vendor');
+  const vendorDir = path.join(PKG_ROOT, 'vendor');
   if (!fs.existsSync(vendorDir)) return;
   const destDir = path.join(DIST_DIR, 'vendor');
   fs.mkdirSync(destDir, { recursive: true });
@@ -788,7 +801,7 @@ function copyVendorToDist() {
 }
 
 function generateSSGPages(siteConfig, contentIndex, pathMap) {
-  const templatePath = path.join(ROOT, 'post.html');
+  const templatePath = path.join(PKG_ROOT, 'post.html');
   if (!fs.existsSync(templatePath)) return 0;
   const template = readText(templatePath);
   const siteName = escapeHtml(siteConfig.site?.name || 'Blog');

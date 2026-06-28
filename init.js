@@ -61,11 +61,8 @@ function ask(prompt, question) {
 
 async function confirmOverwrite(prompt, targetPath) {
   console.log(`\nTarget already has content: ${targetPath}`);
-  for (let i = 1; i <= 3; i += 1) {
-    const answer = await ask(prompt, `Overwrite workspace data? (${i}/3) [y/N]: `);
-    if (answer !== 'y' && answer !== 'yes') return false;
-  }
-  return true;
+  const answer = await ask(prompt, 'Overwrite workspace data? [y/N]: ');
+  return answer === 'y' || answer === 'yes';
 }
 
 async function main() {
@@ -83,7 +80,7 @@ async function main() {
   }
 
   const prompt = createPrompt();
-  const start = await ask(prompt, 'Initialize workspace/site from the starter? [Y/n]: ');
+  const start = await ask(prompt, 'Initialize workspace/site? [Y/n]: ');
   if (start === 'n' || start === 'no') {
     prompt.close();
     console.log('\nInitialization cancelled.');

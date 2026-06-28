@@ -114,7 +114,8 @@ function runRebuild() {
   building = true;
   const t0 = Date.now();
   try {
-    execSync('node build.js', { stdio: 'inherit', cwd: ROOT });
+    const buildScript = path.join(__dirname, 'build.js');
+    execSync(`node "${buildScript}"`, { stdio: 'inherit', cwd: ROOT });
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log(`  Rebuilt in ${elapsed}s`);
     const count = broadcast();
@@ -132,7 +133,7 @@ function runRebuild() {
 function startWatching() {
   const watchDirs = [
     path.join(ROOT, 'workspace', 'site'),
-    path.join(ROOT, 'themes'),
+    path.join(__dirname, 'themes'),
   ];
   const watchFiles = [
     path.join(ROOT, 'index.html'),
@@ -144,17 +145,11 @@ function startWatching() {
     path.join(ROOT, 'about.html'),
     path.join(ROOT, 'disclaimer.html'),
     path.join(ROOT, '404.html'),
-    path.join(ROOT, 'blog.js'),
-    path.join(ROOT, 'blog.core.js'),
-    path.join(ROOT, 'blog.render.js'),
-    path.join(ROOT, 'blog.ui.js'),
-    path.join(ROOT, 'index.page.js'),
-    path.join(ROOT, 'moments.page.js'),
-    path.join(ROOT, 'links.page.js'),
-    path.join(ROOT, 'gallery.page.js'),
-    path.join(ROOT, 'disclaimer.page.js'),
-    path.join(ROOT, '404.page.js'),
-  ];
+  ].concat([
+    'blog.js', 'blog.core.js', 'blog.render.js', 'blog.ui.js',
+    'index.page.js', 'moments.page.js', 'links.page.js',
+    'gallery.page.js', 'disclaimer.page.js', '404.page.js',
+  ].map((f) => path.join(__dirname, f)));
 
   let watchCount = 0;
   const watched = new Set();
@@ -193,10 +188,17 @@ function startWatching() {
 // ── 初始构建 ──────────────────────────────────────────────────────────────
 console.log('Building dist...\n');
 try {
-  execSync('node build.js', { stdio: 'inherit' });
+  const buildScript = path.join(__dirname, 'build.js');
+  execSync(`node "${buildScript}"`, { stdio: 'inherit', cwd: ROOT });
   console.log('');
 } catch (error) {
   console.error('Build failed');
+  process.exit(1);
+}
+
+// Verify dist exists
+if (!fs.existsSync(path.join(DIST_DIR, 'index.html'))) {
+  console.error(`Error: dist/index.html not found at ${DIST_DIR}`);
   process.exit(1);
 }
 

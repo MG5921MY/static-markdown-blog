@@ -12,7 +12,7 @@ deployment:
   siteUrl: ""
 
 theme:
-  active: mono
+  active: graphite
 
 
 content:
