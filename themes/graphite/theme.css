@@ -1015,3 +1015,62 @@ body {
     display: none;
   }
 }
+
+/* ── Dark Mode ───────────────────────────────────────── */
+/* Auto: follow system dark mode unless user chose light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #0e1015;
+    --bg-secondary: #14171e;
+    --bg-elevated: #1a1e28;
+    --text-primary: #e8eaf0;
+    --text-secondary: #a0a8b8;
+    --text-muted: #6b7280;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.25);
+    --accent: #6b8aff;
+    --accent-soft: rgba(107, 138, 255, 0.12);
+    --accent-strong: #8da4ff;
+    --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.5);
+    --code-bg: #0a0c10;
+    --code-border: rgba(107, 138, 255, 0.25);
+    --code-text: #dce4ff;
+    --code-muted: #6b7280;
+    --code-inline-bg: rgba(107, 138, 255, 0.1);
+    --code-inline-text: #dce4ff;
+    --code-selection: rgba(255, 255, 255, 0.08);
+    --code-accent-1: #8fb4ff;
+    --code-accent-2: #7dd3b0;
+    --code-accent-3: #ffb86c;
+  }
+}
+
+/* Explicit: user chose dark */
+:root[data-theme="dark"] {
+  --bg-primary: #0e1015;
+  --bg-secondary: #14171e;
+  --bg-elevated: #1a1e28;
+  --text-primary: #e8eaf0;
+  --text-secondary: #a0a8b8;
+  --text-muted: #6b7280;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.25);
+  --accent: #6b8aff;
+  --accent-soft: rgba(107, 138, 255, 0.12);
+  --accent-strong: #8da4ff;
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.5);
+  --code-bg: #0a0c10;
+  --code-border: rgba(107, 138, 255, 0.25);
+  --code-text: #dce4ff;
+  --code-muted: #6b7280;
+  --code-inline-bg: rgba(107, 138, 255, 0.1);
+  --code-inline-text: #dce4ff;
+  --code-selection: rgba(255, 255, 255, 0.08);
+  --code-accent-1: #8fb4ff;
+  --code-accent-2: #7dd3b0;
+  --code-accent-3: #ffb86c;
+}

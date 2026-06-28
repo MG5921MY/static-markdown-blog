@@ -17,6 +17,15 @@ window.BlogCore = {
       if (needIndex) this.index = index || null;
       if (needPathMap) this.pathMap = pathMap || null;
 
+      // Load i18n if available
+      if (window.BlogI18n) {
+        const configuredLocale = this.config?.site?.locale;
+        await BlogI18n.load(configuredLocale);
+      }
+
+      // Apply saved color scheme preference
+      this.applyColorScheme();
+
       await this.loadTheme();
       this.renderBeian();
       this.setFavicon();
@@ -233,7 +242,7 @@ window.BlogCore = {
     if (filePath.includes('..')) return true;
     if (filePath.startsWith('/') || /^[a-zA-Z]:/.test(filePath)) return true;
     if (/[<>:"|?*\x00-\x1f]/.test(filePath)) return true;
-    return !filePath.endsWith('.md');
+    return !/\.(md|html)$/.test(filePath);
   },
 
   async loadPostContent(postId) {
@@ -249,9 +258,26 @@ window.BlogCore = {
     if (!response.ok) throw new Error('Failed to load post content');
 
     const content = await response.text();
-    const { meta, body } = this.parseFrontMatter(content);
     const postInfo = (categoryData.posts || []).find((item) => item.id === postId);
+    const isRendered = mapping.rendered === true || outputPath.endsWith('.html');
 
+    if (isRendered) {
+      return {
+        id: postId,
+        category: mapping.category,
+        categoryName: categoryData.name,
+        categoryIcon: categoryData.icon,
+        title: postInfo?.title || 'Untitled',
+        date: postInfo?.date || '',
+        tags: postInfo?.tags || [],
+        content: content,
+        rendered: true,
+        prev: mapping.prev || null,
+        next: mapping.next || null
+      };
+    }
+
+    const { meta, body } = this.parseFrontMatter(content);
     return {
       id: postId,
       category: mapping.category,
@@ -260,7 +286,10 @@ window.BlogCore = {
       title: meta.title || postInfo?.title || 'Untitled',
       date: meta.date || postInfo?.date || '',
       tags: meta.tags || postInfo?.tags || [],
-      content: body
+      content: body,
+      rendered: false,
+      prev: mapping.prev || null,
+      next: mapping.next || null
     };
   },
 
@@ -414,5 +443,23 @@ window.BlogCore = {
 
   getPage(pageId) {
     return this.config?.pages?.[pageId] || null;
+  },
+
+  t(key, params) {
+    if (window.BlogI18n && BlogI18n.strings && Object.keys(BlogI18n.strings).length > 0) {
+      return BlogI18n.t(key, params);
+    }
+    return key;
+  },
+
+  applyColorScheme() {
+    let mode = 'auto';
+    try { mode = localStorage.getItem('blog-color-scheme') || 'auto'; } catch (_) { /* ignore */ }
+    if (mode === 'auto') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', mode);
+    }
+    document.documentElement.setAttribute('data-color-scheme', mode);
   }
 };

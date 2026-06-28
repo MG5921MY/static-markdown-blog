@@ -128,10 +128,10 @@ window.BlogRender = {
     let html = '<div class="dir-nav">';
 
     if (currentPath) {
-      html += `<button class="dir-nav-btn dir-nav-back" data-path="${this.escapeHtml(parentPath || '')}">返回上一级</button>`;
+      html += `<button class="dir-nav-btn dir-nav-back" data-path="${this.escapeHtml(parentPath || '')}">${this.t ? this.t('ui.backToParent') : '返回上一级'}</button>`;
       html += `<span class="dir-nav-current">${this.escapeHtml(currentName)}</span>`;
     } else {
-      html += '<span class="dir-nav-current">根目录</span>';
+      html += `<span class="dir-nav-current">${this.t ? this.t('ui.rootDir') : '根目录'}</span>`;
     }
 
     if (subDirs.length > 0) {
@@ -142,7 +142,7 @@ window.BlogRender = {
       html += '</div>';
     }
 
-    html += '<button class="dir-tree-toggle" title="显示目录树">目录树</button>';
+    html += `<button class="dir-tree-toggle" title="${this.t ? this.t('ui.showDirTree') : '显示目录树'}">${this.t ? this.t('ui.dirTree') : '目录树'}</button>`;
     html += '</div>';
     return html;
   },
@@ -166,8 +166,8 @@ window.BlogRender = {
     return `
       <div class="dir-tree-panel" style="display:none;">
         <div class="dir-tree-header">
-          <span>目录</span>
-          <button class="dir-tree-close">关闭</button>
+          <span>${this.t ? this.t('ui.directory') : '目录'}</span>
+          <button class="dir-tree-close">${this.t ? this.t('ui.close') : '关闭'}</button>
         </div>
         <div class="dir-tree-content">${renderNode(tree)}</div>
       </div>
@@ -195,7 +195,7 @@ window.BlogRender = {
   },
 
   renderCategoryFilter() {
-    let html = '<button class="filter-btn active" data-category="all">全部</button>';
+    let html = `<button class="filter-btn active" data-category="all">${this.escapeHtml(this.t ? this.t('index.all') : 'All')}</button>`;
     for (const [id, category] of Object.entries(this.index?.categories || {})) {
       if (!this.isValidId(id)) continue;
       html += `<button class="filter-btn" data-category="${this.escapeHtml(id)}">${this.escapeHtml(category.icon || '')} ${this.escapeHtml(category.name)} (${(category.posts || []).length})</button>`;

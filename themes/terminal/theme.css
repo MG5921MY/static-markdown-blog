@@ -2376,3 +2376,64 @@ mark {
     width: 100%;
   }
 }
+
+/* ── Light Mode (terminal is dark by default) ────────── */
+/* Auto: follow system light mode unless user chose dark */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg-primary: #f0f0f0;
+    --bg-secondary: #e8e8e8;
+    --bg-elevated: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #3a3a3a;
+    --text-muted: #6a6a6a;
+    --text-bright: #000000;
+    --border: rgba(0, 100, 40, 0.2);
+    --border-glow: rgba(0, 100, 40, 0.35);
+    --accent: #008833;
+    --accent-soft: rgba(0, 136, 51, 0.1);
+    --accent-strong: #006622;
+    --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.16);
+    --code-bg: #1a1a1a;
+    --code-border: rgba(0, 100, 40, 0.3);
+    --code-text: #e0e0e0;
+    --code-muted: #6a6a6a;
+    --code-inline-bg: rgba(0, 100, 40, 0.08);
+    --code-inline-text: #1a1a1a;
+    --code-selection: rgba(0, 0, 0, 0.08);
+    --code-accent-1: #008833;
+    --code-accent-2: #006688;
+    --code-accent-3: #886600;
+  }
+}
+
+/* Explicit: user chose light */
+:root[data-theme="light"] {
+  --bg-primary: #f0f0f0;
+  --bg-secondary: #e8e8e8;
+  --bg-elevated: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #3a3a3a;
+  --text-muted: #6a6a6a;
+  --text-bright: #000000;
+  --border: rgba(0, 100, 40, 0.2);
+  --border-glow: rgba(0, 100, 40, 0.35);
+  --accent: #008833;
+  --accent-soft: rgba(0, 136, 51, 0.1);
+  --accent-strong: #006622;
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.16);
+  --code-bg: #1a1a1a;
+  --code-border: rgba(0, 100, 40, 0.3);
+  --code-text: #e0e0e0;
+  --code-muted: #6a6a6a;
+  --code-inline-bg: rgba(0, 100, 40, 0.08);
+  --code-inline-text: #1a1a1a;
+  --code-selection: rgba(0, 0, 0, 0.08);
+  --code-accent-1: #008833;
+  --code-accent-2: #006688;
+  --code-accent-3: #886600;
+}

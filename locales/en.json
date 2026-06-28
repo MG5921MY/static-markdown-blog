@@ -1,0 +1,142 @@
+{
+  "loading": "Loading...",
+  "nav": {
+    "home": "Home",
+    "openMenu": "Open menu"
+  },
+  "hero": {
+    "learnMore": "Learn More",
+    "viewDisclaimer": "View Disclaimer",
+    "continueReading": "Continue Reading",
+    "badge1": "Markdown First",
+    "badge2": "Theme Token Driven",
+    "badge3": "Deploy Anywhere"
+  },
+  "index": {
+    "latestContent": "Latest Content",
+    "sectionCopy": "Built directly from Markdown content in the new structure, maintaining a stable, restrained, and maintainable reading experience.",
+    "searchPlaceholder": "Search articles, tags, or categories",
+    "all": "All",
+    "loadingContent": "Loading content...",
+    "noPosts": "No posts available yet.",
+    "loadFailed": "Failed to load content.",
+    "siteInfo": "Site Info",
+    "siteInfoCopy": "This section shows the blog's positioning, content direction, and contact info, serving as a starting point for further expansion.",
+    "siteName": "Site Name",
+    "siteType": "Site Type",
+    "contentDirection": "Content Direction",
+    "contactEmail": "Contact Email",
+    "pagination": "Page {current} / {total}, {count} posts total",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "noSearchResults": "No matching articles found.",
+    "noPostsInDir": "No posts in this directory yet.",
+    "myBlog": "My Blog",
+    "blog": "Blog",
+    "personalBlog": "Personal Blog"
+  },
+  "post": {
+    "loading": "Loading article...",
+    "notFound": "Article Not Found",
+    "notFoundDetail": "The article you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home",
+    "missingParam": "Missing article parameter."
+  },
+  "page": {
+    "loading": "Loading page...",
+    "notFound": "Page Not Found",
+    "notFoundDetail": "The page you're looking for doesn't exist.",
+    "backHome": "Back to Home",
+    "missingParam": "Missing page parameter.",
+    "notExist": "Page does not exist.",
+    "categoryNotExist": "Category does not exist.",
+    "noCategoryPosts": "No posts in this category yet."
+  },
+  "ui": {
+    "backToTop": "Back to Top",
+    "openMenu": "Open Menu",
+    "toc": "Table of Contents",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "continueReading": "Continue Reading",
+    "readMore": "Read More",
+    "backToParent": "Back",
+    "rootDir": "Root",
+    "showDirTree": "Show Directory Tree",
+    "dirTree": "Directory Tree",
+    "close": "Close",
+    "directory": "Directory",
+    "themeAuto": "Auto (follow system)",
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
+  "gallery": {
+    "title": "Gallery",
+    "description": "Browse the default visual language, branding, and design reference assets.",
+    "visualAssets": "Visual Assets",
+    "galleryCopy": "This gallery reads directories declared in `content/data/gallery.yml` and uses unified tokens and interaction styles.",
+    "loading": "Loading gallery...",
+    "noImages": "No images",
+    "noGroups": "No gallery groups available.",
+    "noGroupImages": "No images in this group yet.",
+    "pathNotExist": "Directory path does not exist.",
+    "notEnabled": "Gallery feature is not enabled.",
+    "loadFailed": "Failed to load gallery content.",
+    "loadMore": "Load More ({count} remaining)",
+    "imageCount": "{count} images",
+    "noImagesInDir": "No images in this directory yet.",
+    "preview": "Preview",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close"
+  },
+  "moments": {
+    "title": "Moments",
+    "description": "Short notes, thoughts, and build process snippets.",
+    "subtitle": "Capturing the judgments, rhythms, and reflections from the refactoring process as short records to revisit.",
+    "loading": "Loading moments...",
+    "notEnabled": "Moments feature is not enabled.",
+    "noMoments": "No moments recorded yet.",
+    "loadFailed": "Failed to load moments."
+  },
+  "links": {
+    "title": "References & Collections",
+    "description": "Long-term reference sites, reading entry points, and development tools.",
+    "subtitle": "Preserving design leads, reading entry points, and tool resources worth keeping as part of the repository.",
+    "loading": "Loading resources...",
+    "notEnabled": "References page is not enabled.",
+    "noLinks": "No reference resources configured yet.",
+    "loadFailed": "Failed to load reference resources.",
+    "defaultGroup": "References",
+    "moreCollection": "More Collections"
+  },
+  "disclaimer": {
+    "title": "Disclaimer",
+    "subtitle": "This page clarifies content nature, risk boundaries, and citation principles to avoid misinterpreting personal notes as professional commitments.",
+    "loading": "Loading disclaimer...",
+    "item1Title": "Content Nature",
+    "item1Desc": "Content on this site is primarily for personal learning notes, design organization, and engineering experience archiving, and may have limitations in timeliness or simplified expressions.",
+    "item2Title": "Not Professional Advice",
+    "item2Desc": "Content on this site does not constitute formal advice on legal, medical, investment, security, or business matters, nor does it replace professional judgment and formal documentation.",
+    "item3Title": "Use at Your Own Risk",
+    "item3Desc": "If you execute scripts, modify configurations, or adjust deployment environments based on this site's content, please verify in a test environment first and bear the corresponding risks.",
+    "item4Title": "External Links",
+    "item4Desc": "External links on this site are provided only as reference entry points or sample references. The availability, accuracy, and security of third-party content are not guaranteed by this site.",
+    "item5Title": "Copyright & Citations",
+    "item5Desc": "Unless otherwise noted, original content is intended for learning and exchange; cited content will include source attribution where possible. Contact us for corrections or removal if needed.",
+    "item6Title": "Ongoing Updates",
+    "item6Desc": "This site continues to be updated along with the refactoring progress. If old documentation, screenshots, or path descriptions are inconsistent with the current implementation, the latest version in the repository takes precedence."
+  },
+  "error404": {
+    "title": "Page Not Found",
+    "description": "This address has no matching content, but your blog is still here. You can search directly or continue browsing from recent articles.",
+    "searchPlaceholder": "Search article titles or tags",
+    "backHome": "Back to Home",
+    "aboutSite": "About This Site",
+    "recommendedReading": "Recommended Reading",
+    "notFound": "The page you're looking for doesn't exist."
+  },
+  "about": {
+    "redirecting": "Redirecting to about page..."
+  }
+}

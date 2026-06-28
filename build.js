@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { marked } = require('./vendor/marked.min.js');
 
 const ROOT = process.cwd();
 const DIST_DIR = path.join(ROOT, 'dist');
+const INCLUDE_DRAFTS = process.argv.includes('--include-drafts');
 const WORKSPACE_SITE_DIR = path.join(ROOT, 'workspace', 'site');
 const WORKSPACE_CONFIG_PATH = path.join(WORKSPACE_SITE_DIR, 'config', 'blog.config.yml');
 const ROOT_CONFIG_PATH = path.join(ROOT, 'config', 'blog.config.yml');
@@ -24,6 +26,7 @@ const STATIC_FILES = [
   'blog.core.js',
   'blog.render.js',
   'blog.ui.js',
+  'blog.i18n.js',
   'index.page.js',
   '404.page.js',
   'moments.page.js',
@@ -240,6 +243,10 @@ function makeSummary(body, maxLength) {
     .replace(/\s+/g, ' ')
     .trim();
   return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text;
+}
+
+function renderMarkdownToHtml(body) {
+  return marked(body, { gfm: true, breaks: true });
 }
 
 function resolveFirstExisting(paths) {
@@ -463,7 +470,8 @@ function buildPagesContent(pagesMap, summaryLength, siteRoot) {
     const parsed = parseFrontMatter(readText(sourcePath));
     page.title = parsed.meta.title || page.title || page.name;
     page.description = page.description || parsed.meta.description || makeSummary(parsed.body, summaryLength);
-    page.content = parsed.body;
+    page.content = renderMarkdownToHtml(parsed.body);
+    page.renderedToHtml = true;
   }
 }
 
@@ -489,6 +497,9 @@ function scanCategoryPosts(category, summaryLength, siteRoot) {
 
       const relative = path.relative(sourceDir, fullPath).replace(/\\/g, '/');
       const parsed = parseFrontMatter(readText(fullPath));
+
+      if (parsed.meta.draft === true && !INCLUDE_DRAFTS) continue;
+
       const id = generateId(`${category.id}:${relative}`);
       const groupPath = path.dirname(relative) === '.' ? null : path.dirname(relative).replace(/\\/g, '/');
       const post = {
@@ -506,7 +517,9 @@ function scanCategoryPosts(category, summaryLength, siteRoot) {
       }
 
       const distMarkdownPath = path.join(DIST_DIR, 'posts', category.id, relative);
-      writeText(distMarkdownPath, readText(fullPath));
+      const distHtmlPath = distMarkdownPath.replace(/\.md$/, '.html');
+      const renderedHtml = renderMarkdownToHtml(parsed.body);
+      writeText(distHtmlPath, renderedHtml);
     }
   }
 
@@ -549,15 +562,34 @@ function buildContent(normalized, availableThemes) {
         }
         if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.md') continue;
         const relative = path.relative(sourceDir, fullPath).replace(/\\/g, '/');
+        const fileContent = readText(fullPath);
+        const fm = parseFrontMatter(fileContent);
+        if (fm.meta.draft === true && !INCLUDE_DRAFTS) continue;
         const id = generateId(`${category.id}:${relative}`);
         pathMap[id] = {
           category: category.id,
           file: relative,
-          outputPath: `posts/${category.id}/${relative}`
+          outputPath: `posts/${category.id}/${relative.replace(/\.md$/, '.html')}`,
+          rendered: true
         };
       }
     }
     walk(sourceDir);
+  }
+
+  // Generate prev/next navigation for all posts
+  const allPosts = [];
+  for (const [catId, catData] of Object.entries(categories)) {
+    for (const post of (catData.posts || [])) {
+      allPosts.push({ id: post.id, title: post.title, date: post.date, category: catId });
+    }
+  }
+  allPosts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  for (let i = 0; i < allPosts.length; i++) {
+    const entry = pathMap[allPosts[i].id];
+    if (!entry) continue;
+    entry.prev = i < allPosts.length - 1 ? { id: allPosts[i + 1].id, title: allPosts[i + 1].title } : null;
+    entry.next = i > 0 ? { id: allPosts[i - 1].id, title: allPosts[i - 1].title } : null;
   }
 
   const nav = resolveNav(normalized.nav, pagesMap);
@@ -629,6 +661,9 @@ function copySiteAssetsToDist() {
 
   const workspaceAssets = path.join(WORKSPACE_SITE_DIR, 'assets');
   if (fs.existsSync(workspaceAssets)) copyDirRecursive(workspaceAssets, path.join(DIST_DIR, 'assets'));
+
+  const localesDir = path.join(ROOT, 'locales');
+  if (fs.existsSync(localesDir)) copyDirRecursive(localesDir, path.join(DIST_DIR, 'locales'));
 }
 
 function copyThemesToDist() {
@@ -636,6 +671,121 @@ function copyThemesToDist() {
 
   const workspaceCustomDir = path.join(WORKSPACE_SITE_DIR, 'themes', 'custom');
   if (fs.existsSync(workspaceCustomDir)) copyDirRecursive(workspaceCustomDir, path.join(DIST_DIR, 'themes', 'custom'));
+}
+
+function escapeXml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function resolveSiteUrl(deployment, requestPath) {
+  const base = (deployment && deployment.siteUrl) ? deployment.siteUrl.replace(/\/+$/, '') : '';
+  return base ? `${base}/${requestPath.replace(/^\/+/, '')}` : `/${requestPath.replace(/^\/+/, '')}`;
+}
+
+function generateRss(siteConfig, contentIndex, pathMap) {
+  const site = siteConfig.site || {};
+  const deployment = siteConfig.deployment || {};
+  const siteUrl = (deployment.siteUrl || '').replace(/\/+$/, '');
+  const title = escapeXml(site.name || 'Blog');
+  const description = escapeXml(site.description || '');
+  const link = escapeXml(siteUrl || '/');
+
+  const items = [];
+  for (const [categoryId, category] of Object.entries(contentIndex.categories || {})) {
+    for (const post of (category.posts || [])) {
+      const mapping = pathMap[post.id];
+      if (!mapping) continue;
+      const postUrl = siteUrl ? `${siteUrl}/${mapping.outputPath}` : `/${mapping.outputPath}`;
+      const postDate = post.date ? new Date(post.date) : new Date();
+      const rfc822Date = isNaN(postDate.getTime()) ? '' : postDate.toUTCString();
+      items.push({
+        title: escapeXml(post.title || 'Untitled'),
+        link: escapeXml(postUrl),
+        description: escapeXml(post.summary || ''),
+        date: rfc822Date,
+        guid: escapeXml(postUrl),
+        category: escapeXml(category.name || categoryId)
+      });
+    }
+  }
+
+  items.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const latestItems = items.slice(0, 20);
+
+  const rssItems = latestItems.map((item) => `    <item>
+      <title>${item.title}</title>
+      <link>${item.link}</link>
+      <description>${item.description}</description>
+      <pubDate>${item.date}</pubDate>
+      <guid isPermaLink="true">${item.guid}</guid>
+      <category>${item.category}</category>
+    </item>`).join('\n');
+
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${title}</title>
+    <link>${link}</link>
+    <description>${description}</description>
+    <language>zh-CN</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${link}/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+  </channel>
+</rss>`;
+
+  writeText(path.join(DIST_DIR, 'feed.xml'), rss);
+  return latestItems.length;
+}
+
+function generateSitemap(siteConfig, contentIndex, pathMap) {
+  const deployment = siteConfig.deployment || {};
+  const siteUrl = (deployment.siteUrl || '').replace(/\/+$/, '');
+  const today = new Date().toISOString().split('T')[0];
+
+  const urls = [];
+  urls.push({ loc: siteUrl || '/', lastmod: today, priority: '1.0' });
+
+  for (const [pageId] of Object.entries(siteConfig.pages || {})) {
+    const pageUrl = siteUrl ? `${siteUrl}/page.html?id=${pageId}` : `/page.html?id=${pageId}`;
+    urls.push({ loc: pageUrl, lastmod: today, priority: '0.8' });
+  }
+
+  urls.push({ loc: siteUrl ? `${siteUrl}/moments.html` : '/moments.html', lastmod: today, priority: '0.6' });
+  urls.push({ loc: siteUrl ? `${siteUrl}/links.html` : '/links.html', lastmod: today, priority: '0.6' });
+  urls.push({ loc: siteUrl ? `${siteUrl}/gallery.html` : '/gallery.html', lastmod: today, priority: '0.6' });
+
+  for (const [id, mapping] of Object.entries(pathMap || {})) {
+    const postUrl = siteUrl ? `${siteUrl}/${mapping.outputPath}` : `/${mapping.outputPath}`;
+    urls.push({ loc: postUrl, lastmod: today, priority: '0.7' });
+  }
+
+  const urlEntries = urls.map((u) => `  <url>
+    <loc>${escapeXml(u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n');
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlEntries}
+</urlset>`;
+
+  writeText(path.join(DIST_DIR, 'sitemap.xml'), sitemap);
+  return urls.length;
 }
 
 function main() {
@@ -651,6 +801,9 @@ function main() {
   const { siteConfig, contentIndex, pathMap } = buildContent(normalized, availableThemes);
   writeOutputs(siteConfig, contentIndex, pathMap);
 
+  const rssCount = generateRss(siteConfig, contentIndex, pathMap);
+  const sitemapCount = generateSitemap(siteConfig, contentIndex, pathMap);
+
   console.log('');
   console.log('Build completed');
   console.log(`  Config: ${path.relative(ROOT, configInput.filePath)}`);
@@ -659,6 +812,8 @@ function main() {
   console.log(`  Theme: ${siteConfig.theme.active}`);
   console.log(`  Categories: ${Object.keys(contentIndex.categories).length}`);
   console.log(`  Posts: ${Object.keys(pathMap).length}`);
+  console.log(`  RSS: ${rssCount} items`);
+  console.log(`  Sitemap: ${sitemapCount} urls`);
   console.log(`  Output: ${path.relative(ROOT, DIST_DIR)}`);
   console.log('');
 }

@@ -8,7 +8,7 @@ window.BlogUI = {
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'nav-toggle';
     toggleBtn.type = 'button';
-    toggleBtn.setAttribute('aria-label', '打开菜单');
+    toggleBtn.setAttribute('aria-label', Blog.t ? Blog.t('ui.openMenu') : '打开菜单');
     toggleBtn.innerHTML = '<span></span><span></span><span></span>';
     navEl.appendChild(toggleBtn);
 
@@ -50,7 +50,7 @@ window.BlogUI = {
     const btn = document.createElement('button');
     btn.className = 'back-to-top';
     btn.type = 'button';
-    btn.setAttribute('aria-label', '返回顶部');
+    btn.setAttribute('aria-label', Blog.t ? Blog.t('ui.backToTop') : '返回顶部');
     btn.innerHTML = '↑';
     btn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -95,7 +95,7 @@ window.BlogUI = {
 
     const tocContainer = document.createElement('nav');
     tocContainer.className = 'toc-container';
-    tocContainer.innerHTML = '<div class="toc-header"><span>目录</span><button type="button" class="toc-toggle">收起</button></div><div class="toc-list"></div>';
+    tocContainer.innerHTML = `<div class="toc-header"><span>${Blog.t ? Blog.t('ui.toc') : '目录'}</span><button type="button" class="toc-toggle">${Blog.t ? Blog.t('ui.collapse') : '收起'}</button></div><div class="toc-list"></div>`;
 
     const tocList = tocContainer.querySelector('.toc-list');
     headings.forEach((heading, index) => {
@@ -118,7 +118,9 @@ window.BlogUI = {
     const toggleBtn = tocContainer.querySelector('.toc-toggle');
     toggleBtn.addEventListener('click', () => {
       tocList.classList.toggle('collapsed');
-      toggleBtn.textContent = tocList.classList.contains('collapsed') ? '展开' : '收起';
+      toggleBtn.textContent = tocList.classList.contains('collapsed')
+        ? (Blog.t ? Blog.t('ui.expand') : '\u5c55\u5f00')
+        : (Blog.t ? Blog.t('ui.collapse') : '\u6536\u8d77');
     });
 
     const observer = new IntersectionObserver((entries) => {
@@ -182,5 +184,68 @@ window.BlogUI = {
     this.setupBackToTop();
     this.setupProgressBar();
     this.setupDirTreePanel();
+    this.setupThemeToggle();
+  },
+
+  /* ── Theme Toggle (auto / light / dark) ─────────────── */
+  _themeModes: ['auto', 'light', 'dark'],
+  _themeIcons: { auto: '\u25D0', light: '\u25CB', dark: '\u25CF' }, // ◐ ○ ●
+
+  _getSavedTheme() {
+    try { return localStorage.getItem('blog-color-scheme') || 'auto'; } catch (_) { return 'auto'; }
+  },
+
+  _saveTheme(mode) {
+    try { localStorage.setItem('blog-color-scheme', mode); } catch (_) { /* ignore */ }
+  },
+
+  _applyTheme(mode) {
+    const root = document.documentElement;
+    if (mode === 'auto') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', mode);
+    }
+    root.setAttribute('data-color-scheme', mode);
+  },
+
+  _cycleTheme() {
+    const current = this._getSavedTheme();
+    const idx = this._themeModes.indexOf(current);
+    const next = this._themeModes[(idx + 1) % this._themeModes.length];
+    this._saveTheme(next);
+    this._applyTheme(next);
+    this._updateThemeButton(next);
+  },
+
+  _updateThemeButton(mode) {
+    const btn = document.querySelector('.theme-toggle-btn');
+    if (!btn) return;
+    const labels = {
+      auto: Blog.t ? Blog.t('ui.themeAuto') : '\u81EA\u52A8',
+      light: Blog.t ? Blog.t('ui.themeLight') : '\u4EAE\u8272',
+      dark: Blog.t ? Blog.t('ui.themeDark') : '\u6697\u8272'
+    };
+    btn.textContent = this._themeIcons[mode] || '';
+    btn.title = labels[mode] || mode;
+    btn.setAttribute('aria-label', labels[mode] || mode);
+    btn.setAttribute('data-theme-mode', mode);
+  },
+
+  setupThemeToggle() {
+    if (document.querySelector('.theme-toggle-btn')) return;
+
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'theme-toggle-btn';
+    btn.type = 'button';
+    btn.addEventListener('click', () => this._cycleTheme());
+    navLinks.appendChild(btn);
+
+    const saved = this._getSavedTheme();
+    this._applyTheme(saved);
+    this._updateThemeButton(saved);
   }
 };

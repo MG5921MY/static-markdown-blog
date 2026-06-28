@@ -86,6 +86,7 @@
     </footer>
   </main>
 
+  <script src="./blog.i18n.js"></script>
   <script src="./blog.core.js"></script>
   <script src="./blog.render.js"></script>
   <script src="./blog.ui.js"></script>
@@ -120,7 +121,11 @@
             await Promise.all([Blog.loadMarkdownDeps(), Blog.loadHighlightDeps()]);
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
-            document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
+            if (page.renderedToHtml) {
+              document.getElementById('page-content').innerHTML = page.content || '';
+            } else {
+              document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
+            }
             document.getElementById('page-markdown').style.display = 'block';
             return;
           }

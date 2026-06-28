@@ -41,6 +41,16 @@
           <div class="post-tags" id="post-tags"></div>
         </header>
         <div class="post-body markdown-body" id="post-body"></div>
+        <nav class="post-nav" id="post-nav" style="display: none;">
+          <a class="post-nav-link post-nav-prev" id="post-nav-prev" href="#">
+            <span class="post-nav-label">上一篇</span>
+            <span class="post-nav-title" id="post-nav-prev-title"></span>
+          </a>
+          <a class="post-nav-link post-nav-next" id="post-nav-next" href="#">
+            <span class="post-nav-label">下一篇</span>
+            <span class="post-nav-title" id="post-nav-next-title"></span>
+          </a>
+        </nav>
       </article>
 
       <div id="post-error" class="error-state" style="display: none; padding: 100px 0;">
@@ -62,6 +72,7 @@
     </footer>
   </main>
 
+  <script src="./blog.i18n.js"></script>
   <script src="./blog.core.js"></script>
   <script src="./blog.render.js"></script>
   <script src="./blog.ui.js"></script>
@@ -97,8 +108,33 @@
           document.getElementById('post-tags').innerHTML = (post.tags || []).map((tag) =>
             `<span class="post-tag">${Blog.escapeHtml(tag)}</span>`
           ).join('');
-          document.getElementById('post-body').innerHTML = Blog.renderMarkdown(post.content);
+
+          if (post.rendered) {
+            document.getElementById('post-body').innerHTML = post.content;
+          } else {
+            document.getElementById('post-body').innerHTML = Blog.renderMarkdown(post.content);
+          }
           Blog.generateTOC();
+
+          // Prev/Next navigation
+          const navEl = document.getElementById('post-nav');
+          if (post.prev || post.next) {
+            const prevEl = document.getElementById('post-nav-prev');
+            const nextEl = document.getElementById('post-nav-next');
+            if (post.prev) {
+              prevEl.href = Blog.resolvePageUrl('post.html', { id: post.prev.id });
+              document.getElementById('post-nav-prev-title').textContent = post.prev.title;
+            } else {
+              prevEl.style.visibility = 'hidden';
+            }
+            if (post.next) {
+              nextEl.href = Blog.resolvePageUrl('post.html', { id: post.next.id });
+              document.getElementById('post-nav-next-title').textContent = post.next.title;
+            } else {
+              nextEl.style.visibility = 'hidden';
+            }
+            navEl.style.display = 'flex';
+          }
 
           loadingEl.style.display = 'none';
           contentEl.style.display = 'block';
