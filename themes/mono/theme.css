@@ -577,6 +577,13 @@ body::before {
     --code-accent-2: #444444;
     --code-accent-3: #686868;
   }
+
+  body {
+    background: var(--bg-primary);
+  }
+  body::before {
+    display: none;
+  }
 }
 
 :root[data-theme="dark"] {
@@ -603,4 +610,11 @@ body::before {
   --code-accent-1: #0a0a0a;
   --code-accent-2: #444444;
   --code-accent-3: #686868;
+}
+
+:root[data-theme="dark"] body {
+  background: var(--bg-primary);
+}
+:root[data-theme="dark"] body::before {
+  display: none;
 }
