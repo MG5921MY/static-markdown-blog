@@ -1612,11 +1612,15 @@ img.nav-logo {
   align-items: center;
   justify-content: center;
   background: var(--bg-secondary);
+  min-height: 80px;
+  max-height: 1200px;
 }
 
 .gallery-item img {
   width: 100%;
   height: auto;
+  max-height: 1200px;
+  min-height: 40px;
   object-fit: contain;
   display: block;
 }
