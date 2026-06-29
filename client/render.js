@@ -321,7 +321,29 @@ window.BlogRender = {
     const navEl = document.getElementById('nav-links');
     const footerEl = document.getElementById('footer-links');
     const current = `${window.location.pathname.split('/').pop()}${window.location.search}`;
-    const navItems = (this.config?.nav || []).filter((item) => this.isSafeUrl(item.url));
+    const rawNav = this.config?.nav || [];
+
+    // Resolve page references to URLs
+    const navItems = rawNav.map((item) => {
+      if (item.url) return item;
+      if (item.page) {
+        // Special: page: index → ./index.html
+        if (item.page === 'index') return { ...item, url: './index.html' };
+        // Look up page config (pages can be array or object)
+        const pages = this.config?.pages;
+        let pageConfig = null;
+        if (Array.isArray(pages)) {
+          pageConfig = pages.find(p => p.id === item.page);
+        } else if (pages && typeof pages === 'object') {
+          pageConfig = pages[item.page];
+        }
+        if (pageConfig) {
+          const url = this.resolvePageUrl('page.html', { id: item.page });
+          return { ...item, url };
+        }
+      }
+      return item;
+    }).filter((item) => this.isSafeUrl(item.url));
 
     const linksHtml = navItems.map((item) => {
       const href = this.isSafeUrl(item.url) ? item.url : this.resolvePageUrl('index.html');

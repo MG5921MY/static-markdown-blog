@@ -185,6 +185,7 @@ window.BlogUI = {
     this.setupProgressBar();
     this.setupDirTreePanel();
     this.setupThemeToggle();
+    this.setupLanguageSwitch();
   },
 
   setupCodeCopyButtons() {
@@ -338,5 +339,67 @@ window.BlogUI = {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       if (this._getSavedTheme() === 'auto') this._updateThemeUI('auto');
     });
+  },
+
+  /* ── Language Switch ─────────────────────────────────── */
+  setupLanguageSwitch() {
+    if (document.querySelector('.lang-switch')) return;
+    if (!window.BlogI18n) return;
+
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) return;
+
+    const currentLocale = BlogI18n.locale || 'zh';
+
+    // Create dropdown wrapper
+    const wrap = document.createElement('div');
+    wrap.className = 'lang-switch';
+
+    // Button shows short label (compact, never overflows)
+    const btn = document.createElement('button');
+    btn.className = 'lang-switch-btn';
+    btn.type = 'button';
+    btn.textContent = BlogI18n.meta?.shortLabel || BlogI18n.meta?.code || currentLocale;
+    btn.title = BlogI18n.meta?.nativeName || currentLocale;
+
+    // Dropdown panel
+    const panel = document.createElement('div');
+    panel.className = 'lang-switch-panel';
+
+    // Populate with available locales
+    const populatePanel = async () => {
+      const locales = await BlogI18n.getAvailableLocales();
+      panel.innerHTML = '';
+      locales.forEach((loc) => {
+        const opt = document.createElement('button');
+        opt.className = 'lang-switch-option' + (loc.code === BlogI18n.locale ? ' active' : '');
+        opt.textContent = loc.nativeName || loc.name || loc.code;
+        opt.addEventListener('click', async () => {
+          if (loc.code === BlogI18n.locale) { wrap.classList.remove('is-open'); return; }
+          BlogI18n.setLocale(loc.code);
+          await BlogI18n.load(loc.code);
+          Blog.applyI18n();
+          btn.textContent = BlogI18n.meta?.shortLabel || BlogI18n.meta?.code || loc.code;
+          btn.title = BlogI18n.meta?.nativeName || loc.code;
+          panel.querySelectorAll('.lang-switch-option').forEach(el => el.classList.remove('active'));
+          opt.classList.add('active');
+          Blog.setNavSiteName();
+          wrap.classList.remove('is-open');
+        });
+        panel.appendChild(opt);
+      });
+    };
+    populatePanel();
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      wrap.classList.toggle('is-open');
+    });
+    document.addEventListener('click', () => wrap.classList.remove('is-open'));
+    panel.addEventListener('click', (e) => e.stopPropagation());
+
+    wrap.appendChild(btn);
+    wrap.appendChild(panel);
+    navLinks.appendChild(wrap);
   }
 };

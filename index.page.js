@@ -30,12 +30,9 @@
   function highlightCard(cardHtml, query) {
     if (!query) return cardHtml;
     const escaped = escapeRegExp(query);
-    const re = new RegExp(`(${escaped})`, 'gi');
-    // Split by HTML tags, highlight only text segments
-    return cardHtml.split(/(<[^>]+>)/).map((segment) => {
-      if (segment.startsWith('<')) return segment;
-      return segment.replace(re, '<mark>$1</mark>');
-    }).join('');
+    return cardHtml.replace(new RegExp(`(>)([^<]*?)(${escaped})([^<]*?)(<)`, 'gi'), (match, pre, before, hit, after, post) => {
+      return `${pre}${before}<mark>${hit}</mark>${after}${post}`;
+    });
   }
 
   function getHeroDisplayConfig() {

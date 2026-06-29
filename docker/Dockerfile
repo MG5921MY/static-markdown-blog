@@ -15,6 +15,10 @@ COPY vendor ./vendor/
 COPY locales ./locales/
 COPY examples ./examples/
 COPY workspace ./workspace/
+COPY favicon.ico ./
+COPY kernel ./kernel/
+COPY plugins ./plugins/
+COPY client ./client/
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \

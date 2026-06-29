@@ -1,13 +1,16 @@
 window.BlogI18n = {
   locale: 'zh',
   strings: {},
+  meta: {},
   _cache: {},
+  _availableLocales: null,
 
   async load(locale) {
     locale = locale || this.detectLocale();
 
     if (this._cache[locale]) {
       this.strings = this._cache[locale];
+      this.meta = this.strings._meta || { code: locale, name: locale, nativeName: locale };
       this.locale = locale;
       return;
     }
@@ -17,6 +20,7 @@ window.BlogI18n = {
       const response = await fetch(`${base}locales/${locale}.json`);
       if (!response.ok) throw new Error(`Failed to load locale: ${locale}`);
       this.strings = await response.json();
+      this.meta = this.strings._meta || { code: locale, name: locale, nativeName: locale };
       this._cache[locale] = this.strings;
       this.locale = locale;
     } catch (err) {
@@ -26,7 +30,27 @@ window.BlogI18n = {
       }
       console.error('Failed to load fallback locale "zh":', err);
       this.strings = {};
+      this.meta = { code: 'zh', name: '简体中文', nativeName: '简体中文' };
     }
+  },
+
+  async getAvailableLocales() {
+    if (this._availableLocales) return this._availableLocales;
+    const known = ['zh', 'en'];
+    const base = this._getBasePath();
+    const available = [];
+    for (const code of known) {
+      try {
+        const resp = await fetch(`${base}locales/${code}.json`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const meta = data._meta || { code, name: code, nativeName: code };
+          available.push(meta);
+        }
+      } catch (_) { /* skip */ }
+    }
+    this._availableLocales = available;
+    return available;
   },
 
   t(key, params) {
@@ -63,13 +87,6 @@ window.BlogI18n = {
   },
 
   _getBasePath() {
-    const scripts = document.getElementsByTagName('script');
-    for (let i = 0; i < scripts.length; i++) {
-      const src = scripts[i].getAttribute('src') || '';
-      if (src.endsWith('blog.i18n.js')) {
-        return src.replace(/blog\.i18n\.js$/, '');
-      }
-    }
     return './';
   }
 };

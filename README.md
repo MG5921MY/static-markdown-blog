@@ -48,10 +48,12 @@ blog serve 8080
 ## 目录结构
 
 ```text
-build.js              构建脚本
+kernel/               内核（config, content, markdown, output, index）
+plugins/              构建时插件（rss, sitemap, search-index, ssg）
+client/               运行时模块（core, render, ui, i18n, blog）
+build.js              构建入口（调用 kernel/index.js）
 serve.js              开发服务器（热重载）
 bin/blog.js           CLI 入口
-package.json          npm 配置
 vendor/               第三方库（marked, lunr, katex）
 themes/               5 个内置主题 + base.css
 locales/              中英双语

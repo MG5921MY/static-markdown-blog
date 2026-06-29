@@ -90,24 +90,34 @@
 ### P6 — 扩展
 - source maps（静态站点价值低）
 
+### P8 — 内核+插件架构重写（✅ 2026-06-29）
+- ✅ kernel/ — 5 个内核文件（config, content, markdown, output, index）
+- ✅ plugins/ — 4 个构建时插件（rss, sitemap, search-index, ssg）
+- ✅ client/ — 5 个运行时模块（core, render, ui, i18n, blog）
+- ✅ build.js — 薄封装层调用 kernel/index.js
+- ✅ 审计修复 — decodeURIComponent 崩溃、highlightCard HTML 安全、DOMPurify 纵深防御、Dockerfile 缺失文件、CDN SRI 支持、RSS 语言从配置读取
+
 ---
 
 ## 架构概览
 
 ```
-build.js          构建（Markdown → HTML、RSS、sitemap、搜索索引、SSG）
-serve.js          开发服务器（热重载、SSE）
-bin/blog.js       CLI 入口
-vendor/           第三方库（marked.js, lunr.js, katex）
-themes/           5 个内置主题 + base.css
-locales/          中英双语
-config/           默认配置
-content/          默认内容
-workspace/site/   用户工作区
-dist/             构建产物
+kernel/             内核（config, content, markdown, output, index）
+plugins/            构建时插件（rss, sitemap, search-index, ssg）
+client/             运行时模块（core, render, ui, i18n, blog）
+build.js            构建入口（调用 kernel/index.js）
+serve.js            开发服务器（热重载、SSE）
+bin/blog.js         CLI 入口
+vendor/             第三方库（marked.js, lunr.js, katex）
+themes/             5 个内置主题 + base.css
+locales/            中英双语
+config/             默认配置
+content/            默认内容
+workspace/site/     用户工作区
+dist/               构建产物
 ```
 
-## 当前就绪度：93%
+## 当前就绪度：95%
 
 | 维度 | 分数 |
 |------|------|

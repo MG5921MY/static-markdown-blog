@@ -1,4 +1,10 @@
 {
+  "_meta": {
+    "code": "en",
+    "name": "English",
+    "nativeName": "English",
+    "shortLabel": "EN"
+  },
   "loading": "Loading...",
   "hero": {
     "learnMore": "Learn More",
@@ -56,7 +62,8 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "prevPost": "Previous",
-    "nextPost": "Next"
+    "nextPost": "Next",
+    "readMore": "Read More"
   },
   "gallery": {
     "title": "Gallery",

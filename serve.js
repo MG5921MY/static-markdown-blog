@@ -151,7 +151,7 @@ function startWatching() {
     path.join(ROOT, 'disclaimer.html'),
     path.join(ROOT, '404.html'),
   ].concat([
-    'blog.js', 'blog.core.js', 'blog.render.js', 'blog.ui.js',
+    'client/core.js', 'client/render.js', 'client/ui.js', 'client/i18n.js', 'client/blog.js',
     'index.page.js', 'moments.page.js', 'links.page.js',
     'gallery.page.js', 'disclaimer.page.js', '404.page.js',
   ].map((f) => path.join(__dirname, f)));
