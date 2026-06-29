@@ -77,6 +77,8 @@
         </section>
       </div>
 
+      <div id="page-custom" style="display: none;"></div>
+
       <div id="page-error" class="error-state" style="display: none; padding: 100px 0;">
         <h2 data-i18n="page.notFound">页面未找到</h2>
         <p id="error-detail" data-i18n="page.notFoundDetail">你访问的页面不存在。</p>
@@ -198,6 +200,25 @@
               : (page.content || '');
             document.getElementById('html-content').innerHTML = htmlContent;
             document.getElementById('page-html').style.display = 'block';
+            return;
+          }
+
+          if (page.type === 'custom') {
+            const container = document.getElementById('page-custom');
+            container.innerHTML = page.content || '';
+            container.style.display = 'block';
+            // Execute inline scripts if scripts were enabled
+            if (page.scripts) {
+              container.querySelectorAll('script').forEach((oldScript) => {
+                const newScript = document.createElement('script');
+                if (oldScript.src) {
+                  newScript.src = oldScript.src;
+                } else {
+                  newScript.textContent = oldScript.textContent;
+                }
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+              });
+            }
             return;
           }
 

@@ -58,6 +58,7 @@ async function build(userOptions) {
     theme: config.theme,
     pages: pagesMap,
     nav: config.nav,
+    navActions: config.navActions,
     features: { ...config.features, ...buildFeatures(config, config._siteRoot) },
     display: config.display,
     beian: config.beian,

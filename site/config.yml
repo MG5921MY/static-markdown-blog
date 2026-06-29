@@ -52,6 +52,12 @@ nav:
   - name: 图库
     url: ./gallery.html
 
+navActions:
+  - type: link
+    icon: "RSS"
+    url: ./feed.xml
+    title: RSS 订阅
+
 features:
   moments:
     enabled: true

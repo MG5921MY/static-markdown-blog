@@ -356,6 +356,33 @@ window.BlogRender = {
 
     if (navEl) navEl.innerHTML = linksHtml;
     if (footerEl) footerEl.innerHTML = footerHtml;
+
+    // Render nav.actions (icon buttons in nav bar)
+    this.renderNavActions(navEl);
+
     this.setupMobileNav();
+  },
+
+  renderNavActions(navEl) {
+    if (!navEl) return;
+    const actions = this.config?.navActions || [];
+    if (!actions.length) return;
+
+    const actionsHtml = actions.map((action) => {
+      const icon = this.escapeHtml(action.icon || '');
+      const title = this.escapeHtml(action.title || '');
+
+      if (action.type === 'link' && action.url && this.isSafeUrl(action.url)) {
+        return `<a href="${this.escapeHtml(action.url)}" class="nav-action" title="${title}" target="_blank" rel="noopener">${icon}</a>`;
+      }
+      if (action.type === 'button' && action.action) {
+        return `<button type="button" class="nav-action" title="${title}" data-action="${this.escapeHtml(action.action)}">${icon}</button>`;
+      }
+      return '';
+    }).filter(Boolean).join('');
+
+    if (actionsHtml) {
+      navEl.insertAdjacentHTML('beforeend', actionsHtml);
+    }
   }
 };

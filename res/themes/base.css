@@ -255,6 +255,35 @@ img.nav-logo {
   border-color: var(--accent);
 }
 
+/* ── Nav Actions (custom buttons) ──────────────────────── */
+.nav-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 6px;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.nav-action:hover {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
 /* ── Language Switch ───────────────────────────────────── */
 .lang-switch {
   position: relative;

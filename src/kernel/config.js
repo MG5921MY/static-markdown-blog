@@ -195,6 +195,7 @@ function loadConfig(cwd, pkgRoot) {
     categories: raw.content?.categories || [],
     pages: normalizePageRecords(raw.content?.pages || []),
     nav: raw.nav || [],
+    navActions: raw.navActions || [],
     features: raw.features || {},
     display: raw.display || {},
     beian: raw.beian || { enabled: false },

@@ -24,16 +24,74 @@ function buildPagesMap(pages) {
   return map;
 }
 
+function readDataFile(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  const ext = path.extname(filePath).toLowerCase();
+  const raw = fs.readFileSync(filePath, 'utf8');
+  if (ext === '.json') {
+    try { return JSON.parse(raw); } catch (_) { return null; }
+  }
+  if (ext === '.yml' || ext === '.yaml') {
+    try { return require('./config').parseYaml(raw); } catch (_) { return null; }
+  }
+  return raw; // .md or other text
+}
+
+function filterScripts(html) {
+  return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '<!-- script removed -->');
+}
+
 function buildPagesContent(pagesMap, siteRoot) {
   for (const page of Object.values(pagesMap)) {
-    if (page.type !== 'markdown' || !page.source) continue;
-    const sourcePath = path.join(siteRoot, page.source);
-    if (!fs.existsSync(sourcePath)) continue;
-    const raw = fs.readFileSync(sourcePath, 'utf8');
-    // Strip front-matter
-    const body = raw.replace(/^---[\s\S]*?---\n?/, '').trim();
-    page.content = marked(body, { gfm: true, breaks: true });
-    page.renderedToHtml = true;
+    if (page.type === 'markdown' && page.source) {
+      const sourcePath = path.join(siteRoot, page.source);
+      if (!fs.existsSync(sourcePath)) continue;
+      const raw = fs.readFileSync(sourcePath, 'utf8');
+      const body = raw.replace(/^---[\s\S]*?---\n?/, '').trim();
+      page.content = marked(body, { gfm: true, breaks: true });
+      page.renderedToHtml = true;
+    }
+
+    if (page.type === 'html' && page.source) {
+      const sourcePath = path.join(siteRoot, page.source);
+      if (!fs.existsSync(sourcePath)) continue;
+      page.content = fs.readFileSync(sourcePath, 'utf8');
+    }
+
+    if (page.type === 'custom' && page.source) {
+      const sourcePath = path.join(siteRoot, page.source);
+      if (!fs.existsSync(sourcePath)) continue;
+      let html = fs.readFileSync(sourcePath, 'utf8');
+
+      // Load data files and embed as JSON
+      if (page.data && typeof page.data === 'object') {
+        const dataEntries = {};
+        for (const [key, relPath] of Object.entries(page.data)) {
+          const dataPath = path.join(siteRoot, relPath);
+          const data = readDataFile(dataPath);
+          if (data !== null) dataEntries[key] = data;
+        }
+        // Inject data into HTML before </head> or </body>
+        const dataScript = Object.entries(dataEntries).map(([key, val]) =>
+          `<script type="application/json" id="data-${key}">${JSON.stringify(val)}</script>`
+        ).join('\n');
+        if (html.includes('</body>')) {
+          html = html.replace('</body>', `${dataScript}\n</body>`);
+        } else {
+          html += '\n' + dataScript;
+        }
+      }
+
+      // Filter scripts if not explicitly enabled
+      if (!page.scripts) {
+        html = filterScripts(html);
+        page._scriptsFiltered = true;
+      }
+
+      page.content = html;
+      page.renderedToHtml = true;
+      page._isCustom = true;
+    }
   }
   return pagesMap;
 }
