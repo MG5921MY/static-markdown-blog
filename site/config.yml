@@ -57,7 +57,7 @@ content:
       icon: "+"
       type: custom
       source: content/pages/skills.html
-      # scripts: true                   # 取消注释以启用 JS（计数器动画）
+      scripts: true                   # 取消注释以启用 JS（计数器动画）
 
     - id: portfolio
       name: 作品集
@@ -66,7 +66,7 @@ content:
       source: content/pages/portfolio.html
       data:                              # 数据文件（构建时嵌入为 JSON）
         projects: content/data/projects.yml
-      # scripts: true                   # 取消注释以启用 JS（3D 倾斜卡片）
+      scripts: true                   # 取消注释以启用 JS（3D 倾斜卡片）
 
     - id: playground
       name: 工具箱
@@ -74,7 +74,7 @@ content:
       type: custom
       source: content/pages/playground.html
       standalone: true                   # 独立模式：隐藏平台导航栏/页脚
-      # scripts: true                   # 取消注释以启用 JS（打字机 + 主题预览）
+      scripts: true                   # 取消注释以启用 JS（打字机 + 主题预览）
 
   # 功能数据文件
   data:
