@@ -31,7 +31,7 @@ function saveManifest(distDir, files) {
 async function build(userOptions) {
   const options = {
     cwd: process.cwd(),
-    pkgRoot: path.resolve(__dirname, '..'),
+    pkgRoot: path.resolve(__dirname, '..', '..'),
     includeDrafts: false,
     incremental: false,
     ...userOptions

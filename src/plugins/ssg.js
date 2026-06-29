@@ -11,7 +11,7 @@ function escapeHtml(value) {
 
 module.exports = function ssgPlugin(buildResult) {
   const { config, categories, pathMap, distDir, pkgRoot } = buildResult;
-  const templatePath = path.join(pkgRoot, 'post.html');
+  const templatePath = path.join(pkgRoot, 'src', 'pages', 'post.html');
   if (!fs.existsSync(templatePath)) return { file: 'ssg', count: 0 };
 
   const template = fs.readFileSync(templatePath, 'utf8');

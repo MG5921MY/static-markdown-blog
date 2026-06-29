@@ -164,26 +164,26 @@ function readText(filePath) {
 }
 
 function loadConfig(cwd, pkgRoot) {
-  const workspacePath = path.join(cwd, 'workspace', 'site', 'config', 'blog.config.yml');
-  const rootPath = path.join(cwd, 'config', 'blog.config.yml');
-  const pkgPath = path.join(pkgRoot, 'config', 'blog.config.yml');
+  const sitePath = path.join(cwd, 'site', 'config.yml');
+  const pkgSitePath = path.join(pkgRoot, 'site', 'config.yml');
+  const legacyPath = path.join(pkgRoot, 'config', 'blog.config.yml');
 
   let filePath, siteRoot, mode;
 
-  if (fs.existsSync(workspacePath)) {
-    filePath = workspacePath;
-    siteRoot = path.join(cwd, 'workspace', 'site');
-    mode = 'workspace';
-  } else if (fs.existsSync(rootPath)) {
-    filePath = rootPath;
-    siteRoot = cwd;
-    mode = 'root';
-  } else if (fs.existsSync(pkgPath)) {
-    filePath = pkgPath;
+  if (fs.existsSync(sitePath)) {
+    filePath = sitePath;
+    siteRoot = path.join(cwd, 'site');
+    mode = 'site';
+  } else if (fs.existsSync(pkgSitePath)) {
+    filePath = pkgSitePath;
+    siteRoot = path.join(pkgRoot, 'site');
+    mode = 'package-site';
+  } else if (fs.existsSync(legacyPath)) {
+    filePath = legacyPath;
     siteRoot = pkgRoot;
-    mode = 'package';
+    mode = 'legacy';
   } else {
-    throw new Error('No config found. Expected workspace/site/config/blog.config.yml or config/blog.config.yml');
+    throw new Error('No config found. Expected site/config.yml or config/blog.config.yml');
   }
 
   const raw = parseYaml(readText(filePath));

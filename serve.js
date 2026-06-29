@@ -137,23 +137,23 @@ function runRebuild() {
 
 function startWatching() {
   const watchDirs = [
-    path.join(ROOT, 'workspace', 'site'),
+    path.join(ROOT, 'site'),
     path.join(__dirname, 'themes'),
   ];
   const watchFiles = [
-    path.join(ROOT, 'index.html'),
-    path.join(ROOT, 'post.html'),
-    path.join(ROOT, 'page.html'),
-    path.join(ROOT, 'moments.html'),
-    path.join(ROOT, 'links.html'),
-    path.join(ROOT, 'gallery.html'),
-    path.join(ROOT, 'about.html'),
-    path.join(ROOT, 'disclaimer.html'),
-    path.join(ROOT, '404.html'),
+    path.join(__dirname, 'src', 'pages', 'index.html'),
+    path.join(__dirname, 'src', 'pages', 'post.html'),
+    path.join(__dirname, 'src', 'pages', 'page.html'),
+    path.join(__dirname, 'src', 'pages', 'moments.html'),
+    path.join(__dirname, 'src', 'pages', 'links.html'),
+    path.join(__dirname, 'src', 'pages', 'gallery.html'),
+    path.join(__dirname, 'src', 'pages', 'about.html'),
+    path.join(__dirname, 'src', 'pages', 'disclaimer.html'),
+    path.join(__dirname, 'src', 'pages', '404.html'),
   ].concat([
-    'client/core.js', 'client/render.js', 'client/ui.js', 'client/i18n.js', 'client/blog.js',
-    'index.page.js', 'moments.page.js', 'links.page.js',
-    'gallery.page.js', 'disclaimer.page.js', '404.page.js',
+    'src/client/core.js', 'src/client/render.js', 'src/client/ui.js', 'src/client/i18n.js', 'src/client/blog.js',
+    'src/pages/index.page.js', 'src/pages/moments.page.js', 'src/pages/links.page.js',
+    'src/pages/gallery.page.js', 'src/pages/disclaimer.page.js', 'src/pages/404.page.js',
   ].map((f) => path.join(__dirname, f)));
 
   let watchCount = 0;

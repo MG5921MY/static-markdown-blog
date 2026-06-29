@@ -1,4 +1,4 @@
-const { build } = require('./kernel/index');
+const { build } = require('./src/kernel/index');
 
 const options = {
   includeDrafts: process.argv.includes('--include-drafts'),

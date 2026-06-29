@@ -4,10 +4,7 @@ const readline = require('readline');
 
 const ROOT = process.cwd();
 const PKG_ROOT = __dirname;
-const STARTER_DIR = path.join(PKG_ROOT, 'examples', 'starter-modern', 'site');
-const ROOT_CONTENT = path.join(PKG_ROOT, 'content');
-const ROOT_ASSETS = path.join(PKG_ROOT, 'assets');
-const TARGET_DIR = path.join(ROOT, 'workspace', 'site');
+const SITE_DIR = path.join(ROOT, 'site');
 
 function exists(targetPath) {
   return fs.existsSync(targetPath);
@@ -61,7 +58,7 @@ function ask(prompt, question) {
 
 async function confirmOverwrite(prompt, targetPath) {
   console.log(`\nTarget already has content: ${targetPath}`);
-  const answer = await ask(prompt, 'Overwrite workspace data? [y/N]: ');
+  const answer = await ask(prompt, 'Overwrite site data? [y/N]: ');
   return answer === 'y' || answer === 'yes';
 }
 
@@ -69,49 +66,46 @@ async function main() {
   console.log('');
   console.log('Static blog workspace initializer');
   console.log('');
-  console.log(`Starter : ${path.relative(ROOT, STARTER_DIR)}`);
-  console.log(`Content : ${path.relative(ROOT, ROOT_CONTENT)}`);
-  console.log(`Assets  : ${path.relative(ROOT, ROOT_ASSETS)}`);
-  console.log(`Target  : ${path.relative(ROOT, TARGET_DIR)}`);
+  console.log(`Target  : ${path.relative(ROOT, SITE_DIR)}`);
   console.log('');
 
-  if (!exists(STARTER_DIR)) {
-    throw new Error(`Starter site not found: ${STARTER_DIR}`);
-  }
-
   const prompt = createPrompt();
-  const start = await ask(prompt, 'Initialize workspace/site? [Y/n]: ');
+  const start = await ask(prompt, 'Initialize site/? [Y/n]: ');
   if (start === 'n' || start === 'no') {
     prompt.close();
     console.log('\nInitialization cancelled.');
     return;
   }
 
-  if (isMeaningfulDirectory(TARGET_DIR)) {
-    const confirmed = await confirmOverwrite(prompt, TARGET_DIR);
+  if (isMeaningfulDirectory(SITE_DIR)) {
+    const confirmed = await confirmOverwrite(prompt, SITE_DIR);
     if (!confirmed) {
       prompt.close();
       console.log('\nInitialization cancelled.');
       return;
     }
-    removeRecursive(TARGET_DIR);
+    removeRecursive(SITE_DIR);
   }
 
-  ensureDir(TARGET_DIR);
+  ensureDir(SITE_DIR);
+  ensureDir(path.join(SITE_DIR, 'content', 'posts'));
+  ensureDir(path.join(SITE_DIR, 'content', 'pages'));
+  ensureDir(path.join(SITE_DIR, 'content', 'data'));
+  ensureDir(path.join(SITE_DIR, 'assets'));
+  ensureDir(path.join(SITE_DIR, 'themes', 'custom'));
 
-  // Copy starter (config + custom themes)
-  copyRecursive(STARTER_DIR, TARGET_DIR);
-
-  // Copy repo baseline content and assets
-  if (exists(ROOT_CONTENT)) copyRecursive(ROOT_CONTENT, path.join(TARGET_DIR, 'content'));
-  if (exists(ROOT_ASSETS)) copyRecursive(ROOT_ASSETS, path.join(TARGET_DIR, 'assets'));
+  // Copy default config from package if available
+  const defaultConfig = path.join(PKG_ROOT, 'site', 'config.yml');
+  if (exists(defaultConfig)) {
+    fs.copyFileSync(defaultConfig, path.join(SITE_DIR, 'config.yml'));
+  }
 
   prompt.close();
 
   console.log('\nWorkspace initialized.');
   console.log('Next steps:');
-  console.log('1. Edit workspace/site/config/blog.config.yml');
-  console.log('2. Add posts under workspace/site/content/posts/');
+  console.log('1. Edit site/config.yml');
+  console.log('2. Add posts under site/content/posts/');
   console.log('3. Run node build.js');
   console.log('4. Run node serve.js');
   console.log('');
