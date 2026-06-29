@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadConfig } = require('./config');
 const { scanContent, fileHash } = require('./content');
-const { writeBuildOutputs, cleanDir, writeJson, buildFeatures } = require('./output');
+const { writeBuildOutputs, cleanDir, writeJson, buildFeatures, buildPagesContent } = require('./output');
 
 function loadPlugins() {
   const names = ['static-copy', 'rss', 'sitemap', 'search-index', 'ssg'];
@@ -50,11 +50,13 @@ async function build(userOptions) {
     distDir
   });
 
+  const pagesMap = buildPagesContent(config.pages, config._siteRoot);
+
   const siteConfig = {
     site: config.site,
     deployment: config.deployment,
     theme: config.theme,
-    pages: config.pages,
+    pages: pagesMap,
     nav: config.nav,
     features: { ...config.features, ...buildFeatures(config, config._siteRoot) },
     display: config.display,
