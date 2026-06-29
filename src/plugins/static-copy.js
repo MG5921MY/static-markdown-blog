@@ -55,13 +55,13 @@ module.exports = function staticCopyPlugin(buildResult) {
     if (copyFileSafe(path.join(pkgRoot, f.src), path.join(distDir, f.dest))) count++;
   }
 
-  // Copy directories (assets, locales, vendor, themes)
-  for (const d of ['assets', 'locales', 'vendor']) {
+  // Copy platform directories (locales, vendor, themes)
+  for (const d of ['locales', 'vendor']) {
     count += copyDirRecursive(path.join(pkgRoot, d), path.join(distDir, d));
   }
   count += copyDirRecursive(path.join(pkgRoot, 'themes'), path.join(distDir, 'themes'));
 
-  // Copy workspace assets (overlay)
+  // Copy user assets and custom themes (overlay)
   if (siteRoot) {
     const wsAssets = path.join(siteRoot, 'assets');
     if (fs.existsSync(wsAssets)) count += copyDirRecursive(wsAssets, path.join(distDir, 'assets'));

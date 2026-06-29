@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectDir = Split-Path -Parent $ScriptDir
-$WorkspaceDir = Join-Path $ProjectDir "workspace\site"
+$WorkspaceDir = Join-Path $ProjectDir "site"
 $ImageName = "static-blog"
 $ContainerName = "static-blog"
 $Port = if ($env:PORT) { $env:PORT } else { "8080" }
@@ -22,20 +22,20 @@ function Build-Image {
 }
 
 function Initialize-Workspace {
-    Write-Info "Initializing workspace/site from container seed..."
+    Write-Info "Initializing site/ from container defaults..."
     New-Item -ItemType Directory -Path $WorkspaceDir -Force | Out-Null
 
     $existing = Get-ChildItem -LiteralPath $WorkspaceDir -Force | Where-Object { $_.Name -ne ".gitkeep" }
     if ($existing.Count -gt 0) {
-        Write-Warn "workspace/site already has content. Skipping initialization."
+        Write-Warn "site/ already has content. Skipping initialization."
         return
     }
 
     Build-Image
     docker create --name "${ContainerName}-init" $ImageName | Out-Null
-    docker cp "${ContainerName}-init:/app/examples/docker-seed/site/." "$WorkspaceDir\"
+    docker cp "${ContainerName}-init:/app/site/." "$WorkspaceDir\"
     docker rm "${ContainerName}-init" | Out-Null
-    Write-Info "workspace/site initialized."
+    Write-Info "site/ initialized."
 }
 
 function Start-Blog {
@@ -60,7 +60,7 @@ function Start-Blog {
         --name $ContainerName `
         --restart unless-stopped `
         -p "${Port}:8080" `
-        -v "${WorkspaceDir}:/app/workspace/site" `
+        -v "${WorkspaceDir}:/app/site" `
         --security-opt no-new-privileges:true `
         --tmpfs /tmp `
         --memory 128m `
@@ -114,7 +114,7 @@ Static blog Docker helper
 Usage: .\deploy.ps1 [command]
 
 Commands:
-  init     Seed workspace/site from the bundled starter
+  init     Seed site/ from the bundled defaults
   start    Start the container
   stop     Stop the container
   restart  Restart the container

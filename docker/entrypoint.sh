@@ -2,8 +2,7 @@
 
 set -eu
 
-WORKSPACE_DIR="/app/workspace/site"
-SEED_DIR="/app/examples/docker-seed/site"
+WORKSPACE_DIR="/app/site"
 
 is_empty_dir() {
   target="$1"
@@ -22,18 +21,14 @@ echo ""
 mkdir -p "$WORKSPACE_DIR"
 
 if is_empty_dir "$WORKSPACE_DIR"; then
-  echo "[INIT] workspace/site is empty, seeding..."
-  # Copy starter config + custom themes
-  cp -R "$SEED_DIR"/. "$WORKSPACE_DIR"/
-  # Copy repo baseline content and assets
-  if [ -d "/app/content" ]; then cp -R /app/content "$WORKSPACE_DIR/content"; fi
-  if [ -d "/app/assets" ]; then cp -R /app/assets "$WORKSPACE_DIR/assets"; fi
+  echo "[INIT] site/ is empty, seeding from defaults..."
+  cp -R /app/site/. "$WORKSPACE_DIR"/
 else
-  echo "[OK] Using existing workspace/site content."
+  echo "[OK] Using existing site/ content."
 fi
 
-if [ ! -f "$WORKSPACE_DIR/config/blog.config.yml" ]; then
-  echo "[ERROR] Missing workspace config: $WORKSPACE_DIR/config/blog.config.yml"
+if [ ! -f "$WORKSPACE_DIR/config.yml" ]; then
+  echo "[ERROR] Missing workspace config: $WORKSPACE_DIR/config.yml"
   exit 1
 fi
 

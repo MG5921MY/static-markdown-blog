@@ -9,7 +9,7 @@ services:
     ports:
       - "${PORT:-8080}:8080"
     volumes:
-      - ../workspace/site:/app/workspace/site
+      - ../site:/app/site
     environment:
       NODE_ENV: production
       PORT: 8080

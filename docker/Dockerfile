@@ -1,28 +1,20 @@
-FROM node:22-alpine3.21
+FROM node:20-alpine
 
 WORKDIR /app
 
+COPY src ./src/
+COPY themes ./themes/
+COPY locales ./locales/
+COPY vendor ./vendor/
+COPY bin ./bin/
 COPY *.js ./
-COPY *.html ./
 COPY *.json ./
 COPY *.ico ./
-COPY assets ./assets/
-COPY bin ./bin/
-COPY config ./config/
-COPY content ./content/
-COPY themes ./themes/
-COPY vendor ./vendor/
-COPY locales ./locales/
-COPY examples ./examples/
-COPY workspace ./workspace/
-COPY favicon.ico ./
-COPY kernel ./kernel/
-COPY plugins ./plugins/
-COPY client ./client/
+COPY site ./site/
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
-    && mkdir -p /app/workspace/site /app/dist
+    && mkdir -p /app/dist
 
 EXPOSE 8080
 

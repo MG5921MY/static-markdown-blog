@@ -20,50 +20,66 @@
 - **热重载** — 开发服务器 SSE 自动刷新
 - **Docker** — 原生支持，一键部署
 
-## 快速开始
+## 发行方式
+
+### 1. 源码构建
 
 ```bash
-# 初始化工作区
-node init.js
-
-# 编辑配置
-# workspace/site/config/blog.config.yml
-
-# 构建
-node build.js
-
-# 预览
-node serve.js
+git clone <repo>
+cd 静态博客
+node init.js          # 初始化 site/ 工作区
+node build.js         # 构建到 dist/
+node serve.js         # 预览 http://localhost:8080
 ```
 
-CLI 方式：
+### 2. Docker 部署
 
 ```bash
-npm install -g .
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+首次启动自动从镜像内置的 `site/` 默认内容初始化。挂载 `site/` 目录可持久化用户数据。
+
+### 3. npm 安装（开发中）
+
+```bash
+npm install -g static-markdown-blog
+mkdir my-blog && cd my-blog
 blog init
 blog build
-blog serve 8080
+blog serve
 ```
+
+### 4. 通用静态托管
+
+`dist/` 目录即完整产物，可直接部署到 Vercel / Netlify / Cloudflare Pages / GitHub Pages / Nginx。
 
 ## 目录结构
 
 ```text
-kernel/               内核（config, content, markdown, output, index）
-plugins/              构建时插件（rss, sitemap, search-index, ssg）
-client/               运行时模块（core, render, ui, i18n, blog）
-build.js              构建入口（调用 kernel/index.js）
-serve.js              开发服务器（热重载）
-bin/blog.js           CLI 入口
-vendor/               第三方库（marked, lunr, katex）
-themes/               5 个内置主题 + base.css
-locales/              中英双语
-config/               默认配置
-content/              默认内容
-workspace/site/       用户工作区
-examples/             示例站点
-docker/               Dockerfile + compose
-.github/workflows/    GitHub Actions
-docs/architecture/    主题引擎参考文档
+src/                    平台代码（用户不碰）
+  kernel/               构建引擎（config, content, markdown, output, paths）
+  plugins/              构建时插件（static-copy, rss, sitemap, search-index, ssg）
+  client/               运行时模块（core, nav, render, ui, i18n, blog）
+  pages/                页面模板 + 页面逻辑
+
+site/                   用户工作区（用户唯一需要碰的目录）
+  config.yml            用户配置
+  content/              用户内容（posts/, pages/, data/）
+  assets/               用户资源
+  themes/custom/        用户自定义主题
+
+themes/                 内置主题（5 个 + base.css）
+locales/                i18n（zh.json, en.json）
+vendor/                 第三方库（marked, lunr, katex）
+docker/                 Docker 部署配置
+docs/                   文档
+bin/                    CLI 入口
+
+build.js                构建入口
+serve.js                开发服务器（热重载）
+init.js                 初始化脚本
+test.js                 自动化测试
 ```
 
 ## 内置主题
@@ -103,30 +119,18 @@ docs/architecture/    主题引擎参考文档
 }
 ```
 
-## 部署
-
-### GitHub Pages
-
-推送到 main 分支自动构建部署（`.github/workflows/deploy.yml`）。
-
-### Docker
-
-```bash
-docker compose -f docker/docker-compose.yml up -d --build
-```
-
-首次启动自动从 `examples/docker-seed/` 初始化。
-
-### 通用静态托管
-
-`dist/` 目录即完整产物，可直接部署到 Vercel / Netlify / Cloudflare Pages / Nginx。
-
 ## 构建选项
 
 ```bash
 node build.js                    # 全量构建
 node build.js --incremental      # 增量构建（跳过未变化文件）
 node build.js --include-drafts   # 包含草稿
+```
+
+## 测试
+
+```bash
+node test.js                     # 运行 212 项自动化测试
 ```
 
 ## 文档

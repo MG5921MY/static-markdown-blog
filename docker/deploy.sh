@@ -8,7 +8,7 @@ PORT="${PORT:-8080}"
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-WORKSPACE_DIR="$PROJECT_DIR/workspace/site"
+WORKSPACE_DIR="$PROJECT_DIR/site"
 
 log_info() { echo "[INFO] $1"; }
 log_warn() { echo "[WARN] $1"; }
@@ -20,19 +20,19 @@ build() {
 }
 
 init() {
-  log_info "Initializing workspace/site from container seed..."
+  log_info "Initializing site/ from container defaults..."
   mkdir -p "$WORKSPACE_DIR"
 
   if [ -n "$(find "$WORKSPACE_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-    log_warn "workspace/site already has content. Skipping initialization."
+    log_warn "site/ already has content. Skipping initialization."
     exit 0
   fi
 
   build
   docker create --name "${CONTAINER_NAME}-init" "$IMAGE_NAME" >/dev/null
-  docker cp "${CONTAINER_NAME}-init:/app/examples/docker-seed/site/." "$WORKSPACE_DIR"/
+  docker cp "${CONTAINER_NAME}-init:/app/site/." "$WORKSPACE_DIR"/
   docker rm "${CONTAINER_NAME}-init" >/dev/null
-  log_info "workspace/site initialized."
+  log_info "site/ initialized."
 }
 
 start() {
@@ -56,7 +56,7 @@ start() {
     --name "$CONTAINER_NAME" \
     --restart unless-stopped \
     -p "${PORT}:8080" \
-    -v "$WORKSPACE_DIR:/app/workspace/site" \
+    -v "$WORKSPACE_DIR:/app/site" \
     --security-opt no-new-privileges:true \
     --tmpfs /tmp \
     --memory 128m \
@@ -111,7 +111,7 @@ Static blog Docker helper
 Usage: ./deploy.sh [command]
 
 Commands:
-  init     Seed workspace/site from the bundled starter
+  init     Seed site/ from the bundled defaults
   start    Start the container
   stop     Stop the container
   restart  Restart the container
