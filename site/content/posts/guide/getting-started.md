@@ -1,6 +1,6 @@
 ---
 title: 5 分钟快速开始
-date: 2026-06-29
+date: 2026-06-30
 tags: [guide, start]
 summary: 从安装到第一篇文章发布，5 分钟内完成。
 ---
@@ -51,7 +51,7 @@ site:
 ```markdown
 ---
 title: 我的第一篇文章
-date: 2026-06-29
+date: 2026-06-30
 tags: [hello, blog]
 summary: 这是我的第一篇博客文章。
 ---
@@ -62,9 +62,9 @@ summary: 这是我的第一篇博客文章。
 
 ## 代码块
 
-\```javascript
+```javascript
 console.log('Hello, blog!');
-\```
+```
 
 ## 列表
 
@@ -102,7 +102,7 @@ node build.js --include-drafts   # 包含草稿
 
 `dist/` 目录即完整产物，可直接部署到：
 
-- **GitHub Pages** — 推送到 main 分支自动构建（`.github/workflows/deploy.yml`）
+- **GitHub Pages** — 推送到 main 分支自动构建
 - **Vercel / Netlify / Cloudflare Pages** — 指向 `dist/` 目录
 - **Nginx** — 将 `dist/` 复制到 web 根目录
 - **Docker** — `docker compose up -d --build`
@@ -118,27 +118,25 @@ theme:
 
 重新构建即可。主题通过 CSS 变量驱动，切换不需要改任何内容。
 
-## 添加自定义主题
+## 添加自定义页面
 
-在 `site/themes/custom/my-theme/` 下创建：
+在 `site/config.yml` 的 `content.pages` 中添加：
 
+```yaml
+pages:
+  - id: portfolio
+    name: 作品集
+    type: custom
+    source: content/pages/portfolio.html
+    data:
+      projects: content/data/projects.yml
 ```
-my-theme/
-  theme.yml          ← 主题元数据
-  theme.css          ← 样式（@import "../base.css" 后覆盖 token）
-```
 
-theme.css 最小示例：
-
-```css
-@import "../../base.css";
-
-:root {
-  --bg-primary: #ffffff;
-  --text-primary: #1a1a1a;
-  --accent: #0066ff;
-}
-```
+自定义页面支持：
+- **嵌入模式** — 显示平台导航栏/页脚，CSS 自动隔离
+- **独立模式** — `standalone: true`，隐藏平台 UI，页面自己管理
+- **数据嵌入** — `data` 字段指定 YAML/JSON 文件，构建时嵌入
+- **JS 执行** — `scripts: true` 显式开启，默认关闭
 
 ## 更多功能
 
@@ -147,9 +145,10 @@ theme.css 最小示例：
 | 瞬间（短内容） | `site/content/data/moments.yml` |
 | 友链 | `site/content/data/links.yml` |
 | 图库 | `site/content/data/gallery.yml` |
-| 自定义页面 | `site/content/pages/` + `site/config.yml` 的 `content.pages` |
+| 自定义页面 | `site/content/pages/` + `site/config.yml` |
 | 评论 | `site/config.yml` 的 `comments` |
 | 备案信息 | `site/config.yml` 的 `beian` |
 | 数学公式 | 文章中写 `$E=mc^2$` 或 `$$\int_0^1$$` |
 | 流程图 | 文章中写 ` ```mermaid ` 代码块 |
 | 搜索 | 自动启用，构建时生成索引 |
+| 导航栏按钮 | `site/config.yml` 的 `navActions` |

@@ -30,6 +30,15 @@
 
 切换主题：修改 `site/config.yml` 中的 `theme.active`。
 
+## 高级功能
+
+- **自定义页面** — 支持 HTML/CSS/JS，可嵌入数据文件
+- **独立页面** — `standalone: true` 隐藏平台导航栏
+- **数学公式** — `$E=mc^2$` 或 `$$\int_0^1$$`
+- **流程图** — ` ```mermaid ` 代码块
+- **评论** — Giscus 可选集成
+- **备案** — ICP + 公安备案支持
+
 ## 更多信息
 
 - 主题开发：`docs/architecture/theme-engine-reference.md`

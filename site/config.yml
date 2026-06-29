@@ -1,27 +1,38 @@
+# ═══════════════════════════════════════════════════════
+# Static Markdown Blog — 站点配置
+# 文档: docs/architecture/theme-engine-reference.md
+# ═══════════════════════════════════════════════════════
+
+# ── 站点信息 ────────────────────────────────────────────
 site:
-  name: Mijiao Notes
-  alias: 静态 Markdown 博客
+  name: Mijiao Notes                     # 站点名称（显示在导航栏和页脚）
+  alias: 静态 Markdown 博客               # 副标题（显示在 Hero 区域）
   description: Markdown first, theme driven, base-path agnostic static blog.
-  author: MijiaoGame
-  email: ""
-  favicon: assets/favicon.svg
-  logo: ""
+  author: MijiaoGame                      # 作者名称
+  email: ""                               # 联系邮箱（留空则不显示）
+  favicon: assets/favicon.svg             # 网站图标路径
+  logo: ""                                # Logo 图片路径（留空则显示文字）
 
+# ── 部署配置 ────────────────────────────────────────────
 deployment:
-  basePath: auto
-  siteUrl: ""
+  basePath: auto                          # 子路径：auto = 自动检测，或手动指定如 /blog/
+  siteUrl: ""                             # 完整站点 URL（用于 RSS/sitemap），如 https://example.com
 
+# ── 主题 ────────────────────────────────────────────────
+# 可选: graphite / aurora / paper / mono / terminal
+# 自定义主题: 将主题放在 site/themes/custom/<theme-id>/
 theme:
   active: graphite
 
-
+# ── 内容 ────────────────────────────────────────────────
 content:
+  # 分类：每篇文章属于一个分类
   categories:
     - id: guide
       name: 快速开始
       icon: "->"
-      path: content/posts/guide
-      type: flat
+      path: content/posts/guide          # Markdown 文件目录
+      type: flat                         # flat = 平铺，tree = 目录树导航
       description: 新结构上手与部署入口。
     - id: themes
       name: 主题系统
@@ -29,38 +40,52 @@ content:
       path: content/posts/themes
       type: flat
       description: 主题设计基线与 token 体系说明。
+
+  # 自定义页面
+  # type: markdown  — Markdown 内容页面（构建时渲染）
+  # type: custom    — 自定义 HTML 页面（支持数据嵌入、JS 执行、独立模式）
+  # type: category  — 分类文章列表页面
   pages:
     - id: about
       name: 关于
       icon: "i"
       type: markdown
       source: content/pages/about.md
+
     - id: skills
       name: 技能矩阵
       icon: "+"
       type: custom
       source: content/pages/skills.html
-      # scripts: true  # 取消注释以启用交互功能
+      # scripts: true                   # 取消注释以启用 JS（计数器动画）
+
     - id: portfolio
       name: 作品集
       icon: "*"
       type: custom
       source: content/pages/portfolio.html
-      data:
+      data:                              # 数据文件（构建时嵌入为 JSON）
         projects: content/data/projects.yml
-      # scripts: true  # 取消注释以启用交互功能
+      # scripts: true                   # 取消注释以启用 JS（3D 倾斜卡片）
+
     - id: playground
       name: 工具箱
       icon: ">"
       type: custom
       source: content/pages/playground.html
-      standalone: true
-      # scripts: true   # 取消注释以启用交互功能（调色板生成器）
+      standalone: true                   # 独立模式：隐藏平台导航栏/页脚
+      # scripts: true                   # 取消注释以启用 JS（打字机 + 主题预览）
+
+  # 功能数据文件
   data:
     moments: content/data/moments.yml
     links: content/data/links.yml
     gallery: content/data/gallery.yml
 
+# ── 导航栏 ──────────────────────────────────────────────
+# 支持两种方式：
+#   page: <page-id>  — 引用 content.pages 中的页面
+#   url: <path>      — 直接指定 URL
 nav:
   - name: 首页
     page: index
@@ -79,61 +104,71 @@ nav:
   - name: 图库
     url: ./gallery.html
 
+# 导航栏右侧图标按钮
+# type: link   — 链接按钮
+# type: button — 按钮（配合 theme.js 处理点击事件）
 navActions:
   - type: link
     icon: "RSS"
     url: ./feed.xml
     title: RSS 订阅
 
+# ── 功能模块 ────────────────────────────────────────────
 features:
   moments:
     enabled: true
-    source: content/data/moments.yml
+    source: content/data/moments.yml     # 瞬间数据文件
   links:
     enabled: true
-    source: content/data/links.yml
+    source: content/data/links.yml       # 友链数据文件
   gallery:
     enabled: true
-    source: content/data/gallery.yml
+    source: content/data/gallery.yml     # 图库数据文件
 
+# ── 备案信息 ────────────────────────────────────────────
+# 默认关闭，中国大陆网站需要配置
 beian:
   enabled: false
-  displayName: ""
+  displayName: ""                        # 显示名称
   icp:
     enabled: false
-    number: ""
+    number: ""                           # 如: 京ICP备XXXXXXXX号
     url: "https://beian.miit.gov.cn/"
   police:
     enabled: false
-    number: ""
+    number: ""                           # 如: 京公网安备XXXXXXXXXXXX号
     url: ""
-    statusText: ""
+    statusText: ""                       # 无链接时的纯文本替代
 
+# ── 评论系统 ────────────────────────────────────────────
+# 默认关闭，开启需要配置 GitHub 仓库
+# 文档: https://giscus.app/zh-CN
 comments:
   enabled: false
   provider: giscus
   giscus:
-    repo: ""
-    repoId: ""
-    category: ""
-    categoryId: ""
+    repo: ""                             # 如: owner/repo
+    repoId: ""                           # GitHub Discussions repo ID
+    category: ""                         # Discussion 分类名
+    categoryId: ""                       # Discussion 分类 ID
     mapping: pathname
     reactionsEnabled: true
     emitMetadata: false
 
+# ── 显示设置 ────────────────────────────────────────────
 display:
-  postsPerPage: 6
-  summaryLength: 140
-  heroBadge: "Markdown First"
+  postsPerPage: 6                        # 首页每页文章数
+  summaryLength: 140                     # 文章摘要截取长度（字符）
+  heroBadge: "Markdown First"            # Hero 区徽章文字
   heroSubtitle: "少配置、强主题、可部署到任意子路径。"
-  showSiteInfo: true
-  siteType: 静态博客
+  showSiteInfo: true                     # 是否显示站点信息区
+  siteType: 静态博客                      # 站点类型标签
   contentDirection: Markdown / Themes / Notes
   hero:
-    immersive: false
+    immersive: false                     # 沉浸式首页
     background:
       enabled: false
-      image: ""
+      image: ""                          # 背景图片路径
       focalPoint: "center center"
       fit: "cover"
       dimming: 0.42
