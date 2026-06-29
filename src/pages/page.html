@@ -222,7 +222,7 @@
 
               var iframe = document.createElement('iframe');
               iframe.className = 'custom-iframe';
-              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-top-navigation');
               iframe.setAttribute('loading', 'lazy');
               iframe.srcdoc = srcdoc;
               container.appendChild(iframe);
