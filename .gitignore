@@ -4,11 +4,13 @@ dist/
 # Dependencies
 node_modules/
 
-# Temporary / internal
-output/
+# IDE / Agent tools (local only, not tracked)
+.kilo/
 .tasks/
 .workbuddy/
-.kilo/
+
+# Temporary
+output/
 tasks/
 docs/compose/
 
