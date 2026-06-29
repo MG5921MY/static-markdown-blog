@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 
 function createPaths(cwd, pkgRoot) {
-  // pkgRoot: where the platform code lives (build.js, src/, themes/, locales/, vendor/)
+  // pkgRoot: where the platform code lives (build.js, src/, res/themes/, res/locales/, res/vendor/)
   // cwd: where the user runs the command (their project directory)
   const resolvedPkg = pkgRoot || cwd;
   const resolvedCwd = cwd;
@@ -24,9 +24,9 @@ function createPaths(cwd, pkgRoot) {
     pluginsDir: path.join(resolvedPkg, 'src', 'plugins'),
     clientDir: path.join(resolvedPkg, 'src', 'client'),
     pagesDir: path.join(resolvedPkg, 'src', 'pages'),
-    themesDir: path.join(resolvedPkg, 'themes'),
-    localesDir: path.join(resolvedPkg, 'locales'),
-    vendorDir: path.join(resolvedPkg, 'vendor'),
+    themesDir: path.join(resolvedPkg, 'res', 'themes'),
+    localesDir: path.join(resolvedPkg, 'res', 'locales'),
+    vendorDir: path.join(resolvedPkg, 'res', 'vendor'),
     binDir: path.join(resolvedPkg, 'bin'),
     defaultSiteDir: path.join(resolvedPkg, 'site'),
 
@@ -69,11 +69,11 @@ function createPaths(cwd, pkgRoot) {
         // Client JS
         client: path.join(resolvedPkg, 'src', 'client'),
         // Built-in themes
-        themes: path.join(resolvedPkg, 'themes'),
+        themes: path.join(resolvedPkg, 'res', 'themes'),
         // Locales
-        locales: path.join(resolvedPkg, 'locales'),
+        locales: path.join(resolvedPkg, 'res', 'locales'),
         // Vendor libs
-        vendor: path.join(resolvedPkg, 'vendor'),
+        vendor: path.join(resolvedPkg, 'res', 'vendor'),
         // User assets (overlay)
         userAssets: path.join(resolvedCwd, 'site', 'assets'),
         // User custom themes (overlay)
@@ -86,8 +86,8 @@ function createPaths(cwd, pkgRoot) {
       return {
         dirs: [
           path.join(resolvedCwd, 'site'),        // User workspace
-          path.join(resolvedPkg, 'themes'),       // Built-in themes
-          path.join(resolvedPkg, 'locales'),      // Locales
+          path.join(resolvedPkg, 'res', 'themes'),       // Built-in themes
+          path.join(resolvedPkg, 'res', 'locales'),      // Locales
         ],
         files: [
           // Platform templates

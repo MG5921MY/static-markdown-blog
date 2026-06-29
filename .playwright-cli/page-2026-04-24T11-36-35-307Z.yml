@@ -1,0 +1,56 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Mijiao Notes" [ref=e3] [cursor=pointer]:
+      - /url: ./index.html
+      - generic [ref=e5]: Mijiao Notes
+    - generic [ref=e6]:
+      - link "首页" [ref=e7] [cursor=pointer]:
+        - /url: ./index.html
+      - link "关于" [ref=e8] [cursor=pointer]:
+        - /url: ./page.html?id=about
+    - button "菜单" [ref=e9]
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: Markdown First
+        - heading "静态 Markdown 博客" [level=1] [ref=e14]
+        - paragraph [ref=e15]: 少配置、强主题、可部署到任意子路径。
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - heading "最新文章" [level=2] [ref=e18]
+          - generic [ref=e19]:
+            - textbox "搜索文章..." [ref=e20]
+            - generic [ref=e21]: 🔍
+        - generic [ref=e22]:
+          - button "All" [ref=e23] [cursor=pointer]
+          - button "→ 快速开始 (1)" [ref=e24] [cursor=pointer]
+          - button "* 主题系统 (1)" [ref=e25] [cursor=pointer]
+        - generic [ref=e26]:
+          - article [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e29]: → 快速开始
+              - generic [ref=e30]: 2026年4月24日
+            - heading "5 分钟快速开始" [level=3] [ref=e31]
+            - paragraph [ref=e32]: 用新的 config/content/themes 结构快速改站点名、写文章、预览博客。
+            - generic [ref=e33]:
+              - generic [ref=e34]: guide
+              - generic [ref=e35]: start
+            - link "阅读全文" [ref=e36] [cursor=pointer]:
+              - /url: ./post.html?id=c21a630f
+          - article [ref=e37]:
+            - generic [ref=e38]:
+              - generic [ref=e39]: "* 主题系统"
+              - generic [ref=e40]: 2026年4月24日
+            - heading "主题系统与设计基线" [level=3] [ref=e41]
+            - paragraph [ref=e42]: 内置主题不再依赖整页 CSS 复制，而是统一语义结构与 token 驱动的表达方式。
+            - generic [ref=e43]:
+              - generic [ref=e44]: theme
+              - generic [ref=e45]: design
+            - link "阅读全文" [ref=e46] [cursor=pointer]:
+              - /url: ./post.html?id=23e15b2d
+    - generic [ref=e50]:
+      - link "首页" [ref=e51] [cursor=pointer]:
+        - /url: ./index.html
+      - link "关于" [ref=e52] [cursor=pointer]:
+        - /url: ./page.html?id=about
+  - button "返回顶部" [ref=e53]: ↑

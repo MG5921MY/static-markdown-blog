@@ -1,0 +1,87 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Mijiao Notes" [ref=e3] [cursor=pointer]:
+      - /url: ./index.html
+      - generic [ref=e5]: Mijiao Notes
+    - generic [ref=e6]:
+      - link "首页" [ref=e7] [cursor=pointer]:
+        - /url: ./index.html
+      - link "关于" [ref=e8] [cursor=pointer]:
+        - /url: ./page.html?id=about
+    - button "菜单" [ref=e9]
+  - main [ref=e10]:
+    - article [ref=e12]:
+      - generic [ref=e13]:
+        - link "← 返回首页" [ref=e14] [cursor=pointer]:
+          - /url: ./index.html
+        - generic [ref=e15]:
+          - generic [ref=e16]: → 快速开始
+          - generic [ref=e17]: 2026年4月24日
+        - heading "5 分钟快速开始" [level=1] [ref=e18]
+        - generic [ref=e19]:
+          - generic [ref=e20]: guide
+          - generic [ref=e21]: start
+      - navigation [ref=e22]:
+        - generic [ref=e23]:
+          - text: 📚 目录
+          - button "收起" [ref=e24]
+        - generic [ref=e25]:
+          - link "改站点信息" [ref=e26] [cursor=pointer]:
+            - /url: "#heading-0"
+          - link "新增文章" [ref=e27] [cursor=pointer]:
+            - /url: "#heading-1"
+          - link "切换主题" [ref=e28] [cursor=pointer]:
+            - /url: "#heading-2"
+          - link "构建与预览" [ref=e29] [cursor=pointer]:
+            - /url: "#heading-3"
+      - generic [ref=e30]:
+        - heading "5 分钟快速开始" [level=1] [ref=e31]
+        - paragraph [ref=e32]: 这个项目现在默认围绕三件事组织：
+        - list [ref=e33]:
+          - listitem [ref=e34]:
+            - code [ref=e35]: config/blog.config.yml
+          - listitem [ref=e36]:
+            - code [ref=e37]: content/posts/**/*.md
+          - listitem [ref=e38]:
+            - code [ref=e39]: themes/<theme-id>/
+        - heading "改站点信息" [level=2] [ref=e40]
+        - paragraph [ref=e41]:
+          - text: 编辑
+          - code [ref=e42]: config/blog.config.yml
+          - text: 中的
+          - code [ref=e43]: site
+          - text: ：
+        - code [ref=e45]: "site: name: Your Blog alias: 你的副标题 description: 站点描述"
+        - heading "新增文章" [level=2] [ref=e46]
+        - paragraph [ref=e47]:
+          - text: 在
+          - code [ref=e48]: content/posts/guide/
+          - text: 或其他分类目录里新增 Markdown 文件：
+        - code [ref=e50]: "--- title: 新文章 date: 2026-04-24 tags: [note] --- # 正文"
+        - heading "切换主题" [level=2] [ref=e51]
+        - paragraph [ref=e52]: 修改：
+        - code [ref=e54]: "theme: active: graphite"
+        - paragraph [ref=e55]: 可选主题：
+        - list [ref=e56]:
+          - listitem [ref=e57]:
+            - code [ref=e58]: graphite
+          - listitem [ref=e59]:
+            - code [ref=e60]: aurora
+          - listitem [ref=e61]:
+            - code [ref=e62]: paper
+          - listitem [ref=e63]:
+            - code [ref=e64]: mono
+        - heading "构建与预览" [level=2] [ref=e65]
+        - code [ref=e67]: node build.js node serve.js
+        - paragraph [ref=e68]:
+          - text: 默认会输出到
+          - code [ref=e69]: dist/
+          - text: ，本地预览也直接服务
+          - code [ref=e70]: dist/
+          - text: 。
+    - generic [ref=e74]:
+      - link "首页" [ref=e75] [cursor=pointer]:
+        - /url: ./index.html
+      - link "关于" [ref=e76] [cursor=pointer]:
+        - /url: ./page.html?id=about
+  - button "返回顶部" [ref=e77]: ↑

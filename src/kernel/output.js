@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { marked } = require('../../vendor/marked.min.js');
+const { marked } = require('../../res/vendor/marked.min.js');
 
 function ensureDir(dirPath) { fs.mkdirSync(dirPath, { recursive: true }); }
 

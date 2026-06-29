@@ -66,7 +66,7 @@ function testBuild() {
 function testLocales() {
   console.log('\n[Locales]');
   for (const code of ['zh', 'en']) {
-    const file = path.join(ROOT, 'locales', `${code}.json`);
+    const file = path.join(ROOT, 'res', 'locales', `${code}.json`);
     try {
       const data = JSON.parse(fs.readFileSync(file, 'utf8'));
       assert(data._meta?.code === code, `${code}.json _meta.code="${code}"`);

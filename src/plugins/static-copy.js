@@ -57,9 +57,9 @@ module.exports = function staticCopyPlugin(buildResult) {
 
   // Copy platform directories (locales, vendor, themes)
   for (const d of ['locales', 'vendor']) {
-    count += copyDirRecursive(path.join(pkgRoot, d), path.join(distDir, d));
+    count += copyDirRecursive(path.join(pkgRoot, 'res', d), path.join(distDir, d));
   }
-  count += copyDirRecursive(path.join(pkgRoot, 'themes'), path.join(distDir, 'themes'));
+  count += copyDirRecursive(path.join(pkgRoot, 'res', 'themes'), path.join(distDir, 'themes'));
 
   // Copy user assets and custom themes (overlay)
   if (siteRoot) {

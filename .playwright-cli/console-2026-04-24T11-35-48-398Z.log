@@ -1,0 +1,33 @@
+[     247ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8092/favicon.ico:0
+[    3277ms] [WARNING] The resource http://127.0.0.1:8092/posts/index.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:8092/:0
+[   32257ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js:6:22872)
+[   32346ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/bash.min.js:6:3079)
+[   32352ms] Identifier 'IDENT_RE' has already been declared
+[   32352ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/python.min.js:6:3428)
+[   32361ms] Identifier 'MODES' has already been declared
+[   32606ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/json.min.js:6:388)
+[   32613ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/yaml.min.js:6:1808)
+[   32869ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/xml.min.js:6:1877)
+[   35874ms] [WARNING] The resource http://127.0.0.1:8092/posts/index.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:8092/post.html?id=c21a630f:0
+[   49028ms] [WARNING] The resource http://127.0.0.1:8092/posts/index.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:8092/index.html:0
+[   60328ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js:6:22872)
+[   60331ms] Identifier 'IDENT_RE' has already been declared
+[   60331ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/bash.min.js:6:3079)
+[   60331ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/yaml.min.js:6:1808)
+[   60331ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/json.min.js:6:388)
+[   60331ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/python.min.js:6:3428)
+[   60331ms] Identifier 'MODES' has already been declared
+[   60331ms] Uncaught ReferenceError: module is not defined
+    at <anonymous> (https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/xml.min.js:6:1877)
+[   63336ms] [WARNING] The resource http://127.0.0.1:8092/posts/index.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:8092/post.html?id=c21a630f:0

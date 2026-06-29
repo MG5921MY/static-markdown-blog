@@ -35,7 +35,7 @@ node serve.js         # 预览 http://localhost:8080
 ### 2. Docker 部署
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d --build
+docker compose -f deploy/docker/docker-compose.yml up -d --build
 ```
 
 首次启动自动从镜像内置的 `site/` 默认内容初始化。挂载 `site/` 目录可持久化用户数据。
@@ -69,10 +69,12 @@ site/                   用户工作区（用户唯一需要碰的目录）
   assets/               用户资源
   themes/custom/        用户自定义主题
 
-themes/                 内置主题（5 个 + base.css）
-locales/                i18n（zh.json, en.json）
-vendor/                 第三方库（marked, lunr, katex）
-docker/                 Docker 部署配置
+res/                    平台资源（构建时复制到 dist/）
+  themes/               内置主题（5 个 + base.css）
+  locales/              i18n（zh.json, en.json）
+  vendor/               第三方库（marked, lunr, katex）
+deploy/                 部署配置
+  docker/               Docker 部署配置
 docs/                   文档
 bin/                    CLI 入口
 

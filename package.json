@@ -12,11 +12,11 @@
     "init.js",
     "bin/",
     "src/",
-    "vendor/",
-    "themes/",
-    "locales/",
+    "res/vendor/",
+    "res/themes/",
+    "res/locales/",
     "site/",
-    "docker/",
+    "deploy/",
     "*.json"
   ],
   "scripts": {

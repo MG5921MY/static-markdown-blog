@@ -138,7 +138,7 @@ function runRebuild() {
 function startWatching() {
   const watchDirs = [
     path.join(ROOT, 'site'),
-    path.join(__dirname, 'themes'),
+    path.join(__dirname, 'res', 'themes'),
   ];
   const watchFiles = [
     path.join(__dirname, 'src', 'pages', 'index.html'),
