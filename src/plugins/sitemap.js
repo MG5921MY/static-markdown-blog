@@ -9,21 +9,30 @@ module.exports = function sitemapPlugin(buildResult) {
   const { config, pathMap, distDir } = buildResult;
   const deployment = config.deployment || {};
   const siteUrl = (deployment.siteUrl || '').replace(/\/+$/, '');
+  const rawBase = String(deployment.basePath || '').trim();
+  const basePath = (rawBase && rawBase !== 'auto') ? rawBase.replace(/\/+$/, '').replace(/^\//, '') : '';
+  const prefix = siteUrl || (basePath ? `/${basePath}` : '');
   const today = new Date().toISOString().split('T')[0];
 
-  const urls = [];
-  urls.push({ loc: siteUrl || '/', lastmod: today, priority: '1.0' });
-
-  for (const [pageId] of Object.entries(config.pages || {})) {
-    urls.push({ loc: siteUrl ? `${siteUrl}/page.html?id=${pageId}` : `/page.html?id=${pageId}`, lastmod: today, priority: '0.8' });
+  if (!siteUrl) {
+    console.warn('  Sitemap: deployment.siteUrl is empty. Sitemap URLs may not work under sub-path deployment.');
   }
 
-  urls.push({ loc: siteUrl ? `${siteUrl}/moments.html` : '/moments.html', lastmod: today, priority: '0.6' });
-  urls.push({ loc: siteUrl ? `${siteUrl}/links.html` : '/links.html', lastmod: today, priority: '0.6' });
-  urls.push({ loc: siteUrl ? `${siteUrl}/gallery.html` : '/gallery.html', lastmod: today, priority: '0.6' });
+  const urls = [];
+  urls.push({ loc: siteUrl || (prefix || '/'), lastmod: today, priority: '1.0' });
+
+  const pages = Array.isArray(config.pages) ? config.pages : Object.values(config.pages || {});
+  for (const page of pages) {
+    const pageId = page.id || page;
+    urls.push({ loc: `${prefix}/page.html?id=${pageId}`, lastmod: today, priority: '0.8' });
+  }
+
+  urls.push({ loc: `${prefix}/moments.html`, lastmod: today, priority: '0.6' });
+  urls.push({ loc: `${prefix}/links.html`, lastmod: today, priority: '0.6' });
+  urls.push({ loc: `${prefix}/gallery.html`, lastmod: today, priority: '0.6' });
 
   for (const [, mapping] of Object.entries(pathMap)) {
-    urls.push({ loc: siteUrl ? `${siteUrl}/${mapping.outputPath}` : `/${mapping.outputPath}`, lastmod: today, priority: '0.7' });
+    urls.push({ loc: `${prefix}/${mapping.outputPath}`, lastmod: today, priority: '0.7' });
   }
 
   const urlEntries = urls.map((u) => `  <url>

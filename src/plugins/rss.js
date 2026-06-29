@@ -10,17 +10,24 @@ module.exports = function rssPlugin(buildResult) {
   const site = config.site || {};
   const deployment = config.deployment || {};
   const siteUrl = (deployment.siteUrl || '').replace(/\/+$/, '');
+  const rawBase = String(deployment.basePath || '').trim();
+  const basePath = (rawBase && rawBase !== 'auto') ? rawBase.replace(/\/+$/, '').replace(/^\//, '') : '';
+  const prefix = siteUrl || (basePath ? `/${basePath}` : '');
   const title = escapeXml(site.name || 'Blog');
   const description = escapeXml(site.description || '');
-  const link = escapeXml(siteUrl || '/');
+  const link = escapeXml(siteUrl || prefix || '/');
   const lang = (site.locale === 'en') ? 'en-US' : 'zh-CN';
+
+  if (!siteUrl) {
+    console.warn('  RSS: deployment.siteUrl is empty. RSS links may not work under sub-path deployment.');
+  }
 
   const items = [];
   for (const [categoryId, category] of Object.entries(categories)) {
     for (const post of (category.posts || [])) {
       const mapping = pathMap[post.id];
       if (!mapping) continue;
-      const postUrl = siteUrl ? `${siteUrl}/${mapping.outputPath}` : `/${mapping.outputPath}`;
+      const postUrl = `${prefix}/${mapping.outputPath}`;
       const postDate = post.date ? new Date(post.date) : new Date();
       const rfc822Date = isNaN(postDate.getTime()) ? '' : postDate.toUTCString();
       items.push({
