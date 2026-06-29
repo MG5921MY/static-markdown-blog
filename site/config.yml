@@ -3,7 +3,7 @@ site:
   alias: 静态 Markdown 博客
   description: Markdown first, theme driven, base-path agnostic static blog.
   author: MijiaoGame
-  email: your-email@example.com
+  email: ""
   favicon: assets/favicon.svg
   logo: ""
 

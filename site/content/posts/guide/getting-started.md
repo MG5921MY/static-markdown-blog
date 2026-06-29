@@ -1,64 +1,155 @@
 ---
 title: 5 分钟快速开始
-date: 2026-04-24
+date: 2026-06-29
 tags: [guide, start]
-summary: 用新的 config/content/themes 结构快速改站点名、写文章、预览博客。
+summary: 从安装到第一篇文章发布，5 分钟内完成。
 ---
 
 # 5 分钟快速开始
 
-这个项目现在默认围绕三件事组织：
+## 安装
 
-1. `config/blog.config.yml`
-2. `content/posts/**/*.md`
-3. `themes/<theme-id>/`
+### 源码构建
 
-## 改站点信息
+```bash
+git clone <repo>
+cd 静态博客
+node init.js          # 初始化 site/ 工作区
+```
 
-编辑 `config/blog.config.yml` 中的 `site`：
+### Docker
+
+```bash
+docker compose -f deploy/docker/docker-compose.yml up -d --build
+```
+
+### npm（开发中）
+
+```bash
+npm install -g static-markdown-blog
+mkdir my-blog && cd my-blog
+blog init
+```
+
+## 第一步：修改站点信息
+
+编辑 `site/config.yml`：
 
 ```yaml
 site:
-  name: Your Blog
-  alias: 你的副标题
-  description: 站点描述
+  name: 我的博客
+  alias: 记录与思考
+  description: 一个关于技术与生活的博客。
+  author: 你的名字
+  email: ""
 ```
 
-## 新增文章
+## 第二步：写文章
 
-在 `content/posts/guide/` 或其他分类目录里新增 Markdown 文件：
+在 `site/content/posts/` 下创建 Markdown 文件：
 
-```md
+```markdown
 ---
-title: 新文章
-date: 2026-04-24
-tags: [note]
+title: 我的第一篇文章
+date: 2026-06-29
+tags: [hello, blog]
+summary: 这是我的第一篇博客文章。
 ---
 
-# 正文
+# 你好世界
+
+这是正文内容。支持 **粗体**、*斜体*、`代码`。
+
+## 代码块
+
+\```javascript
+console.log('Hello, blog!');
+\```
+
+## 列表
+
+- 第一项
+- 第二项
+- 第三项
 ```
+
+### 支持的 front-matter 字段
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `title` | 是 | 文章标题 |
+| `date` | 是 | 发布日期（YYYY-MM-DD） |
+| `tags` | 否 | 标签数组 |
+| `summary` | 否 | 摘要（不填则自动截取正文） |
+| `draft` | 否 | `true` 表示草稿，构建时跳过 |
+
+## 第三步：构建与预览
+
+```bash
+node build.js         # 构建到 dist/
+node serve.js         # 预览 http://localhost:8080
+```
+
+### 构建选项
+
+```bash
+node build.js                    # 全量构建
+node build.js --incremental      # 增量构建（跳过未变化文件）
+node build.js --include-drafts   # 包含草稿
+```
+
+## 第四步：部署
+
+`dist/` 目录即完整产物，可直接部署到：
+
+- **GitHub Pages** — 推送到 main 分支自动构建（`.github/workflows/deploy.yml`）
+- **Vercel / Netlify / Cloudflare Pages** — 指向 `dist/` 目录
+- **Nginx** — 将 `dist/` 复制到 web 根目录
+- **Docker** — `docker compose up -d --build`
 
 ## 切换主题
 
-修改：
+修改 `site/config.yml`：
 
 ```yaml
 theme:
-  active: graphite
+  active: terminal    # 可选: graphite / aurora / paper / mono / terminal
 ```
 
-可选主题：
+重新构建即可。主题通过 CSS 变量驱动，切换不需要改任何内容。
 
-- `graphite`
-- `aurora`
-- `paper`
-- `mono`
+## 添加自定义主题
 
-## 构建与预览
+在 `site/themes/custom/my-theme/` 下创建：
 
-```bash
-node build.js
-node serve.js
+```
+my-theme/
+  theme.yml          ← 主题元数据
+  theme.css          ← 样式（@import "../base.css" 后覆盖 token）
 ```
 
-默认会输出到 `dist/`，本地预览也直接服务 `dist/`。
+theme.css 最小示例：
+
+```css
+@import "../../base.css";
+
+:root {
+  --bg-primary: #ffffff;
+  --text-primary: #1a1a1a;
+  --accent: #0066ff;
+}
+```
+
+## 更多功能
+
+| 功能 | 配置位置 |
+|------|----------|
+| 瞬间（短内容） | `site/content/data/moments.yml` |
+| 友链 | `site/content/data/links.yml` |
+| 图库 | `site/content/data/gallery.yml` |
+| 自定义页面 | `site/content/pages/` + `site/config.yml` 的 `content.pages` |
+| 评论 | `site/config.yml` 的 `comments` |
+| 备案信息 | `site/config.yml` 的 `beian` |
+| 数学公式 | 文章中写 `$E=mc^2$` 或 `$$\int_0^1$$` |
+| 流程图 | 文章中写 ` ```mermaid ` 代码块 |
+| 搜索 | 自动启用，构建时生成索引 |

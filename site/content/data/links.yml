@@ -5,32 +5,32 @@ groups:
   - id: reading
     name: 长期阅读
     icon: "Read"
-  - id: tooling
-    name: 开发工具
-    icon: "Dev"
+  - id: tools
+    name: 常用工具
+    icon: "Tool"
 
 links:
   - name: UI Patterns
     url: https://ui-patterns.com/
-    description: 适合归档交互模式、信息层级和常见流程的参考入口。
+    description: 交互模式、信息层级和常见流程的参考入口。
     icon: "UI"
     label: 模式
     group: references
   - name: Smashing Magazine
     url: https://www.smashingmagazine.com/
-    description: 用来补充前端体验、设计系统和内容表达的长期阅读来源。
+    description: 前端体验、设计系统和内容表达的长期阅读来源。
     icon: "SM"
     label: 阅读
     group: reading
   - name: A List Apart
     url: https://alistapart.com/
-    description: 更偏方法论和长期写作，适合沉淀内容结构与编辑感。
+    description: 方法论和长期写作，适合沉淀内容结构与编辑感。
     icon: "AL"
     label: 文章
     group: reading
-  - name: Playwright Docs
-    url: https://playwright.dev/
-    description: 本地页面回归、截图验收和子路径浏览器验证的常用工具入口。
-    icon: "PW"
-    label: 测试
-    group: tooling
+  - name: MDN Web Docs
+    url: https://developer.mozilla.org/
+    description: Web 技术参考，HTML/CSS/JS 标准文档。
+    icon: "MD"
+    label: 文档
+    group: tools

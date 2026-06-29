@@ -1,11 +1,11 @@
 moments:
-  - date: 2026-04-24
-    mood: "Note"
-    content: |
-      新结构已经跑通：构建输出统一进入 `dist/`，主题从 `themes/<id>/theme.css` 加载，运行时路径 helper 也完成了第一轮收敛。
-    tags: [rebuild, build, theme]
-  - date: 2026-04-20
+  - date: 2026-06-29
     mood: "Ship"
     content: |
-      这轮开始把 `.tmp/` 里的设计研究正式沉淀成架构文档，不再依赖“临时参考资料”维持审美一致性。
-    tags: [docs, design-system]
+      5 个内置主题全部支持亮暗切换，导航栏新增语言切换按钮。
+    tags: [theme, i18n]
+  - date: 2026-06-20
+    mood: "Note"
+    content: |
+      图库功能上线，支持目录扫描、文件夹导航和灯箱查看器。
+    tags: [gallery, feature]
