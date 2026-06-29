@@ -1600,6 +1600,7 @@ img.nav-logo {
 
 .gallery-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
 }
 
 .gallery-item {
@@ -1607,12 +1608,17 @@ img.nav-logo {
   overflow: hidden;
   padding: 0;
   border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
 }
 
 .gallery-item img {
-  aspect-ratio: 4 / 3;
   width: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .gallery-item-overlay {
