@@ -29,7 +29,13 @@
 
   function highlightCard(cardHtml, query) {
     if (!query) return cardHtml;
-    return cardHtml.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<mark>$1</mark>');
+    const escaped = escapeRegExp(query);
+    const re = new RegExp(`(${escaped})`, 'gi');
+    // Split by HTML tags, highlight only text segments
+    return cardHtml.split(/(<[^>]+>)/).map((segment) => {
+      if (segment.startsWith('<')) return segment;
+      return segment.replace(re, '<mark>$1</mark>');
+    }).join('');
   }
 
   function getHeroDisplayConfig() {

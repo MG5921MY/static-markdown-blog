@@ -5,6 +5,7 @@ WORKDIR /app
 COPY *.js ./
 COPY *.html ./
 COPY *.json ./
+COPY *.ico ./
 COPY assets ./assets/
 COPY bin ./bin/
 COPY config ./config/

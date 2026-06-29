@@ -46,7 +46,12 @@ function normalizeBasePath(input) {
 const BASE_PATH = normalizeBasePath(BASE_PATH_INPUT);
 
 function stripBasePath(urlPath) {
-  let requestPath = decodeURIComponent((urlPath || '/').split('?')[0]);
+  let requestPath;
+  try {
+    requestPath = decodeURIComponent((urlPath || '/').split('?')[0]);
+  } catch (_) {
+    return null;
+  }
   if (BASE_PATH !== '/') {
     if (requestPath === BASE_PATH.slice(0, -1)) requestPath = BASE_PATH;
     if (!requestPath.startsWith(BASE_PATH)) return null;

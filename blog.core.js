@@ -433,11 +433,15 @@ window.BlogCore = {
     return this.config?.theme || {};
   },
 
-  loadCDN(url) {
+  loadCDN(url, integrity) {
     if (this._cdnLoaded[url]) return this._cdnLoaded[url];
     this._cdnLoaded[url] = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = url;
+      if (integrity) {
+        script.integrity = integrity;
+        script.crossOrigin = 'anonymous';
+      }
       script.onload = resolve;
       script.onerror = reject;
       document.head.appendChild(script);

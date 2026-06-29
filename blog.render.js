@@ -138,7 +138,7 @@ window.BlogRender = {
         mermaid.initialize({
           startOnLoad: false,
           theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
-          securityLevel: 'loose'
+          securityLevel: 'strict'
         });
       } catch (_) { return; }
     }
@@ -175,7 +175,7 @@ window.BlogRender = {
         <h3 class="post-card-title">${this.escapeHtml(post.title)}</h3>
         <p class="post-summary">${this.escapeHtml(post.summary || '')}</p>
         <div class="post-tags">${tagsHtml}</div>
-        <a href="${this.escapeHtml(postUrl)}" class="post-link">阅读全文</a>
+        <a href="${this.escapeHtml(postUrl)}" class="post-link">${this.t ? this.t('ui.readMore') : '阅读全文'}</a>
       </article>
     `;
   },

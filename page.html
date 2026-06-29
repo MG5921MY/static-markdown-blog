@@ -130,7 +130,8 @@
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
             if (page.renderedToHtml) {
-              document.getElementById('page-content').innerHTML = page.content || '';
+              const safe = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(page.content || '') : (page.content || '');
+              document.getElementById('page-content').innerHTML = safe;
             } else {
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
             }
