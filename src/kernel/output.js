@@ -41,6 +41,76 @@ function filterScripts(html) {
   return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '<!-- script removed -->');
 }
 
+// Extract <style> content from HTML
+function extractStyles(html) {
+  const styles = [];
+  html.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
+    styles.push(css);
+    return '';
+  });
+  return styles.join('\n');
+}
+
+// Extract <body> innerHTML from HTML document
+function extractBody(html) {
+  const bodyMatch = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) return bodyMatch[1].trim();
+  // If no <body> tag, return the whole thing (already a fragment)
+  return html.replace(/<!DOCTYPE[^>]*>/gi, '').replace(/<\/?html[^>]*>/gi, '').replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '').trim();
+}
+
+// Scope CSS rules to a container selector (#page-custom)
+// Preserves @font-face, @keyframes, and comments
+function scopeCss(css, scope) {
+  // Step 1: Extract and preserve comments
+  const comments = [];
+  let processed = css.replace(/\/\*[\s\S]*?\*\//g, (match) => {
+    comments.push(match);
+    return `__COMMENT_${comments.length - 1}__`;
+  });
+
+  // Step 2: Extract and preserve @font-face and @keyframes blocks
+  const globals = [];
+  processed = processed.replace(/@(font-face|keyframes)[^}]*\{[\s\S]*?\}\s*\}/g, (match) => {
+    globals.push(match);
+    return `__GLOBAL_${globals.length - 1}__`;
+  });
+
+  // Step 3: Scope @media blocks
+  processed = processed.replace(/@media[^{]+\{([\s\S]*?\})\s*\}/g, (mediaBlock) => {
+    return mediaBlock.replace(/([^{}@]+)\{/g, (rule) => {
+      if (rule.trim().startsWith('@')) return rule;
+      if (rule.includes('__COMMENT_') && !rule.includes('{')) return rule;
+      return scopeRule(rule, scope);
+    });
+  });
+
+  // Step 4: Scope top-level rules
+  processed = processed.replace(/([^{}@]+)\{/g, (rule) => {
+    if (rule.trim().startsWith('@')) return rule;
+    if (rule.trim().startsWith(scope)) return rule;
+    if (rule.includes('__COMMENT_') && !rule.includes('{')) return rule;
+    return scopeRule(rule, scope);
+  });
+
+  // Step 5: Restore globals and comments
+  let result = globals.reduce((acc, g, i) => acc.replace(`__GLOBAL_${i}__`, g), processed);
+  result = comments.reduce((acc, c, i) => acc.replace(`__COMMENT_${i}__`, c), result);
+
+  return result;
+}
+
+function scopeRule(rule, scope) {
+  return rule.replace(/(^|,)\s*([^,{]+)/g, (match, sep, selector) => {
+    selector = selector.trim();
+    if (!selector || selector.startsWith('@')) return match;
+    if (selector === 'body') return `${sep} ${scope}`;
+    if (selector === '*') return `${sep} ${scope} *`;
+    if (selector.startsWith(scope)) return match;
+    return `${sep} ${scope} ${selector}`;
+  });
+}
+
 function buildPagesContent(pagesMap, siteRoot) {
   for (const page of Object.values(pagesMap)) {
     if (page.type === 'markdown' && page.source) {
@@ -63,7 +133,13 @@ function buildPagesContent(pagesMap, siteRoot) {
       if (!fs.existsSync(sourcePath)) continue;
       let html = fs.readFileSync(sourcePath, 'utf8');
 
-      // Load data files and embed as JSON
+      // Filter user scripts (unless explicitly enabled)
+      if (!page.scripts) {
+        html = filterScripts(html);
+        page._scriptsFiltered = true;
+      }
+
+      // Embed data files as JSON
       if (page.data && typeof page.data === 'object') {
         const dataEntries = {};
         for (const [key, relPath] of Object.entries(page.data)) {
@@ -71,26 +147,47 @@ function buildPagesContent(pagesMap, siteRoot) {
           const data = readDataFile(dataPath);
           if (data !== null) dataEntries[key] = data;
         }
-        // Inject data into HTML before </head> or </body>
         const dataScript = Object.entries(dataEntries).map(([key, val]) =>
           `<script type="application/json" id="data-${key}">${JSON.stringify(val)}</script>`
         ).join('\n');
-        if (html.includes('</body>')) {
-          html = html.replace('</body>', `${dataScript}\n</body>`);
-        } else {
-          html += '\n' + dataScript;
+        if (dataScript) {
+          if (html.includes('</body>')) {
+            html = html.replace('</body>', `${dataScript}\n</body>`);
+          } else {
+            html += '\n' + dataScript;
+          }
         }
       }
 
-      // Filter scripts if not explicitly enabled
-      if (!page.scripts) {
-        html = filterScripts(html);
-        page._scriptsFiltered = true;
-      }
+      if (page.standalone) {
+        // Standalone: keep full HTML, platform chrome hidden at runtime
+        page.content = html;
+        page._isCustom = true;
+        page._isStandalone = true;
+      } else {
+        // Embedded: extract body + scope CSS to #page-custom
+        const rawStyles = extractStyles(html);
+        const bodyContent = extractBody(html);
 
-      page.content = html;
-      page.renderedToHtml = true;
-      page._isCustom = true;
+        // Scope CSS: @font-face and @keyframes stay global, other rules scoped
+        let scopedCss = '';
+        if (rawStyles) {
+          // Extract @font-face and @keyframes (must be global)
+          const globals = [];
+          const localCss = rawStyles.replace(/@(font-face|keyframes)[^}]*\{[\s\S]*?\}\s*\}/g, (match) => {
+            globals.push(match);
+            return '';
+          });
+          const scoped = scopeCss(localCss.trim(), '#page-custom');
+          scopedCss = globals.join('\n') + '\n' + scoped;
+        }
+
+        page.content = scopedCss
+          ? `<style>${scopedCss}</style>\n<div class="custom-page">${bodyContent}</div>`
+          : `<div class="custom-page">${bodyContent}</div>`;
+        page._isCustom = true;
+        page._isStandalone = false;
+      }
     }
   }
   return pagesMap;

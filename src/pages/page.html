@@ -205,6 +205,40 @@
 
           if (page.type === 'custom') {
             const container = document.getElementById('page-custom');
+
+            if (page._isStandalone || page.standalone) {
+              // Standalone: hide platform chrome, render in iframe
+              document.querySelector('.nav')?.style.setProperty('display', 'none');
+              document.querySelector('.footer')?.style.setProperty('display', 'none');
+              container.classList.add('custom-standalone');
+              document.title = `${page.name || 'Page'} | ${Blog.config?.site?.name || ''}`;
+
+              // Build srcdoc HTML
+              var srcdoc = page.content || '';
+              // Filter user scripts if not enabled
+              if (!page.scripts) {
+                srcdoc = srcdoc.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+              }
+
+              var iframe = document.createElement('iframe');
+              iframe.className = 'custom-iframe';
+              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+              iframe.setAttribute('loading', 'lazy');
+              iframe.srcdoc = srcdoc;
+              container.appendChild(iframe);
+              container.style.display = 'block';
+
+              // Resize iframe to fit content
+              iframe.addEventListener('load', function() {
+                try {
+                  const h = iframe.contentDocument?.documentElement?.scrollHeight;
+                  if (h) iframe.style.height = h + 'px';
+                } catch (_) {}
+              });
+              return;
+            }
+
+            // Embedded: inject into page-custom with CSS scoping
             container.innerHTML = page.content || '';
             container.style.display = 'block';
             // Execute inline scripts if scripts were enabled

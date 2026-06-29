@@ -35,6 +35,27 @@ content:
       icon: "i"
       type: markdown
       source: content/pages/about.md
+    - id: skills
+      name: 技能矩阵
+      icon: "+"
+      type: custom
+      source: content/pages/skills.html
+      # scripts: true  # 取消注释以启用交互功能
+    - id: portfolio
+      name: 作品集
+      icon: "*"
+      type: custom
+      source: content/pages/portfolio.html
+      data:
+        projects: content/data/projects.yml
+      # scripts: true  # 取消注释以启用交互功能
+    - id: playground
+      name: 工具箱
+      icon: ">"
+      type: custom
+      source: content/pages/playground.html
+      standalone: true
+      # scripts: true   # 取消注释以启用交互功能（调色板生成器）
   data:
     moments: content/data/moments.yml
     links: content/data/links.yml
@@ -45,6 +66,12 @@ nav:
     page: index
   - name: 关于
     page: about
+  - name: 技能
+    page: skills
+  - name: 作品
+    page: portfolio
+  - name: 工具
+    page: playground
   - name: 瞬间
     url: ./moments.html
   - name: 参考

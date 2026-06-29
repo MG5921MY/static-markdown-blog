@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具箱</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+      background: #0a0a0f;
+      color: #e8eaf0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated Border ──────────────────────────────── */
+    @property --border-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+    .magic-border {
+      --border-angle: 0deg;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 32px;
+      background:
+        linear-gradient(#14141f, #14141f) padding-box,
+        conic-gradient(from var(--border-angle), #667eea, #764ba2, #f093fb, #4facfe, #667eea) border-box;
+      animation: rotate-border 4s linear infinite;
+    }
+    @keyframes rotate-border { to { --border-angle: 360deg; } }
+
+    /* ── Particles ────────────────────────────────────── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particles span {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(102,126,234,0.6);
+      opacity: 0;
+      animation: float-up linear infinite;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.7; }
+      90%  { opacity: 0.7; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+    .particles span:nth-child(1) { left: 8%; animation-duration: 10s; animation-delay: 0s; }
+    .particles span:nth-child(2) { left: 22%; animation-duration: 14s; animation-delay: 2s; }
+    .particles span:nth-child(3) { left: 38%; animation-duration: 11s; animation-delay: 4s; }
+    .particles span:nth-child(4) { left: 55%; animation-duration: 13s; animation-delay: 1s; }
+    .particles span:nth-child(5) { left: 70%; animation-duration: 9s; animation-delay: 3s; }
+    .particles span:nth-child(6) { left: 85%; animation-duration: 12s; animation-delay: 5s; }
+    .particles span:nth-child(7) { left: 15%; animation-duration: 15s; animation-delay: 6s; }
+    .particles span:nth-child(8) { left: 92%; animation-duration: 10s; animation-delay: 2.5s; }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .page-wrap { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 80px 20px; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    h1 { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .subtitle { color: rgba(255,255,255,0.5); font-size: 15px; margin-bottom: 48px; }
+
+    /* ── Typewriter ───────────────────────────────────── */
+    .typewriter-wrap { margin-bottom: 48px; }
+    .typewriter-text {
+      font-size: 20px;
+      color: #8b9cf7;
+      font-family: "JetBrains Mono", monospace;
+      min-height: 32px;
+    }
+    .typewriter-text::after {
+      content: "|";
+      animation: blink 1s step-end infinite;
+      color: #667eea;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Theme Preview ────────────────────────────────── */
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 16px;
+    }
+    .theme-grid {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .theme-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .theme-chip:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+    .theme-chip.active { border-color: #667eea; background: rgba(102,126,234,0.1); }
+    .theme-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); }
+    .theme-chip-name { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+    /* ── Info Box ─────────────────────────────────────── */
+    .info-box {
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.8;
+    }
+    .info-box strong { color: rgba(255,255,255,0.7); }
+    .info-box code {
+      background: rgba(102,126,234,0.12);
+      color: #8b9cf7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Particles -->
+  <div class="particles">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <div class="page-wrap">
+    <a class="back-link" href="./index.html">← 返回首页</a>
+
+    <h1>工具箱</h1>
+    <p class="subtitle">Playground — standalone 独立页面 + 打字机 + 粒子背景 + 动画边框 + 主题预览</p>
+
+    <!-- Typewriter -->
+    <div class="typewriter-wrap">
+      <div class="typewriter-text" id="typewriter"></div>
+    </div>
+
+    <!-- Animated Border Card -->
+    <div class="magic-border" style="margin-bottom: 48px;">
+      <div class="section-title">动画渐变边框</div>
+      <p style="font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7;">
+        这个卡片的边框使用 <code>@property</code> 注册的 CSS 自定义属性驱动 <code>conic-gradient</code> 旋转。
+        纯 CSS 实现，零 JavaScript。这是 2024-2025 年最流行的 CSS 技巧之一。
+      </p>
+    </div>
+
+    <!-- Theme Preview -->
+    <div class="section-title">主题预览（点击切换 CSS 变量）</div>
+    <div class="theme-grid">
+      <div class="theme-chip active" data-accent="#667eea" data-bg="#0a0a0f" data-text="#e8eaf0">
+        <div class="theme-dot" style="background: #667eea;"></div>
+        <span class="theme-chip-name">Midnight</span>
+      </div>
+      <div class="theme-chip" data-accent="#0ea5e9" data-bg="#0c1929" data-text="#e0f2fe">
+        <div class="theme-dot" style="background: #0ea5e9;"></div>
+        <span class="theme-chip-name">Ocean</span>
+      </div>
+      <div class="theme-chip" data-accent="#f97316" data-bg="#1a0f0a" data-text="#ffedd5">
+        <div class="theme-dot" style="background: #f97316;"></div>
+        <span class="theme-chip-name">Sunset</span>
+      </div>
+      <div class="theme-chip" data-accent="#22c55e" data-bg="#0a1a0f" data-text="#dcfce7">
+        <div class="theme-dot" style="background: #22c55e;"></div>
+        <span class="theme-chip-name">Forest</span>
+      </div>
+      <div class="theme-chip" data-accent="#e879f9" data-bg="#1a0a1f" data-text="#fae8ff">
+        <div class="theme-dot" style="background: #e879f9;"></div>
+        <span class="theme-chip-name">Neon</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-box">
+      <strong>standalone 模式：</strong>这个页面隐藏了平台导航栏和页脚，完全独立运行。
+      页面底部有"返回首页"链接。所有样式和脚本都在页面内部，不影响平台其他页面。<br><br>
+      <strong>scripts: true</strong> — 页面 JS 仅做 DOM 操作（打字机、主题切换）。
+      无网络请求、无 eval、无外部依赖、无 localStorage 读写。
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    // Typewriter
+    var texts = [
+      '零依赖静态博客平台',
+      'Token 驱动主题系统',
+      'Markdown 优先，构建时渲染',
+      '支持 Docker / GitHub Pages / npm'
+    ];
+    var tw = document.getElementById('typewriter');
+    var ti = 0, ci = 0, del = false;
+    function tick() {
+      var cur = texts[ti];
+      if (!del) {
+        tw.textContent = cur.slice(0, ++ci);
+        if (ci === cur.length) { setTimeout(function() { del = true; tick(); }, 2000); return; }
+      } else {
+        tw.textContent = cur.slice(0, --ci);
+        if (ci === 0) { del = false; ti = (ti + 1) % texts.length; }
+      }
+      setTimeout(tick, del ? 40 : 80);
+    }
+    tick();
+
+    // Theme preview
+    document.querySelectorAll('.theme-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.theme-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var accent = chip.dataset.accent;
+        var bg = chip.dataset.bg;
+        var text = chip.dataset.text;
+        document.documentElement.style.setProperty('--accent', accent);
+        document.body.style.background = bg;
+        document.body.style.color = text;
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
