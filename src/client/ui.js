@@ -377,14 +377,8 @@ window.BlogUI = {
         opt.addEventListener('click', async () => {
           if (loc.code === BlogI18n.locale) { wrap.classList.remove('is-open'); return; }
           BlogI18n.setLocale(loc.code);
-          await BlogI18n.load(loc.code);
-          Blog.applyI18n();
-          btn.textContent = BlogI18n.meta?.shortLabel || BlogI18n.meta?.code || loc.code;
-          btn.title = BlogI18n.meta?.nativeName || loc.code;
-          panel.querySelectorAll('.lang-switch-option').forEach(el => el.classList.remove('active'));
-          opt.classList.add('active');
-          Blog.setNavSiteName();
-          wrap.classList.remove('is-open');
+          // Reload page to re-render all dynamic content with new locale
+          location.reload();
         });
         panel.appendChild(opt);
       });
