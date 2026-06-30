@@ -63,6 +63,8 @@
     "themeDark": "Dark",
     "prevPost": "Previous",
     "nextPost": "Next",
+    "prevPage": "Previous",
+    "nextPage": "Next",
     "readMore": "Read More"
   },
   "gallery": {
