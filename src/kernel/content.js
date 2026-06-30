@@ -32,6 +32,18 @@ function makeSummary(body, maxLength) {
   return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text;
 }
 
+/**
+ * 扫描单个分类下的所有文章，支持增量缓存。
+ * 通过对比源文件 MD5 与 manifest 中的缓存哈希，跳过未变更文件的重新渲染。
+ *
+ * @param {object} category - 分类配置（id、path、name 等）
+ * @param {number} summaryLength - 摘要截断长度
+ * @param {string} siteRoot - 站点根目录
+ * @param {string} distDir - 输出目录
+ * @param {boolean} includeDrafts - 是否包含草稿
+ * @param {object|null} manifest - 构建清单，用于增量判断
+ * @returns {{ posts: object[], groups: object }} 文章列表和分组映射
+ */
 function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDrafts, manifest) {
   const sourceDir = path.join(siteRoot, category.path);
   const result = { posts: [], groups: {} };
@@ -48,9 +60,12 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
       if (parsed.meta.draft === true && !includeDrafts) continue;
 
       const id = generateId(`${category.id}:${relative}`);
+      // 分组路径：子目录结构，根目录文件为 null
       const groupPath = path.dirname(relative) === '.' ? null : path.dirname(relative).replace(/\\/g, '/');
+      // 输出路径格式：posts/{分类ID}/{相对路径}.html
       const outputPath = `posts/${category.id}/${relative.replace(/\.md$/, '.html')}`;
       const distHtmlPath = path.join(distDir, 'posts', category.id, relative.replace(/\.md$/, '.html'));
+      // 增量缓存：对比源文件哈希与 manifest 记录，且目标 HTML 已存在则跳过渲染
       const currentHash = fileHash(fullPath);
       const cachedHash = manifest?.files?.[id];
       const isCached = !!(manifest && cachedHash === currentHash && fs.existsSync(distHtmlPath));

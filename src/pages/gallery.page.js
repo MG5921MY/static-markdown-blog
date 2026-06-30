@@ -221,26 +221,30 @@
     if (event.target.id === 'lightbox') closeLightbox();
   });
 
+  // 触摸滑动手势：在 lightbox 中左右滑动切换图片
   (() => {
     let touchStartX = 0;
     let touchEndX = 0;
     let touchStartY = 0;
     let touchEndY = 0;
-    const minSwipe = 50;
+    const minSwipe = 50; // 最小滑动阈值（像素），低于此值忽略避免误触
 
+    // 记录触摸起点坐标
     lightboxEl.addEventListener('touchstart', (event) => {
       touchStartX = event.changedTouches[0].screenX;
       touchStartY = event.changedTouches[0].screenY;
     }, { passive: true });
 
+    // 计算滑动方向：水平位移 > 垂直位移 且超过阈值时判定为左右滑动
     lightboxEl.addEventListener('touchend', (event) => {
       touchEndX = event.changedTouches[0].screenX;
       touchEndY = event.changedTouches[0].screenY;
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
+      // 轴向检测：仅在水平方向位移大于垂直方向时触发，防止与纵向滚动冲突
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipe) {
-        if (diffX > 0) navLightbox(-1);
-        else navLightbox(1);
+        if (diffX > 0) navLightbox(-1); // 右滑 → 上一张
+        else navLightbox(1);            // 左滑 → 下一张
       }
     }, { passive: true });
   })();

@@ -50,18 +50,15 @@ module.exports = function staticCopyPlugin(buildResult) {
   const { pkgRoot, distDir, siteRoot } = buildResult;
   let count = 0;
 
-  // Copy static files (HTML templates, client JS, page JS, favicon)
   for (const f of STATIC_FILES) {
     if (copyFileSafe(path.join(pkgRoot, f.src), path.join(distDir, f.dest))) count++;
   }
 
-  // Copy platform directories (locales, vendor, themes)
   for (const d of ['locales', 'vendor']) {
     count += copyDirRecursive(path.join(pkgRoot, 'res', d), path.join(distDir, d));
   }
   count += copyDirRecursive(path.join(pkgRoot, 'res', 'themes'), path.join(distDir, 'themes'));
 
-  // Copy user assets and custom themes (overlay)
   if (siteRoot) {
     const wsAssets = path.join(siteRoot, 'assets');
     if (fs.existsSync(wsAssets)) count += copyDirRecursive(wsAssets, path.join(distDir, 'assets'));

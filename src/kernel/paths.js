@@ -64,19 +64,12 @@ function createPaths(cwd, pkgRoot) {
     // ── Static file sources (for build output) ──
     getStaticFileSources() {
       return {
-        // HTML templates
         templates: path.join(resolvedPkg, 'src', 'pages'),
-        // Client JS
         client: path.join(resolvedPkg, 'src', 'client'),
-        // Built-in themes
         themes: path.join(resolvedPkg, 'res', 'themes'),
-        // Locales
         locales: path.join(resolvedPkg, 'res', 'locales'),
-        // Vendor libs
         vendor: path.join(resolvedPkg, 'res', 'vendor'),
-        // User assets (overlay)
         userAssets: path.join(resolvedCwd, 'site', 'assets'),
-        // User custom themes (overlay)
         userThemes: path.join(resolvedCwd, 'site', 'themes', 'custom'),
       };
     },

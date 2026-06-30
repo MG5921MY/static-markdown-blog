@@ -103,6 +103,13 @@
   <script src="./client/ui.js"></script>
   <script src="./client/blog.js"></script>
   <script>
+    /**
+     * 页面类型分发逻辑：
+     * - markdown: 加载 Markdown 依赖，用 DOMPurify 渲染 HTML 内容
+     * - category: 展示文章网格，支持目录树导航（tree 类型分类）
+     * - html: 加载 DOMPurify，消毒后注入页面
+     * - custom: 独立模式（standalone）用 iframe 隔离渲染；嵌入模式直接注入并重新执行脚本
+     */
     (async function() {
       const loadingEl = document.getElementById('page-loading');
       const errorEl = document.getElementById('page-error');

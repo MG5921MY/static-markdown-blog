@@ -1,9 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * 轻量 YAML 解析器，基于缩进栈逐行解析
+ *
+ * 已支持：标量、块标量（|、|-、>）、数组、嵌套对象、引号字符串、行内数组
+ * 不支持：流映射 {}、锚点 & / 别名 *
+ *
+ * @param {string} content - YAML 文本内容
+ * @returns {object} 解析后的 JS 对象
+ */
 function parseYaml(content) {
   const root = {};
   const lines = content.replace(/\r/g, '').split('\n');
+  // 缩进栈：每层记录 { indent, value }，用于追踪当前嵌套层级
   const stack = [{ indent: -1, value: root }];
 
   function parseScalar(raw) {
@@ -26,6 +36,7 @@ function parseYaml(content) {
     return value;
   }
 
+  // 辅助函数：跳过空行和注释，找到下一个有效行（用于判断子节点类型）
   function nextUsefulLine(index) {
     for (let i = index + 1; i < lines.length; i += 1) {
       const text = lines[i].trim();
@@ -35,6 +46,7 @@ function parseYaml(content) {
     return null;
   }
 
+  // 读取块标量（|、|-、>），收集父缩进以下的所有行直到遇到同级或更浅缩进
   function readBlockScalar(startIndex, parentIndent) {
     const chunks = [];
     let lastIndex = startIndex;
@@ -68,12 +80,14 @@ function parseYaml(content) {
     };
   }
 
+  // 主循环：逐行解析，遇到缩进回退时弹栈恢复父级上下文
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
     const indent = line.search(/\S/);
 
+    // 缩进栈回退：当前行缩进 <= 栈顶缩进时，弹出已结束的层级
     while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
       stack.pop();
     }
@@ -163,6 +177,19 @@ function readText(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+/**
+ * 三级配置解析：site/config.yml → pkg/site/config.yml → config/blog.config.yml
+ *
+ * 优先使用 cwd/site/config.yml（site 模式），
+ * 其次使用 pkgRoot/site/config.yml（package-site 模式），
+ * 最后回退到 pkgRoot/config/blog.config.yml（legacy 模式）。
+ *
+ * 返回的配置对象包含 _mode（配置来源）、_siteRoot（站点根目录）、_pkgRoot（包根目录）等内部属性。
+ *
+ * @param {string} cwd - 当前工作目录
+ * @param {string} pkgRoot - 博客包根目录
+ * @returns {object} 标准化后的配置对象
+ */
 function loadConfig(cwd, pkgRoot) {
   const sitePath = path.join(cwd, 'site', 'config.yml');
   const pkgSitePath = path.join(pkgRoot, 'site', 'config.yml');

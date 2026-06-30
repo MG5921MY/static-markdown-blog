@@ -41,7 +41,6 @@ function filterScripts(html) {
   return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '<!-- script removed -->');
 }
 
-// Extract <style> content from HTML
 function extractStyles(html) {
   const styles = [];
   html.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (match, css) => {
@@ -51,7 +50,6 @@ function extractStyles(html) {
   return styles.join('\n');
 }
 
-// Extract <body> innerHTML from HTML document
 function extractBody(html) {
   const bodyMatch = html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
   if (bodyMatch) return bodyMatch[1].trim();
@@ -59,8 +57,7 @@ function extractBody(html) {
   return html.replace(/<!DOCTYPE[^>]*>/gi, '').replace(/<\/?html[^>]*>/gi, '').replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '').trim();
 }
 
-// Scope CSS rules to a container selector (#page-custom)
-// Preserves @font-face, @keyframes, and comments
+// 将 CSS 作用域限定到指定容器（保留 @font-face、@keyframes 和注释）
 function scopeCss(css, scope) {
   // Step 1: Extract and preserve comments
   const comments = [];
@@ -172,7 +169,7 @@ function buildPagesContent(pagesMap, siteRoot) {
         // Scope CSS: @font-face and @keyframes stay global, other rules scoped
         let scopedCss = '';
         if (rawStyles) {
-          // Extract @font-face and @keyframes (must be global)
+          // scopeCss 内部处理 @font-face/@keyframes 保留
           const globals = [];
           const localCss = rawStyles.replace(/@(font-face|keyframes)[^}]*\{[\s\S]*?\}\s*\}/g, (match) => {
             globals.push(match);

@@ -119,8 +119,8 @@ window.BlogUI = {
     toggleBtn.addEventListener('click', () => {
       tocList.classList.toggle('collapsed');
       toggleBtn.textContent = tocList.classList.contains('collapsed')
-        ? (Blog.t ? Blog.t('ui.expand') : '\u5c55\u5f00')
-        : (Blog.t ? Blog.t('ui.collapse') : '\u6536\u8d77');
+        ? (Blog.t ? Blog.t('ui.expand') : '展开')
+        : (Blog.t ? Blog.t('ui.collapse') : '收起');
     });
 
     const observer = new IntersectionObserver((entries) => {
@@ -302,12 +302,12 @@ window.BlogUI = {
     panel.className = 'theme-toggle-panel';
     panel.innerHTML = `
       <label class="theme-toggle-row">
-        <span class="theme-toggle-label">${Blog.t ? Blog.t('ui.themeAuto') : '\u8DDF\u968F\u7CFB\u7EDF'}</span>
+        <span class="theme-toggle-label">${Blog.t ? Blog.t('ui.themeAuto') : '跟随系统'}</span>
         <input type="checkbox" class="theme-auto-check">
       </label>
       <div class="theme-manual-panel">
-        <button class="theme-manual-btn" data-value="light">${Blog.t ? Blog.t('ui.themeLight') : '\u4EAE\u8272'}</button>
-        <button class="theme-manual-btn" data-value="dark">${Blog.t ? Blog.t('ui.themeDark') : '\u6697\u8272'}</button>
+        <button class="theme-manual-btn" data-value="light">${Blog.t ? Blog.t('ui.themeLight') : '亮色'}</button>
+        <button class="theme-manual-btn" data-value="dark">${Blog.t ? Blog.t('ui.themeDark') : '暗色'}</button>
       </div>
     `;
 

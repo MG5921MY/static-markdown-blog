@@ -1,7 +1,6 @@
 window.BlogRender = {
 
-  // Add line numbers to all <pre><code> blocks in the page
-  // Works independently of highlight.js — runs on pre-rendered HTML too
+  // 为指定容器内的 <pre><code> 块添加行号（独立于 highlight.js，可用于预渲染 HTML）
   addLineNumbers(container) {
     const scope = container || document;
     scope.querySelectorAll('pre > code').forEach((codeEl) => {
@@ -19,6 +18,13 @@ window.BlogRender = {
     });
   },
 
+  /**
+   * Markdown 渲染管线，分四个阶段：
+   * 1. 代码渲染：通过 highlight.js 高亮，mermaid 代码块替换为占位 div
+   * 2. DOMPurify 消毒：在消毒前提取数学公式（$$、$）为占位 span，避免被过滤
+   * 3. 数学公式调度：将提取的公式加入 _pendingMath 队列，异步调用 KaTeX 渲染
+   * 4. Mermaid 调度：检测 mermaid 占位符，异步加载 mermaid 并渲染为 SVG
+   */
   renderMarkdown(content) {
     if (!content) return '';
     let html = '';

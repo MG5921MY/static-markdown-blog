@@ -2,7 +2,8 @@
  * Automated test suite for static blog platform.
  * Run: node test.js
  *
- * Tests build, dist structure, config, locales, and HTTP endpoints.
+ * Tests build, dist structure, config, locales, feeds, search index,
+ * HTML templates, nav config, old file cleanup, and HTTP endpoints.
  */
 
 const http = require('http');

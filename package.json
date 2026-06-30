@@ -10,6 +10,7 @@
     "build.js",
     "serve.js",
     "init.js",
+    "test.js",
     "bin/",
     "src/",
     "res/vendor/",
