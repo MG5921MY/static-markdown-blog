@@ -11,6 +11,15 @@ Design principles:
 - **Beautiful themes** — 5 original themes, 45+ CSS tokens, 3-state dark mode
 - **Works out of the box** — Self-contained build output, deployable anywhere
 
+## Live Demo
+
+https://mg5921my.github.io/static-markdown-blog/
+
+The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demonstrate custom page capabilities:
+- **Skills** — Custom HTML page with JS execution (counter animation)
+- **Portfolio** — Custom HTML page with data embedding (projects.yml) + JS (3D tilt cards)
+- **Toolbox** — Standalone mode (hides platform nav/footer, iframe sandbox isolation)
+
 ## Features
 
 | Category | Capabilities |
