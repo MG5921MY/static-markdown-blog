@@ -59,6 +59,18 @@ window.BlogNav = {
         else el.textContent = text;
       }
     });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-aria-label');
+      if (!key) return;
+      const text = BlogI18n.t(key);
+      if (text && text !== key) el.setAttribute('aria-label', text);
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-alt');
+      if (!key) return;
+      const text = BlogI18n.t(key);
+      if (text && text !== key) el.setAttribute('alt', text);
+    });
     document.documentElement.lang = BlogI18n.locale === 'en' ? 'en' : 'zh-CN';
   },
 

@@ -6,6 +6,14 @@
     "shortLabel": "EN"
   },
   "loading": "Loading...",
+  "nav": {
+    "home": "Home"
+  },
+  "site": {
+    "defaultName": "Blog",
+    "personalBlog": "Personal Blog",
+    "myBlog": "My Blog"
+  },
   "hero": {
     "learnMore": "Learn More",
     "viewDisclaimer": "View Disclaimer",
@@ -30,7 +38,8 @@
     "contactEmail": "Contact Email",
     "pagination": "Page {current} / {total}, {count} posts total",
     "noSearchResults": "No matching articles found.",
-    "noPostsInDir": "No posts in this directory yet."
+    "noPostsInDir": "No posts in this directory yet.",
+    "noCategoryPosts": "No posts in this category yet."
   },
   "post": {
     "loading": "Loading article...",
@@ -65,7 +74,8 @@
     "nextPost": "Next",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "readMore": "Read More"
+    "readMore": "Read More",
+    "empty": "Empty"
   },
   "gallery": {
     "title": "Gallery",
@@ -92,7 +102,8 @@
     "loading": "Loading moments...",
     "notEnabled": "Moments feature is not enabled.",
     "noMoments": "No moments recorded yet.",
-    "loadFailed": "Failed to load moments."
+    "loadFailed": "Failed to load moments.",
+    "imageAlt": "Moment image"
   },
   "links": {
     "title": "References & Collections",

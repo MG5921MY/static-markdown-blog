@@ -65,7 +65,7 @@
 
     const groupImages = galleryData.images?.[currentGroup];
     if (!groupImages) {
-      Blog.renderState(galleryViewEl, Blog.t ? Blog.t('gallery.noGroupImages') : '当前分组暂时没有图片。', '空');
+      Blog.renderState(galleryViewEl, Blog.t ? Blog.t('gallery.noGroupImages') : '当前分组暂时没有图片。', Blog.t ? Blog.t('ui.empty') : '空');
       return;
     }
 

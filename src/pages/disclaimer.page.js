@@ -3,7 +3,7 @@
     needIndex: false,
     needPathMap: false,
     task: async () => {
-      Blog.setPageTitle('免责声明');
+      Blog.setPageTitle(Blog.t('disclaimer.title'));
       Blog.setNavSiteName();
     }
   });

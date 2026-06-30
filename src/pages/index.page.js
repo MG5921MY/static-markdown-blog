@@ -261,12 +261,12 @@
     const site = Blog.config?.site || {};
     const display = Blog.config?.display || {};
 
-    document.title = `${site.name || '博客'} | ${site.description || '个人博客'}`;
+    document.title = `${site.name || Blog.t('site.defaultName')} | ${site.description || Blog.t('site.personalBlog')}`;
 
     const descMeta = document.querySelector('meta[name="description"]');
     if (descMeta) descMeta.content = site.description || '';
 
-    Blog.setNavSiteName('nav-site-name', '博客');
+    Blog.setNavSiteName('nav-site-name', Blog.t('site.defaultName'));
 
     const heroBadge = document.getElementById('hero-badge');
     const heroTitle = document.getElementById('hero-title');
@@ -281,7 +281,7 @@
       }
     }
 
-    if (heroTitle) heroTitle.textContent = site.alias || site.name || '我的博客';
+    if (heroTitle) heroTitle.textContent = site.alias || site.name || Blog.t('site.myBlog');
     if (heroSubtitle) {
       const subtitleText = display.heroSubtitle || site.description || '';
       heroSubtitle.innerHTML = Blog.escapeHtml(subtitleText).replace(/\n/g, '<br>');

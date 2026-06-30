@@ -17,7 +17,7 @@
 
       if (safeImages.length > 0) {
         imagesHtml = `<div class="moment-images">
-          ${safeImages.map((img) => `<img src="${Blog.escapeHtml(Blog.resolveAsset(img))}" alt="瞬间配图" loading="lazy">`).join('')}
+          ${safeImages.map((img) => `<img src="${Blog.escapeHtml(Blog.resolveAsset(img))}" alt="${Blog.escapeHtml(Blog.t('moments.imageAlt'))}" loading="lazy">`).join('')}
         </div>`;
       }
     }

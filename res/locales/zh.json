@@ -6,6 +6,14 @@
     "shortLabel": "中"
   },
   "loading": "加载中...",
+  "nav": {
+    "home": "首页"
+  },
+  "site": {
+    "defaultName": "博客",
+    "personalBlog": "个人博客",
+    "myBlog": "我的博客"
+  },
   "hero": {
     "learnMore": "了解项目",
     "viewDisclaimer": "查看说明",
@@ -30,7 +38,8 @@
     "contactEmail": "联系邮箱",
     "pagination": "第 {current} / {total} 页，共 {count} 篇",
     "noSearchResults": "没有找到匹配的文章。",
-    "noPostsInDir": "当前目录下还没有文章。"
+    "noPostsInDir": "当前目录下还没有文章。",
+    "noCategoryPosts": "当前分类下暂无文章。"
   },
   "post": {
     "loading": "正在加载文章...",
@@ -65,7 +74,8 @@
     "nextPost": "下一篇",
     "prevPage": "上一页",
     "nextPage": "下一页",
-    "readMore": "阅读全文"
+    "readMore": "阅读全文",
+    "empty": "空"
   },
   "gallery": {
     "title": "图库",
@@ -92,7 +102,8 @@
     "loading": "正在加载瞬间...",
     "notEnabled": "瞬间功能未启用。",
     "noMoments": "还没有记录任何瞬间。",
-    "loadFailed": "瞬间内容加载失败。"
+    "loadFailed": "瞬间内容加载失败。",
+    "imageAlt": "瞬间配图"
   },
   "links": {
     "title": "参考与收藏",
