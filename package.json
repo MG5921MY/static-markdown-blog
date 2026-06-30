@@ -25,8 +25,8 @@
     "init": "node init.js"
   },
   "keywords": ["blog", "static-site", "markdown", "themes", "zero-dependency"],
-  "author": "MijiaoGame",
-  "license": "MIT",
+  "author": "Yang Ming Guang",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=18.0.0"
   }

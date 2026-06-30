@@ -194,7 +194,7 @@
           }
 
           if (page.type === 'html') {
-            await Blog.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js');
+            await Blog.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js');
             document.getElementById('html-title').textContent = page.title || page.name;
             document.getElementById('html-desc').textContent = page.description || '';
             const htmlContent = typeof DOMPurify !== 'undefined'
