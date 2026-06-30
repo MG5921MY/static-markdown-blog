@@ -15,7 +15,7 @@
 | **构建** | Markdown → HTML 构建时渲染、RSS、Sitemap、搜索索引、SSG、增量构建、草稿系统 |
 | **主题** | 5 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、Google Fonts、theme.js、模板覆盖 |
 | **内容** | 博客文章、自定义页面（HTML/CSS/JS）、瞬间、友链、图库、数学公式（KaTeX）、流程图（Mermaid） |
-| **开发** | 零依赖、热重载（SSE）、CLI、自动化测试（221 项） |
+| **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、自动化测试（221 项） |
 | **部署** | GitHub Pages、Docker、通用静态托管、子路径自动适应 |
 | **扩展** | 插件架构、自定义主题、自定义页面（standalone/嵌入）、评论集成（Giscus） |
 
@@ -50,6 +50,19 @@ blog serve
 ### 通用静态托管
 
 `dist/` 目录即完整产物，可直接部署到 Vercel / Netlify / Cloudflare Pages / GitHub Pages / Nginx。
+
+## CLI
+
+```bash
+blog init                  # 初始化工作区
+blog build                 # 构建
+blog build --incremental   # 增量构建
+blog serve [port]          # 开发服务器
+blog serve --no-live       # 禁用热重载
+blog --help                # 帮助（自动检测语言）
+blog --help --lang en      # 英文帮助
+blog --version             # 版本号
+```
 
 ## 目录结构
 
