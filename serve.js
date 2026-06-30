@@ -289,7 +289,7 @@ const server = http.createServer((req, res) => {
 });
 
 // ── 启动 ──────────────────────────────────────────────────────────────────
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, '0.0.0.0', () => {
   const previewUrl = BASE_PATH === '/' ? `http://localhost:${PORT}` : `http://localhost:${PORT}${BASE_PATH}`;
   console.log(`Serving dist on ${previewUrl}`);
 
