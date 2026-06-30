@@ -202,6 +202,7 @@ function loadConfig(cwd, pkgRoot) {
     comments: raw.comments || { enabled: false },
     _raw: raw,
     _siteRoot: siteRoot,
+    _pkgRoot: pkgRoot,
     _configPath: filePath,
     _mode: mode
   };

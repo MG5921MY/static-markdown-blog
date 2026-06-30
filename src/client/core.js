@@ -98,10 +98,16 @@ window.BlogCore = {
     const availableThemes = this.config?.theme?.available || [];
     let themeName = this.config?.theme?.active || 'graphite';
     if (!this.isValidId(themeName)) themeName = 'graphite';
-    // Only validate against available list if it's populated
-    if (availableThemes.length > 0 && !availableThemes.some((item) => item.id === themeName)) {
-      themeName = availableThemes[0]?.id || 'graphite';
+
+    // Validate against available list (if populated)
+    if (availableThemes.length > 0) {
+      const found = availableThemes.find((t) => t.id === themeName);
+      if (!found) {
+        console.warn(`Theme "${themeName}" not found. Available: ${availableThemes.map(t => t.id).join(', ')}. Falling back to "${availableThemes[0].id}".`);
+        themeName = availableThemes[0]?.id || 'graphite';
+      }
     }
+
     const themeMeta = availableThemes.find((item) => item.id === themeName);
     const themeHref = themeMeta?.path
       ? this.resolveAsset(`${themeMeta.path}/theme.css`)

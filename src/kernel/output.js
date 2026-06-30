@@ -273,4 +273,38 @@ function writeBuildOutputs({ siteConfig, contentIndex, pathMap, posts, distDir }
   }
 }
 
-module.exports = { writeBuildOutputs, cleanDir, ensureDir, writeText, writeJson, buildPagesMap, buildPagesContent, resolveNav, buildFeatures };
+function scanThemeDir(dirPath, source) {
+  const themes = [];
+  if (!fs.existsSync(dirPath)) return themes;
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const themeDir = path.join(dirPath, entry.name);
+    const ymlPath = path.join(themeDir, 'theme.yml');
+    const cssPath = path.join(themeDir, 'theme.css');
+    if (!fs.existsSync(cssPath)) continue;
+    let meta = { id: entry.name, name: entry.name };
+    if (fs.existsSync(ymlPath)) {
+      try {
+        const parsed = require('./config').parseYaml(fs.readFileSync(ymlPath, 'utf8'));
+        if (parsed) meta = { ...meta, ...parsed };
+      } catch (_) {}
+    }
+    if (!meta.id) meta.id = entry.name;
+    meta.source = source;
+    meta.path = source === 'system' ? `themes/${entry.name}` : `themes/custom/${entry.name}`;
+    themes.push(meta);
+  }
+  return themes;
+}
+
+function scanAvailableThemes(pkgRoot, siteRoot) {
+  const systemThemes = scanThemeDir(path.join(pkgRoot, 'res', 'themes'), 'system');
+  const userThemes = scanThemeDir(path.join(siteRoot, 'themes', 'custom'), 'user');
+  // User themes override system themes with same id
+  const map = {};
+  for (const t of systemThemes) map[t.id] = t;
+  for (const t of userThemes) map[t.id] = t;
+  return Object.values(map);
+}
+
+module.exports = { writeBuildOutputs, cleanDir, ensureDir, writeText, writeJson, buildPagesMap, buildPagesContent, resolveNav, buildFeatures, scanAvailableThemes };
