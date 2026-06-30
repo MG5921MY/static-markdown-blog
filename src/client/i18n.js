@@ -36,9 +36,23 @@ window.BlogI18n = {
 
   async getAvailableLocales() {
     if (this._availableLocales) return this._availableLocales;
-    const known = ['zh', 'en'];
     const base = this._getBasePath();
     const available = [];
+
+    // Try to load locale index (generated at build time)
+    try {
+      const resp = await fetch(`${base}locales/index.json`);
+      if (resp.ok) {
+        const index = await resp.json();
+        if (Array.isArray(index) && index.length > 0) {
+          this._availableLocales = index;
+          return index;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback: probe known locales
+    const known = ['zh', 'en'];
     for (const code of known) {
       try {
         const resp = await fetch(`${base}locales/${code}.json`);

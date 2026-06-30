@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadConfig } = require('./config');
 const { scanContent, fileHash } = require('./content');
-const { writeBuildOutputs, cleanDir, writeJson, buildFeatures, buildPagesContent, scanAvailableThemes } = require('./output');
+const { writeBuildOutputs, cleanDir, writeJson, buildFeatures, buildPagesContent, scanAvailableThemes, generateLocaleIndex } = require('./output');
 
 function loadPlugins() {
   const names = ['static-copy', 'rss', 'sitemap', 'search-index', 'ssg'];
@@ -79,6 +79,9 @@ async function build(userOptions) {
   for (const plugin of loadPlugins()) {
     pluginResults.push(await plugin(buildResult));
   }
+
+  // Generate locale index for dynamic locale discovery
+  const localeCount = generateLocaleIndex(distDir);
 
   const manifestFiles = {};
   for (const [id, entry] of Object.entries(pathMap)) {

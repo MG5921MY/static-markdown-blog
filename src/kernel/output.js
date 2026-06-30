@@ -229,18 +229,22 @@ function scanGalleryDir(dirPath, formats, maxDepth, currentDepth, basePath) {
 function buildFeatures(config, siteRoot) {
   const features = {};
   const feats = config.features || {};
-  const read = (p) => { try { return fs.existsSync(p) ? require('./config').parseYaml(fs.readFileSync(p, 'utf8')) : null; } catch (_) { return null; } };
+  const read = (p, name) => {
+    if (!fs.existsSync(p)) { console.warn(`  Feature "${name}": source not found: ${p}`); return null; }
+    try { return require('./config').parseYaml(fs.readFileSync(p, 'utf8')); }
+    catch (e) { console.warn(`  Feature "${name}": failed to parse ${p}: ${e.message}`); return null; }
+  };
 
   if (feats.moments?.enabled) {
-    const data = feats.moments.source ? read(path.join(siteRoot, feats.moments.source)) : null;
+    const data = feats.moments.source ? read(path.join(siteRoot, feats.moments.source), 'moments') : null;
     features.moments = { enabled: true, ...feats.moments, ...(data || { moments: [] }) };
   }
   if (feats.links?.enabled) {
-    const data = feats.links.source ? read(path.join(siteRoot, feats.links.source)) : null;
+    const data = feats.links.source ? read(path.join(siteRoot, feats.links.source), 'links') : null;
     features.links = { enabled: true, ...feats.links, ...(data || { groups: [], links: [] }) };
   }
   if (feats.gallery?.enabled) {
-    const data = feats.gallery.source ? read(path.join(siteRoot, feats.gallery.source)) : null;
+    const data = feats.gallery.source ? read(path.join(siteRoot, feats.gallery.source), 'gallery') : null;
     const galleryData = { enabled: true, ...feats.gallery, ...(data || { groups: [], settings: {} }) };
     // Scan gallery directories to build images map
     const formats = (galleryData.settings?.formats || ['jpg', 'png', 'svg']).map(f => f.toLowerCase());
@@ -307,4 +311,23 @@ function scanAvailableThemes(pkgRoot, siteRoot) {
   return Object.values(map);
 }
 
-module.exports = { writeBuildOutputs, cleanDir, ensureDir, writeText, writeJson, buildPagesMap, buildPagesContent, resolveNav, buildFeatures, scanAvailableThemes };
+function generateLocaleIndex(distDir) {
+  const localesDir = path.join(distDir, 'locales');
+  if (!fs.existsSync(localesDir)) return 0;
+  const index = [];
+  for (const entry of fs.readdirSync(localesDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.json') || entry.name === 'index.json') continue;
+    const code = entry.name.replace('.json', '');
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(localesDir, entry.name), 'utf8'));
+      const meta = data._meta || { code, name: code, nativeName: code };
+      index.push(meta);
+    } catch (_) {
+      index.push({ code, name: code, nativeName: code });
+    }
+  }
+  if (index.length > 0) writeJson(path.join(localesDir, 'index.json'), index);
+  return index.length;
+}
+
+module.exports = { writeBuildOutputs, cleanDir, ensureDir, writeText, writeJson, buildPagesMap, buildPagesContent, resolveNav, buildFeatures, scanAvailableThemes, generateLocaleIndex };
