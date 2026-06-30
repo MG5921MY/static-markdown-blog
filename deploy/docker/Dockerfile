@@ -18,7 +18,10 @@ COPY *.json ./                      # package.json
 COPY *.ico ./                       # favicon
 
 # ── 复制用户工作区（作为默认种子内容）──────────────────
-COPY site ./site/
+# 注意：必须复制到 /app/site-defaults/，不能复制到 /app/site/
+# 因为 docker-compose 会把宿主机 site/ 挂载到 /app/site/，
+# 如果源和目标相同，cp 会报 "are the same file" 错误。
+COPY site ./site-defaults/
 
 # ── 入口脚本 ──────────────────────────────────────────
 COPY deploy/docker/entrypoint.sh /entrypoint.sh

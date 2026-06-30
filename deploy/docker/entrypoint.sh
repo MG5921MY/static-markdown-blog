@@ -46,9 +46,9 @@ EOF
   fi
 }
 
-# 复制默认示例内容
+# 复制默认示例内容（从 /app/site-defaults/ 到 /app/site/）
 seed_example_content() {
-  cp -R /app/site/. "$WORKSPACE_DIR"/
+  cp -R /app/site-defaults/. "$WORKSPACE_DIR"/
 }
 
 # ── 主逻辑 ────────────────────────────────────────────
