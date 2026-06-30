@@ -47,8 +47,26 @@ node serve.js         # Preview at http://localhost:8080
 ### Docker
 
 ```bash
-docker compose -f deploy/docker/docker-compose.yml up -d --build
+cd deploy/docker
+
+# Build image locally
+docker compose up -d --build
+
+# Or pull pre-built image from GitHub Container Registry
+docker compose --profile pull up -d
+
+# Stop
+docker compose down
 ```
+
+On first start, if `site/` is empty, example content is automatically seeded. Control initialization behavior with the `INIT_MODE` environment variable:
+
+```bash
+INIT_MODE=empty docker compose up -d --build   # Empty structure (no examples)
+INIT_MODE=force docker compose up -d --build    # Force reinitialize
+```
+
+LAN access: `http://YOUR_IP:8110` (port can be changed in docker-compose.yml).
 
 ### npm (in development)
 
