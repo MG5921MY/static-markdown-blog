@@ -47,8 +47,26 @@ node serve.js         # 预览 http://localhost:8080
 ### Docker
 
 ```bash
-docker compose -f deploy/docker/docker-compose.yml up -d --build
+cd deploy/docker
+
+# 本地构建镜像
+docker compose up -d --build
+
+# 或从 GitHub Container Registry 拉取预构建镜像
+docker compose --profile pull up -d
+
+# 停止
+docker compose down
 ```
+
+首次启动时 `site/` 为空，会自动复制示例内容。通过 `INIT_MODE` 环境变量控制初始化行为：
+
+```bash
+INIT_MODE=empty docker compose up -d --build   # 空结构（不带示例）
+INIT_MODE=force docker compose up -d --build    # 强制重新初始化
+```
+
+局域网访问：`http://你的IP:8110`（端口可在 docker-compose.yml 中修改）。
 
 ### npm（开发中）
 
