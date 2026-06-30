@@ -6,48 +6,49 @@ const ROOT = process.cwd();
 const PKG_ROOT = __dirname;
 const SITE_DIR = path.join(ROOT, 'site');
 
-function exists(targetPath) {
-  return fs.existsSync(targetPath);
+// ── Helpers ─────────────────────────────────────────────
+function exists(p) { return fs.existsSync(p); }
+function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
+
+function listEntries(p) {
+  if (!exists(p)) return [];
+  return fs.readdirSync(p).filter((n) => n !== '.gitkeep');
 }
 
-function ensureDir(targetPath) {
-  fs.mkdirSync(targetPath, { recursive: true });
+function isEmptyOrMissing(p) {
+  return !exists(p) || listEntries(p).length === 0;
 }
 
-function listEntries(targetPath) {
-  if (!exists(targetPath)) return [];
-  return fs.readdirSync(targetPath).filter((name) => name !== '.gitkeep');
+function countFiles(dir) {
+  if (!exists(dir)) return 0;
+  let count = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isFile()) count++;
+    else if (entry.isDirectory()) count += countFiles(path.join(dir, entry.name));
+  }
+  return count;
 }
 
-function isMeaningfulDirectory(targetPath) {
-  return listEntries(targetPath).length > 0;
-}
-
-function copyRecursive(sourcePath, targetPath) {
-  const stat = fs.statSync(sourcePath);
+function copyRecursive(src, dest, overwrite) {
+  const stat = fs.statSync(src);
   if (stat.isDirectory()) {
-    ensureDir(targetPath);
-    for (const entry of fs.readdirSync(sourcePath)) {
-      copyRecursive(path.join(sourcePath, entry), path.join(targetPath, entry));
+    ensureDir(dest);
+    for (const entry of fs.readdirSync(src)) {
+      copyRecursive(path.join(src, entry), path.join(dest, entry), overwrite);
     }
     return;
   }
-
-  ensureDir(path.dirname(targetPath));
-  fs.copyFileSync(sourcePath, targetPath);
+  if (!overwrite && exists(dest)) return; // skip existing
+  ensureDir(path.dirname(dest));
+  fs.copyFileSync(src, dest);
 }
 
-function removeRecursive(targetPath) {
-  if (exists(targetPath)) {
-    fs.rmSync(targetPath, { recursive: true, force: true });
-  }
+function removeRecursive(p) {
+  if (exists(p)) fs.rmSync(p, { recursive: true, force: true });
 }
 
 function createPrompt() {
-  return readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+  return readline.createInterface({ input: process.stdin, output: process.stdout });
 }
 
 function ask(prompt, question) {
@@ -56,36 +57,112 @@ function ask(prompt, question) {
   });
 }
 
-async function confirmOverwrite(prompt, targetPath) {
-  console.log(`\nTarget already has content: ${targetPath}`);
-  const answer = await ask(prompt, 'Overwrite site data? [y/N]: ');
-  return answer === 'y' || answer === 'yes';
+// ── Source directories ──────────────────────────────────
+const SOURCES = {
+  config: path.join(PKG_ROOT, 'site', 'config.yml'),
+  content: path.join(PKG_ROOT, 'content'),
+  posts: path.join(PKG_ROOT, 'site', 'content', 'posts'),
+  pages: path.join(PKG_ROOT, 'site', 'content', 'pages'),
+  data: path.join(PKG_ROOT, 'site', 'content', 'data'),
+  assets: path.join(PKG_ROOT, 'assets'),
+};
+
+function copyExampleContent(overwrite) {
+  // Config
+  if (exists(SOURCES.config)) {
+    const dest = path.join(SITE_DIR, 'config.yml');
+    if (overwrite || !exists(dest)) {
+      fs.copyFileSync(SOURCES.config, dest);
+    }
+  }
+
+  // Content (posts, pages, data)
+  if (exists(SOURCES.posts)) {
+    copyRecursive(SOURCES.posts, path.join(SITE_DIR, 'content', 'posts'), overwrite);
+  }
+  if (exists(SOURCES.pages)) {
+    copyRecursive(SOURCES.pages, path.join(SITE_DIR, 'content', 'pages'), overwrite);
+  }
+  if (exists(SOURCES.data)) {
+    copyRecursive(SOURCES.data, path.join(SITE_DIR, 'content', 'data'), overwrite);
+  }
+
+  // Assets
+  if (exists(SOURCES.assets)) {
+    copyRecursive(SOURCES.assets, path.join(SITE_DIR, 'assets'), overwrite);
+  }
+
+  // Custom themes dir
+  ensureDir(path.join(SITE_DIR, 'themes', 'custom'));
 }
 
+function showSiteSummary() {
+  const posts = countFiles(path.join(SITE_DIR, 'content', 'posts'));
+  const pages = countFiles(path.join(SITE_DIR, 'content', 'pages'));
+  const data = countFiles(path.join(SITE_DIR, 'content', 'data'));
+  const assets = countFiles(path.join(SITE_DIR, 'assets'));
+  const hasConfig = exists(path.join(SITE_DIR, 'config.yml'));
+  console.log(`  config.yml: ${hasConfig ? 'yes' : 'no'}`);
+  console.log(`  posts: ${posts} files`);
+  console.log(`  pages: ${pages} files`);
+  console.log(`  data: ${data} files`);
+  console.log(`  assets: ${assets} files`);
+}
+
+// ── Main ────────────────────────────────────────────────
 async function main() {
   console.log('');
   console.log('Static blog workspace initializer');
   console.log('');
-  console.log(`Target  : ${path.relative(ROOT, SITE_DIR)}`);
+  console.log(`Target: ${path.relative(ROOT, SITE_DIR) || '.'}`);
   console.log('');
 
   const prompt = createPrompt();
-  const start = await ask(prompt, 'Initialize site/? [Y/n]: ');
-  if (start === 'n' || start === 'no') {
+
+  // site/ already exists with content
+  if (!isEmptyOrMissing(SITE_DIR)) {
+    console.log('site/ already exists:');
+    showSiteSummary();
+    console.log('');
+    console.log('  [1] Sync examples (add missing files, keep existing)');
+    console.log('  [2] Overwrite everything');
+    console.log('  [3] Cancel');
+    console.log('');
+    const choice = await ask(prompt, 'Choose [1/2/3]: ');
+
+    if (choice === '3' || choice === 'cancel' || choice === '') {
+      prompt.close();
+      console.log('\nCancelled.');
+      return;
+    }
+
+    if (choice === '2' || choice === 'overwrite') {
+      const confirm = await ask(prompt, 'This will replace ALL site/ content. Confirm? [y/N]: ');
+      if (confirm !== 'y' && confirm !== 'yes') {
+        prompt.close();
+        console.log('\nCancelled.');
+        return;
+      }
+      removeRecursive(SITE_DIR);
+      ensureDir(SITE_DIR);
+      copyExampleContent(true);
+      prompt.close();
+      console.log('\nWorkspace overwritten with example content.');
+      showNextSteps();
+      return;
+    }
+
+    // choice === '1' or 'sync'
+    copyExampleContent(false); // don't overwrite existing
     prompt.close();
-    console.log('\nInitialization cancelled.');
+    console.log('\nExample content synced (existing files preserved).');
+    showNextSteps();
     return;
   }
 
-  if (isMeaningfulDirectory(SITE_DIR)) {
-    const confirmed = await confirmOverwrite(prompt, SITE_DIR);
-    if (!confirmed) {
-      prompt.close();
-      console.log('\nInitialization cancelled.');
-      return;
-    }
-    removeRecursive(SITE_DIR);
-  }
+  // site/ doesn't exist — fresh init
+  const withExamples = await ask(prompt, 'Initialize with example content? [Y/n]: ');
+  const useExamples = withExamples !== 'n' && withExamples !== 'no';
 
   ensureDir(SITE_DIR);
   ensureDir(path.join(SITE_DIR, 'content', 'posts'));
@@ -94,18 +171,27 @@ async function main() {
   ensureDir(path.join(SITE_DIR, 'assets'));
   ensureDir(path.join(SITE_DIR, 'themes', 'custom'));
 
-  // Copy default config from package if available
-  const defaultConfig = path.join(PKG_ROOT, 'site', 'config.yml');
-  if (exists(defaultConfig)) {
-    fs.copyFileSync(defaultConfig, path.join(SITE_DIR, 'config.yml'));
+  if (useExamples) {
+    copyExampleContent(true);
+    prompt.close();
+    console.log('\nWorkspace initialized with example content.');
+  } else {
+    // Copy only config
+    if (exists(SOURCES.config)) {
+      fs.copyFileSync(SOURCES.config, path.join(SITE_DIR, 'config.yml'));
+    }
+    prompt.close();
+    console.log('\nWorkspace initialized (empty).');
   }
 
-  prompt.close();
+  showNextSteps();
+}
 
-  console.log('\nWorkspace initialized.');
+function showNextSteps() {
+  console.log('');
   console.log('Next steps:');
   console.log('1. Edit site/config.yml');
-  console.log('2. Add posts under site/content/posts/');
+  console.log('2. Write posts in site/content/posts/');
   console.log('3. Run node build.js');
   console.log('4. Run node serve.js');
   console.log('');
