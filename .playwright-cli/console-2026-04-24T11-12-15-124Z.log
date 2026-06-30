@@ -1,3 +1,0 @@
-[     309ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8091/assets/favicon.ico:0
-[     368ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8091/favicon.ico:0
-[     368ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8091/assets/favicon.ico:0

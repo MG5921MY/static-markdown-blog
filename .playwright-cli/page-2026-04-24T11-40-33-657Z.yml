@@ -1,7 +1,0 @@
-- generic [active] [ref=e1]:
-  - navigation [ref=e2]:
-    - link "加载中..." [ref=e3] [cursor=pointer]:
-      - /url: ./index.html
-      - text: 加载中...
-  - main [ref=e4]:
-    - paragraph [ref=e7]: 正在加载...
