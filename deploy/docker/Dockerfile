@@ -8,14 +8,22 @@ FROM node:22-alpine
 WORKDIR /app
 
 # ── 复制平台代码 ──────────────────────────────────────
-COPY src ./src/                     # 构建引擎 + 客户端模块
-COPY res/themes ./res/themes/       # 5 个内置主题
-COPY res/locales ./res/locales/     # 中英双语翻译
-COPY res/vendor ./res/vendor/       # 第三方库 (marked, lunr, katex)
-COPY bin ./bin/                     # CLI 入口
-COPY *.js ./                        # build.js, serve.js, init.js, test.js
-COPY *.json ./                      # package.json
-COPY *.ico ./                       # favicon
+# 构建引擎 + 客户端模块
+COPY src ./src/
+# 5 个内置主题
+COPY res/themes ./res/themes/
+# 中英双语翻译
+COPY res/locales ./res/locales/
+# 第三方库 (marked, lunr, katex)
+COPY res/vendor ./res/vendor/
+# CLI 入口
+COPY bin ./bin/
+# build.js, serve.js, init.js, test.js
+COPY *.js ./
+# package.json
+COPY *.json ./
+# favicon
+COPY *.ico ./
 
 # ── 复制用户工作区（作为默认种子内容）──────────────────
 # 注意：必须复制到 /app/site-defaults/，不能复制到 /app/site/
