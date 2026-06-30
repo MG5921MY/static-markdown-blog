@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>参考与收藏</title>
+  <meta name="description" content="长期保留的参考站点、阅读入口和开发工具。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span id="nav-site-name">加载中...</span>
+    </a>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+
+  <main class="main">
+    <section class="hero hero-compact links-shell">
+      <div class="hero-kicker">References</div>
+      <h1 class="hero-title" data-i18n="links.title">参考与收藏</h1>
+      <p class="hero-subtitle" data-i18n="links.subtitle">把值得长期保留的设计线索、阅读入口和工具资源，沉淀成仓库的一部分。</p>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="links-shell">
+        <div id="links-content">
+          <div class="loading-state" style="padding: 60px 0;">
+            <div class="loading-spinner"></div>
+            <p data-i18n="links.loading">正在加载资源...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer" data-template="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links"></div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./client/i18n.js"></script>
+  <script src="./client/core.js"></script>
+  <script src="./client/nav.js"></script>
+  <script src="./client/render.js"></script>
+  <script src="./client/ui.js"></script>
+  <script src="./client/blog.js"></script>
+  <script src="./links.page.js"></script>
+</body>
+</html>

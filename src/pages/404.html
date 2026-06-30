@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>404 | 加载中...</title>
+  <meta name="description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span id="nav-site-name">加载中...</span>
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="./index.html" class="nav-link" data-i18n="nav.home">首页</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="error-page">
+      <div class="error-code">404</div>
+      <h1 class="error-title" data-i18n="error404.title">页面未找到</h1>
+      <p class="error-desc" data-i18n="error404.description">这个地址没有对应内容，但你的博客还在。你可以直接搜索，也可以从最近文章继续浏览。</p>
+
+      <div class="error-search">
+        <input type="text" id="error-search-input" class="search-input" placeholder="搜索文章标题或标签" data-i18n="error404.searchPlaceholder" autocomplete="off" />
+      </div>
+
+      <div class="error-actions">
+        <a href="./index.html" class="btn btn-primary" data-i18n="error404.backHome">返回首页</a>
+        <a href="./page.html?id=about" class="btn btn-secondary" data-i18n="error404.aboutSite">关于本站</a>
+      </div>
+
+      <div id="error-recent-posts" class="error-recent" style="display:none;">
+        <h3 data-i18n="error404.recommendedReading">推荐阅读</h3>
+        <div id="error-posts-list" class="posts-grid"></div>
+      </div>
+    </div>
+
+    <footer class="footer" data-template="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links">
+            <a href="./index.html" class="footer-link" data-i18n="nav.home">首页</a>
+          </div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./client/i18n.js"></script>
+  <script src="./client/core.js"></script>
+  <script src="./client/nav.js"></script>
+  <script src="./client/render.js"></script>
+  <script src="./client/ui.js"></script>
+  <script src="./client/blog.js"></script>
+  <script src="./404.page.js"></script>
+</body>
+</html>

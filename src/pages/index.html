@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>加载中...</title>
+  <meta name="description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
+  <link rel="preload" as="script" href="./client/core.js" />
+  <link rel="preload" as="fetch" href="./locales/zh.json" crossorigin />
+  <link rel="preload" as="script" href="./client/render.js" />
+  <link rel="preload" as="script" href="./client/ui.js" />
+  <link rel="preload" as="script" href="./client/blog.js" />
+  <link rel="preload" as="script" href="./index.page.js" />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span id="nav-site-name" data-i18n="loading">加载中...</span>
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="./index.html" class="nav-link active" data-i18n="nav.home">首页</a>
+    </div>
+  </nav>
+
+  <main class="main home-layout" id="home-layout">
+    <div class="container">
+      <section class="hero home-hero" id="home-hero" data-template="hero">
+        <div class="hero-media" id="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <div class="hero-badge" id="hero-badge"></div>
+          <h1 class="hero-title" id="hero-title"></h1>
+          <p class="hero-subtitle" id="hero-subtitle"></p>
+          <div class="hero-actions">
+            <a href="./page.html?id=about" class="btn btn-primary" data-i18n="hero.learnMore">了解项目</a>
+            <a href="./disclaimer.html" class="btn btn-secondary" data-i18n="hero.viewDisclaimer">查看说明</a>
+          </div>
+          <div class="hero-meta">
+            <span data-i18n="hero.badge1">Markdown 优先</span>
+            <span data-i18n="hero.badge2">主题 token 驱动</span>
+            <span data-i18n="hero.badge3">支持任意子路径部署</span>
+          </div>
+        </div>
+        <a href="#posts-section" class="hero-scroll-cue" id="hero-scroll-cue">
+          <span data-i18n="hero.continueReading">继续阅读</span>
+        </a>
+      </section>
+
+      <section class="section home-feed-section" id="posts-section">
+        <div class="section-surface">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title" data-i18n="index.latestContent">最新内容</h2>
+              <p class="section-copy" data-i18n="index.sectionCopy">从新结构中的 Markdown 内容直接构建，默认保持稳定、克制、可长期维护的阅读体验。</p>
+            </div>
+            <div class="search-box">
+              <input type="text" id="search-input" class="search-input" data-i18n="index.searchPlaceholder" placeholder="搜索文章、标签或分类" autocomplete="off" />
+              <span class="search-icon">⌕</span>
+            </div>
+          </div>
+
+          <div class="filter-group" id="category-filter"></div>
+          <div id="subdir-filter-container"></div>
+          <div id="dir-tree-container"></div>
+
+          <div id="posts-loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p data-i18n="index.loadingContent">正在加载内容...</p>
+          </div>
+
+          <div id="posts-grid" class="posts-grid" style="display: none;"></div>
+          <div id="posts-pagination" class="posts-pagination"></div>
+          <div id="posts-empty" class="empty-state" style="display: none;"><p data-i18n="index.noPosts">还没有可展示的文章。</p></div>
+          <div id="posts-error" class="empty-state" style="display: none;"><p id="error-message" data-i18n="index.loadFailed">内容加载失败。</p></div>
+        </div>
+      </section>
+
+      <section class="section home-site-section" id="site-info-section">
+        <div class="section-surface">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title" data-i18n="index.siteInfo">站点信息</h2>
+              <p class="section-copy" data-i18n="index.siteInfoCopy">这里展示当前博客的定位、内容方向和联系入口，方便把默认示例站点当成正式起点继续扩展。</p>
+            </div>
+          </div>
+          <div class="site-info" id="site-info"></div>
+          <div class="contact-box" id="contact-box" style="display: none;">
+            <span data-i18n="index.contactEmail">联系邮箱</span>
+            <span class="email" id="contact-email"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer" data-template="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links">
+            <a href="./index.html" class="footer-link" data-i18n="nav.home">首页</a>
+          </div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./client/i18n.js"></script>
+  <script src="./client/core.js"></script>
+  <script src="./client/nav.js"></script>
+  <script src="./client/render.js"></script>
+  <script src="./client/ui.js"></script>
+  <script src="./client/blog.js"></script>
+  <script src="./index.page.js"></script>
+</body>
+</html>

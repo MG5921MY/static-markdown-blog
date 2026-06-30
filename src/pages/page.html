@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>加载中...</title>
+  <meta name="description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span id="nav-site-name">加载中...</span>
+    </a>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <div id="page-loading" class="loading-state" style="padding: 100px 0;">
+        <div class="loading-spinner"></div>
+        <p data-i18n="page.loading">正在加载页面...</p>
+      </div>
+
+      <div id="page-markdown" style="display: none;">
+        <section class="hero hero-compact">
+          <div class="hero-kicker">Page</div>
+          <h1 class="hero-title" id="page-title"></h1>
+          <p class="hero-subtitle" id="page-desc"></p>
+        </section>
+        <section class="section" style="padding-top: 0;">
+          <div class="section-surface">
+            <div class="markdown-body" id="page-content"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-category" style="display: none;">
+        <section class="hero hero-compact">
+          <div class="hero-kicker">Category</div>
+          <h1 class="hero-title" id="cat-title"></h1>
+          <p class="hero-subtitle" id="cat-desc"></p>
+        </section>
+        <section class="section" style="padding-top: 0;">
+          <div class="section-surface">
+            <div id="cat-dir-nav"></div>
+            <div id="cat-dir-tree"></div>
+            <div id="cat-posts" class="posts-grid"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-html" style="display: none;">
+        <section class="hero hero-compact">
+          <div class="hero-kicker">Page</div>
+          <h1 class="hero-title" id="html-title"></h1>
+          <p class="hero-subtitle" id="html-desc"></p>
+        </section>
+        <section class="section" style="padding-top: 0;">
+          <div class="section-surface">
+            <div id="html-content"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-custom" style="display: none;"></div>
+
+      <div id="page-error" class="error-state" style="display: none; padding: 100px 0;">
+        <h2 data-i18n="page.notFound">页面未找到</h2>
+        <p id="error-detail" data-i18n="page.notFoundDetail">你访问的页面不存在。</p>
+        <a href="./index.html" class="btn btn-primary" style="margin-top: 20px;" data-i18n="page.backHome">返回首页</a>
+      </div>
+    </div>
+
+    <footer class="footer" data-template="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links"></div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./client/i18n.js"></script>
+  <script src="./client/core.js"></script>
+  <script src="./client/nav.js"></script>
+  <script src="./client/render.js"></script>
+  <script src="./client/ui.js"></script>
+  <script src="./client/blog.js"></script>
+  <script>
+    /**
+     * 页面类型分发逻辑：
+     * - markdown: 加载 Markdown 依赖，用 DOMPurify 渲染 HTML 内容
+     * - category: 展示文章网格，支持目录树导航（tree 类型分类）
+     * - html: 加载 DOMPurify，消毒后注入页面
+     * - custom: 独立模式（standalone）用 iframe 隔离渲染；嵌入模式直接注入并重新执行脚本
+     */
+    (async function() {
+      const loadingEl = document.getElementById('page-loading');
+      const errorEl = document.getElementById('page-error');
+      const errorDetail = document.getElementById('error-detail');
+
+      const pageId = Blog.getUrlParam('id');
+      if (!pageId) {
+        Blog.showPageError(loadingEl, errorEl, errorDetail, '缺少页面参数。');
+        return;
+      }
+
+      await Blog.runPage({
+        needIndex: true,
+        needPathMap: false,
+        loadingEl,
+        errorEl,
+        errorDetailEl: errorDetail,
+        task: async () => {
+          const page = Blog.getPage(pageId);
+          if (!page) throw new Error('页面不存在。');
+
+          document.title = `${page.name} | ${Blog.config?.site?.name || Blog.t('site.defaultName')}`;
+          document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || Blog.t('site.defaultName');
+          loadingEl.style.display = 'none';
+
+          if (page.type === 'markdown') {
+            await Blog.loadMarkdownDeps();
+            Blog.loadHighlightDeps(); // non-blocking
+            document.getElementById('page-title').textContent = page.title || page.name;
+            document.getElementById('page-desc').textContent = page.description || '';
+            if (page.renderedToHtml) {
+              const safe = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(page.content || '') : (page.content || '');
+              document.getElementById('page-content').innerHTML = safe;
+            } else {
+              document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
+            }
+            Blog.addLineNumbers(document.getElementById('page-content'));
+            document.getElementById('page-markdown').style.display = 'block';
+            return;
+          }
+
+          if (page.type === 'category') {
+            const category = Blog.index?.categories?.[page.categoryId];
+            if (!category) throw new Error('分类不存在。');
+
+            document.getElementById('cat-title').textContent = `${page.icon || category.icon || ''} ${page.name}`;
+            document.getElementById('cat-desc').textContent = page.description || category.description || '';
+
+            const dirNavEl = document.getElementById('cat-dir-nav');
+            const dirTreeEl = document.getElementById('cat-dir-tree');
+            const postsEl = document.getElementById('cat-posts');
+
+            const updateCategoryDisplay = (dirPath = '') => {
+              const result = Blog.renderCategoryContent(page.categoryId, dirPath);
+              dirNavEl.innerHTML = result.dirNav || '';
+              dirTreeEl.innerHTML = result.dirTreePanel || '';
+              postsEl.innerHTML = result.html || `<div class="empty-state"><p>${Blog.t('index.noCategoryPosts')}</p></div>`;
+            };
+
+            updateCategoryDisplay();
+            document.getElementById('page-category').style.display = 'block';
+
+            dirNavEl.addEventListener('click', (event) => {
+              const btn = event.target.closest('.dir-nav-btn');
+              if (btn) {
+                updateCategoryDisplay(btn.dataset.path);
+                return;
+              }
+              if (event.target.closest('.dir-tree-toggle')) {
+                const panel = document.querySelector('.dir-tree-panel');
+                if (panel) panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+              }
+            });
+
+            dirTreeEl.addEventListener('click', (event) => {
+              if (event.target.closest('.dir-tree-close')) {
+                const panel = document.querySelector('.dir-tree-panel');
+                if (panel) panel.style.display = 'none';
+                return;
+              }
+              const item = event.target.closest('.tree-item');
+              if (item) {
+                updateCategoryDisplay(item.dataset.path);
+                document.querySelectorAll('.tree-item').forEach((node) => node.classList.remove('active'));
+                item.classList.add('active');
+              }
+            });
+            return;
+          }
+
+          if (page.type === 'html') {
+            await Blog.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js');
+            document.getElementById('html-title').textContent = page.title || page.name;
+            document.getElementById('html-desc').textContent = page.description || '';
+            const htmlContent = typeof DOMPurify !== 'undefined'
+              ? DOMPurify.sanitize(page.content || '', { ADD_ATTR: ['target', 'rel'] })
+              : (page.content || '');
+            document.getElementById('html-content').innerHTML = htmlContent;
+            document.getElementById('page-html').style.display = 'block';
+            return;
+          }
+
+          if (page.type === 'custom') {
+            const container = document.getElementById('page-custom');
+
+            if (page._isStandalone || page.standalone) {
+              // Standalone: hide platform chrome, render in iframe
+              document.querySelector('.nav')?.style.setProperty('display', 'none');
+              document.querySelector('.footer')?.style.setProperty('display', 'none');
+              container.classList.add('custom-standalone');
+              document.title = `${page.name || 'Page'} | ${Blog.config?.site?.name || ''}`;
+
+              // Build srcdoc HTML
+              var srcdoc = page.content || '';
+              // Filter user scripts if not enabled
+              if (!page.scripts) {
+                srcdoc = srcdoc.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+              }
+
+              var iframe = document.createElement('iframe');
+              iframe.className = 'custom-iframe';
+              iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-top-navigation');
+              iframe.setAttribute('loading', 'lazy');
+              iframe.srcdoc = srcdoc;
+              container.appendChild(iframe);
+              container.style.display = 'block';
+
+              // Resize iframe to fit content
+              iframe.addEventListener('load', function() {
+                try {
+                  const h = iframe.contentDocument?.documentElement?.scrollHeight;
+                  if (h) iframe.style.height = h + 'px';
+                } catch (_) {}
+              });
+              return;
+            }
+
+            // Embedded: inject into page-custom with CSS scoping
+            container.innerHTML = page.content || '';
+            container.style.display = 'block';
+            // Execute inline scripts if scripts were enabled
+            if (page.scripts) {
+              container.querySelectorAll('script').forEach((oldScript) => {
+                const newScript = document.createElement('script');
+                if (oldScript.src) {
+                  newScript.src = oldScript.src;
+                } else {
+                  newScript.textContent = oldScript.textContent;
+                }
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+              });
+            }
+            return;
+          }
+
+          throw new Error(`Unsupported page type: ${page.type}`);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

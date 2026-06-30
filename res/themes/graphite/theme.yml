@@ -1,0 +1,8 @@
+id: graphite
+name: Graphite
+version: 1.0.0
+author: MijiaoGame
+description: Default theme inspired by Linear and Vercel.
+references:
+  - linear.app
+  - vercel

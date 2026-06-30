@@ -1,0 +1,142 @@
+{
+  "_meta": {
+    "code": "zh",
+    "name": "简体中文",
+    "nativeName": "简体中文",
+    "shortLabel": "中"
+  },
+  "loading": "加载中...",
+  "nav": {
+    "home": "首页"
+  },
+  "site": {
+    "defaultName": "博客",
+    "personalBlog": "个人博客",
+    "myBlog": "我的博客"
+  },
+  "hero": {
+    "learnMore": "了解项目",
+    "viewDisclaimer": "查看说明",
+    "continueReading": "继续阅读",
+    "badge1": "Markdown 优先",
+    "badge2": "主题 token 驱动",
+    "badge3": "支持任意子路径部署"
+  },
+  "index": {
+    "latestContent": "最新内容",
+    "sectionCopy": "从新结构中的 Markdown 内容直接构建，默认保持稳定、克制、可长期维护的阅读体验。",
+    "searchPlaceholder": "搜索文章、标签或分类",
+    "all": "全部",
+    "loadingContent": "正在加载内容...",
+    "noPosts": "还没有可展示的文章。",
+    "loadFailed": "内容加载失败。",
+    "siteInfo": "站点信息",
+    "siteInfoCopy": "这里展示当前博客的定位、内容方向和联系入口，方便把默认示例站点当成正式起点继续扩展。",
+    "siteName": "站点名称",
+    "siteType": "站点类型",
+    "contentDirection": "内容方向",
+    "contactEmail": "联系邮箱",
+    "pagination": "第 {current} / {total} 页，共 {count} 篇",
+    "noSearchResults": "没有找到匹配的文章。",
+    "noPostsInDir": "当前目录下还没有文章。",
+    "noCategoryPosts": "当前分类下暂无文章。"
+  },
+  "post": {
+    "loading": "正在加载文章...",
+    "notFound": "文章未找到",
+    "notFoundDetail": "你访问的文章不存在，或者已经被移动。",
+    "backHome": "返回首页",
+    "missingParam": "缺少文章参数。"
+  },
+  "page": {
+    "loading": "正在加载页面...",
+    "notFound": "页面未找到",
+    "notFoundDetail": "你访问的页面不存在。",
+    "backHome": "返回首页",
+    "missingParam": "缺少页面参数。"
+  },
+  "ui": {
+    "backToTop": "返回顶部",
+    "openMenu": "打开菜单",
+    "toc": "目录",
+    "collapse": "收起",
+    "expand": "展开",
+    "backToParent": "返回上一级",
+    "rootDir": "根目录",
+    "showDirTree": "显示目录树",
+    "dirTree": "目录树",
+    "close": "关闭",
+    "directory": "目录",
+    "themeAuto": "跟随系统",
+    "themeLight": "亮色",
+    "themeDark": "暗色",
+    "prevPost": "上一篇",
+    "nextPost": "下一篇",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "readMore": "阅读全文",
+    "empty": "空"
+  },
+  "gallery": {
+    "title": "图库",
+    "description": "把默认视觉语言、标识和参考板块整理成一套可浏览、可继续扩展的静态资源视图。",
+    "visualAssets": "视觉资产",
+    "galleryCopy": "当前图集读取 `content/data/gallery.yml` 中声明的目录，并沿用统一 token 与交互样式。",
+    "loading": "正在加载图库...",
+    "noGroups": "暂无图集分组。",
+    "noGroupImages": "当前分组暂时没有图片。",
+    "pathNotExist": "目录路径不存在。",
+    "notEnabled": "图库功能未启用。",
+    "loadFailed": "图库内容加载失败。",
+    "loadMore": "加载更多（剩余 {count} 张）",
+    "imageCount": "{count} 张图片",
+    "noImagesInDir": "这个目录下还没有图片。",
+    "preview": "预览图",
+    "previous": "上一张",
+    "next": "下一张",
+    "close": "关闭"
+  },
+  "moments": {
+    "title": "瞬间",
+    "subtitle": "把重构过程中的判断、节奏和小结，留成可以回看的短记录。",
+    "loading": "正在加载瞬间...",
+    "notEnabled": "瞬间功能未启用。",
+    "noMoments": "还没有记录任何瞬间。",
+    "loadFailed": "瞬间内容加载失败。",
+    "imageAlt": "瞬间配图"
+  },
+  "links": {
+    "title": "参考与收藏",
+    "subtitle": "把值得长期保留的设计线索、阅读入口和工具资源，沉淀成仓库的一部分。",
+    "loading": "正在加载资源...",
+    "notEnabled": "参考页功能尚未启用。",
+    "noLinks": "这里还没有配置任何参考资源。",
+    "loadFailed": "参考资源加载失败。",
+    "defaultGroup": "参考资源",
+    "moreCollection": "更多收藏"
+  },
+  "disclaimer": {
+    "title": "免责声明",
+    "subtitle": "这里用来明确内容性质、风险边界和引用原则，避免把个人记录误读成专业承诺。",
+    "item1Title": "内容性质",
+    "item1Desc": "本站内容主要用于个人学习记录、设计整理和工程经验归档，可能存在时效性限制或表达上的局部简化。",
+    "item2Title": "不构成专业建议",
+    "item2Desc": "本站内容不构成法律、医疗、投资、安全或商业上的正式建议，也不替代专业判断和正式文档。",
+    "item3Title": "风险自担",
+    "item3Desc": "如果你根据本站内容执行脚本、修改配置或调整部署环境，请先在测试环境验证，并自行承担相应风险。",
+    "item4Title": "外部链接",
+    "item4Desc": "页面中出现的外部链接仅作为资料入口或参考样本，第三方内容的可用性、准确性与安全性不由本站保证。",
+    "item5Title": "版权与引用",
+    "item5Desc": "除特别说明外，原创内容默认用于学习和交流；引用内容会尽量注明来源，如有问题可联系更正或删除。",
+    "item6Title": "持续更新",
+    "item6Desc": "本站会随着重构进度继续更新。旧文档、旧截图或旧路径说明如果与当前实现不一致，以仓库中的最新版本为准。"
+  },
+  "error404": {
+    "title": "页面未找到",
+    "description": "这个地址没有对应内容，但你的博客还在。你可以直接搜索，也可以从最近文章继续浏览。",
+    "searchPlaceholder": "搜索文章标题或标签",
+    "backHome": "返回首页",
+    "aboutSite": "关于本站",
+    "recommendedReading": "推荐阅读"
+  }
+}

@@ -1,0 +1,15 @@
+settings:
+  maxDepth: 2
+  formats: [jpg, jpeg, png, gif, webp, svg]
+
+groups:
+  - id: identity
+    name: 品牌资产
+    icon: "ID"
+    path: assets/gallery/identity
+    maxDepth: 1
+  - id: posters
+    name: 视觉基线
+    icon: "DS"
+    path: assets/gallery/posters
+    maxDepth: 1

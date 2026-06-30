@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Theme baseline board</title>
+  <desc id="desc">Five built-in themes with actual accent colors.</desc>
+
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#f3f4f7"/>
+
+  <!-- Header -->
+  <text x="80" y="80" fill="#111111" font-size="48" font-family="Segoe UI, Arial, sans-serif" font-weight="700">Built-in Themes</text>
+  <text x="80" y="120" fill="#6b7280" font-size="20" font-family="Segoe UI, Arial, sans-serif">Token-driven · 3-state dark mode · Layout control · Google Fonts</text>
+
+  <!--
+    5 cards, each 232×540, spacing 24px
+    Total: 5×232 + 4×24 = 1256, left margin = (1400-1256)/2 = 72
+    Top: 170
+  -->
+
+  <!-- graphite -->
+  <g transform="translate(72 170)">
+    <rect width="232" height="540" rx="24" fill="#f4f4ef" stroke="#e0e0d8" stroke-width="1"/>
+    <rect x="24" y="24" width="72" height="8" rx="4" fill="#1a3aff"/>
+    <text x="24" y="92" fill="#1a1a1a" font-size="30" font-family="Segoe UI, Arial, sans-serif" font-weight="700">graphite</text>
+    <text x="24" y="126" fill="#6b7280" font-size="16" font-family="Segoe UI, Arial, sans-serif">Industrial blueprint</text>
+    <text x="24" y="156" fill="#1a3aff" font-size="13" font-family="Consolas, monospace">Linear + Vercel</text>
+    <rect x="24" y="196" width="184" height="44" rx="6" fill="#1a3aff"/>
+    <text x="36" y="224" fill="#ffffff" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">accent</text>
+    <text x="112" y="224" fill="#ffffff" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#1a3aff</text>
+    <rect x="24" y="256" width="184" height="44" rx="6" fill="#f4f4ef" stroke="#1a1a1a" stroke-width="1"/>
+    <text x="36" y="284" fill="#1a1a1a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">text</text>
+    <text x="80" y="284" fill="#1a1a1a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#1a1a1a</text>
+    <rect x="24" y="316" width="184" height="44" rx="6" fill="#1a1a1a"/>
+    <text x="36" y="344" fill="#f4f4ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">bg</text>
+    <text x="56" y="344" fill="#f4f4ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#f4f4ef</text>
+  </g>
+
+  <!-- aurora -->
+  <g transform="translate(328 170)">
+    <rect width="232" height="540" rx="24" fill="#faf8f3" stroke="#e8e0d8" stroke-width="1"/>
+    <rect x="24" y="24" width="72" height="8" rx="4" fill="#d04a1a"/>
+    <text x="24" y="92" fill="#1c1815" font-size="30" font-family="Georgia, serif" font-weight="700">aurora</text>
+    <text x="24" y="126" fill="#6b7280" font-size="16" font-family="Segoe UI, Arial, sans-serif">Brand showcase</text>
+    <text x="24" y="156" fill="#d04a1a" font-size="13" font-family="Consolas, monospace">Stripe</text>
+    <rect x="24" y="196" width="184" height="44" rx="6" fill="#d04a1a"/>
+    <text x="36" y="224" fill="#ffffff" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">accent</text>
+    <text x="112" y="224" fill="#ffffff" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#d04a1a</text>
+    <rect x="24" y="256" width="184" height="44" rx="6" fill="#faf8f3" stroke="#1c1815" stroke-width="1"/>
+    <text x="36" y="284" fill="#1c1815" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">text</text>
+    <text x="80" y="284" fill="#1c1815" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#1c1815</text>
+    <rect x="24" y="316" width="184" height="44" rx="6" fill="#1c1815"/>
+    <text x="36" y="344" fill="#faf8f3" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">bg</text>
+    <text x="56" y="344" fill="#faf8f3" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#faf8f3</text>
+  </g>
+
+  <!-- paper -->
+  <g transform="translate(584 170)">
+    <rect width="232" height="540" rx="24" fill="#f5f1e6" stroke="#e0dcd0" stroke-width="1"/>
+    <rect x="24" y="24" width="72" height="8" rx="4" fill="#1a3a2e"/>
+    <text x="24" y="92" fill="#1a1f1a" font-size="30" font-family="Georgia, serif" font-weight="700">paper</text>
+    <text x="24" y="126" fill="#6b7280" font-size="16" font-family="Segoe UI, Arial, sans-serif">Reading-first</text>
+    <text x="24" y="156" fill="#1a3a2e" font-size="13" font-family="Consolas, monospace">Notion + Claude</text>
+    <rect x="24" y="196" width="184" height="44" rx="6" fill="#1a3a2e"/>
+    <text x="36" y="224" fill="#f5f1e6" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">accent</text>
+    <text x="112" y="224" fill="#f5f1e6" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#1a3a2e</text>
+    <rect x="24" y="256" width="184" height="44" rx="6" fill="#f5f1e6" stroke="#1a1f1a" stroke-width="1"/>
+    <text x="36" y="284" fill="#1a1f1a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">text</text>
+    <text x="80" y="284" fill="#1a1f1a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#1a1f1a</text>
+    <rect x="24" y="316" width="184" height="44" rx="6" fill="#1a1f1a"/>
+    <text x="36" y="344" fill="#f5f1e6" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">bg</text>
+    <text x="56" y="344" fill="#f5f1e6" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#f5f1e6</text>
+  </g>
+
+  <!-- mono -->
+  <g transform="translate(840 170)">
+    <rect width="232" height="540" rx="24" fill="#f4f3ef" stroke="#e0e0d8" stroke-width="1"/>
+    <rect x="24" y="24" width="72" height="8" rx="4" fill="#0a0a0a"/>
+    <text x="24" y="92" fill="#0a0a0a" font-size="30" font-family="Consolas, monospace" font-weight="700">mono</text>
+    <text x="24" y="126" fill="#6b7280" font-size="16" font-family="Segoe UI, Arial, sans-serif">Developer minimal</text>
+    <text x="24" y="156" fill="#0a0a0a" font-size="13" font-family="Consolas, monospace">Vercel</text>
+    <rect x="24" y="196" width="184" height="44" rx="6" fill="#0a0a0a"/>
+    <text x="36" y="224" fill="#f4f3ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">accent</text>
+    <text x="112" y="224" fill="#f4f3ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#0a0a0a</text>
+    <rect x="24" y="256" width="184" height="44" rx="6" fill="#f4f3ef" stroke="#0a0a0a" stroke-width="1"/>
+    <text x="36" y="284" fill="#0a0a0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">text</text>
+    <text x="80" y="284" fill="#0a0a0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#0a0a0a</text>
+    <rect x="24" y="316" width="184" height="44" rx="6" fill="#0a0a0a"/>
+    <text x="36" y="344" fill="#f4f3ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">bg</text>
+    <text x="56" y="344" fill="#f4f3ef" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#f4f3ef</text>
+  </g>
+
+  <!-- terminal -->
+  <g transform="translate(1096 170)">
+    <rect width="232" height="540" rx="24" fill="#0a0f0a" stroke="#00ff6633" stroke-width="1"/>
+    <rect x="24" y="24" width="72" height="8" rx="4" fill="#00ff66"/>
+    <text x="24" y="92" fill="#00ff66" font-size="26" font-family="Consolas, monospace" font-weight="700">terminal</text>
+    <text x="24" y="126" fill="#7a9a7a" font-size="16" font-family="Segoe UI, Arial, sans-serif">CRT cyberpunk</text>
+    <text x="24" y="156" fill="#00ff66" font-size="13" font-family="Consolas, monospace">DiskScope</text>
+    <rect x="24" y="196" width="184" height="44" rx="6" fill="#00ff66"/>
+    <text x="36" y="224" fill="#0a0f0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">accent</text>
+    <text x="112" y="224" fill="#0a0f0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#00ff66</text>
+    <rect x="24" y="256" width="184" height="44" rx="6" fill="#0a0f0a" stroke="#c8e6c9" stroke-width="1"/>
+    <text x="36" y="284" fill="#c8e6c9" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">text</text>
+    <text x="80" y="284" fill="#c8e6c9" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#c8e6c9</text>
+    <rect x="24" y="316" width="184" height="44" rx="6" fill="#c8e6c9"/>
+    <text x="36" y="344" fill="#0a0f0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">bg</text>
+    <text x="56" y="344" fill="#0a0f0a" font-size="14" font-family="Consolas, monospace" dominant-baseline="central">#0a0f0a</text>
+  </g>
+</svg>

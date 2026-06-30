@@ -1,0 +1,11 @@
+moments:
+  - date: 2026-06-29
+    mood: "Ship"
+    content: |
+      5 个内置主题全部支持亮暗切换，导航栏新增语言切换按钮。
+    tags: [theme, i18n]
+  - date: 2026-06-20
+    mood: "Note"
+    content: |
+      图库功能上线，支持目录扫描、文件夹导航和灯箱查看器。
+    tags: [gallery, feature]
