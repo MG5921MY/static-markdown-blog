@@ -162,6 +162,9 @@ workspace/site/themes/custom/<theme-id>/
 | `--code-accent-1` | 代码高亮色 1（关键字、标签） | `#8fb4ff` |
 | `--code-accent-2` | 代码高亮色 2（字符串、属性） | `#9ce3c3` |
 | `--code-accent-3` | 代码高亮色 3（数字、类型） | `#ffc98f` |
+| `--code-line-num-color` | 行号文本色 | `var(--code-muted)` |
+| `--code-line-num-bg` | 行号背景色 | `color-mix(var(--code-bg) 85%, var(--code-text))` |
+| `--code-line-num-border` | 行号分隔线色 | `var(--code-border)` |
 
 ---
 

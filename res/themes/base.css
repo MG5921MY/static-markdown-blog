@@ -1240,6 +1240,41 @@ img.nav-logo {
   background: transparent;
 }
 
+/* ── Line Numbers ─────────────────────────────────────── */
+.hljs-ln {
+  display: flex;
+  counter-reset: line;
+}
+
+.hljs-ln-num {
+  display: inline-block;
+  min-width: 2.5em;
+  padding-right: 1em;
+  text-align: right;
+  color: var(--code-line-num-color, var(--code-muted));
+  background: var(--code-line-num-bg, rgba(255, 255, 255, 0.04));
+  background: var(--code-line-num-bg, color-mix(in srgb, var(--code-bg) 85%, var(--code-text)));
+  user-select: none;
+  -webkit-user-select: none;
+  border-right: 1px solid var(--code-line-num-border, var(--code-border));
+  margin-right: 1em;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85em;
+  line-height: inherit;
+}
+
+/* Theme can hide line numbers */
+.hljs-ln-num[data-hide-line-numbers] {
+  display: none;
+}
+
+/* Hide line numbers on small screens */
+@media (max-width: 600px) {
+  .hljs-ln-num {
+    display: none;
+  }
+}
+
 .markdown-body pre .hljs-comment,
 .markdown-body pre .hljs-quote,
 .moment-content pre .hljs-comment,

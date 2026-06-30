@@ -108,7 +108,10 @@
         errorEl,
         errorDetailEl: errorDetail,
         task: async () => {
-          await Promise.all([Blog.loadMarkdownDeps(), Blog.loadHighlightDeps()]);
+          // Load DOMPurify (required for sanitization), hljs in background
+          await Blog.loadMarkdownDeps();
+          Blog.loadHighlightDeps(); // non-blocking, use if available
+
           const post = await Blog.loadPostContent(postId);
 
           document.title = `${post.title} | ${Blog.config?.site?.name || '博客'}`;
@@ -126,6 +129,7 @@
           } else {
             document.getElementById('post-body').innerHTML = Blog.renderMarkdown(post.content);
           }
+          Blog.addLineNumbers(document.getElementById('post-body'));
           Blog.generateTOC();
 
           // Prev/Next navigation

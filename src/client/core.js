@@ -96,9 +96,12 @@ window.BlogCore = {
   async loadTheme() {
     if (this.themeLoaded) return;
     const availableThemes = this.config?.theme?.available || [];
-    let themeName = this.config?.theme?.active || availableThemes[0]?.id || 'graphite';
-    if (!this.isValidId(themeName)) themeName = availableThemes[0]?.id || 'graphite';
-    if (!availableThemes.some((item) => item.id === themeName)) themeName = availableThemes[0]?.id || 'graphite';
+    let themeName = this.config?.theme?.active || 'graphite';
+    if (!this.isValidId(themeName)) themeName = 'graphite';
+    // Only validate against available list if it's populated
+    if (availableThemes.length > 0 && !availableThemes.some((item) => item.id === themeName)) {
+      themeName = availableThemes[0]?.id || 'graphite';
+    }
     const themeMeta = availableThemes.find((item) => item.id === themeName);
     const themeHref = themeMeta?.path
       ? this.resolveAsset(`${themeMeta.path}/theme.css`)
@@ -275,7 +278,7 @@ window.BlogCore = {
   },
 
   async loadHighlightDeps() {
-    await this.loadCDN('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/lib/common.min.js');
+    await this.loadCDN('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js');
     return true;
   },
 

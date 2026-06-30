@@ -129,7 +129,8 @@
           loadingEl.style.display = 'none';
 
           if (page.type === 'markdown') {
-            await Promise.all([Blog.loadMarkdownDeps(), Blog.loadHighlightDeps()]);
+            await Blog.loadMarkdownDeps();
+            Blog.loadHighlightDeps(); // non-blocking
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
             if (page.renderedToHtml) {
@@ -138,6 +139,7 @@
             } else {
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
             }
+            Blog.addLineNumbers(document.getElementById('page-content'));
             document.getElementById('page-markdown').style.display = 'block';
             return;
           }

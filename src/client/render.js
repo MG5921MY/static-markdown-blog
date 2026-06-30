@@ -1,4 +1,24 @@
 window.BlogRender = {
+
+  // Add line numbers to all <pre><code> blocks in the page
+  // Works independently of highlight.js — runs on pre-rendered HTML too
+  addLineNumbers(container) {
+    const scope = container || document;
+    scope.querySelectorAll('pre > code').forEach((codeEl) => {
+      const pre = codeEl.parentElement;
+      if (pre.classList.contains('hljs-ln')) return; // already processed
+      const text = codeEl.textContent || '';
+      const lines = text.split('\n');
+      if (lines.length < 2) return;
+      const padLen = String(lines.length).length;
+      const numbered = lines.map((line, i) =>
+        `<span class="hljs-ln-num" data-line="${i + 1}">${String(i + 1).padStart(padLen, ' ')}</span>${line}`
+      ).join('\n');
+      pre.classList.add('hljs-ln');
+      codeEl.innerHTML = numbered;
+    });
+  },
+
   renderMarkdown(content) {
     if (!content) return '';
     let html = '';
@@ -25,7 +45,13 @@ window.BlogRender = {
           }
         }
 
-        return `<pre><code class="hljs${lang ? ` language-${lang}` : ''}">${highlighted}</code></pre>`;
+        // Add line numbers
+        const lines = highlighted.split('\n');
+        const numbered = lines.map((line, i) =>
+          `<span class="hljs-ln-num" data-line="${i + 1}">${String(i + 1).padStart(String(lines.length).length, ' ')}</span>${line}`
+        ).join('\n');
+
+        return `<pre class="hljs-ln"><code class="hljs${lang ? ` language-${lang}` : ''}">${numbered}</code></pre>`;
       };
 
       marked.setOptions({ breaks: true, gfm: true, renderer });
