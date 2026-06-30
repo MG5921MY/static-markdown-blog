@@ -4,9 +4,12 @@ A zero-dependency, token-driven theme, sub-path deployable static blog platform.
 
 ## Why This Exists
 
-Most Markdown static blog solutions suffer from three problems: **ugly** (outdated default themes), **abandoned** (niche SSGs with no maintenance), and **outdated** (no modern CSS, no containerization, no sub-path deployment).
+This project aims to provide a **zero-dependency, beautiful themes, works out of the box** static blog platform.
 
-This project aims to be: **zero-dependency, beautiful themes, works out of the box**.
+Design principles:
+- **Zero dependencies** — No npm runtime dependencies (vendored libs only)
+- **Beautiful themes** — 5 original themes, 45+ CSS tokens, 3-state dark mode
+- **Works out of the box** — Self-contained build output, deployable anywhere
 
 ## Features
 
