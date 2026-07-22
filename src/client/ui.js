@@ -198,7 +198,18 @@ window.BlogUI = {
         const code = pre.querySelector('code');
         if (!code) return;
         try {
-          await navigator.clipboard.writeText(code.textContent);
+          // 过滤行号元素，只复制代码内容
+          let text = '';
+          code.childNodes.forEach((node) => {
+            if (node.nodeType === 3) {
+              // 文本节点：直接取内容
+              text += node.textContent;
+            } else if (node.nodeType === 1 && !node.classList.contains('hljs-ln-num')) {
+              // 元素节点：排除行号
+              text += node.textContent;
+            }
+          });
+          await navigator.clipboard.writeText(text);
           btn.textContent = 'Copied!';
           btn.classList.add('copied');
           setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
