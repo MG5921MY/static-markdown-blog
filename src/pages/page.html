@@ -147,13 +147,32 @@
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
             }
 
+            // 将预渲染的 mermaid 代码块转换为占位符（构建时没有 mermaid）
+            window._mermaidBlocks = window._mermaidBlocks || [];
+            document.querySelectorAll('#page-content pre > code.language-mermaid').forEach((el) => {
+              const code = el.textContent || '';
+              const idx = window._mermaidBlocks.length;
+              window._mermaidBlocks.push(code);
+              const placeholder = document.createElement('div');
+              placeholder.className = 'mermaid-placeholder';
+              placeholder.setAttribute('data-mermaid-id', idx);
+              el.parentElement.replaceWith(placeholder);
+            });
+
             // 对预渲染的代码块应用 hljs 高亮（构建时没有 hljs）
             if (typeof hljs !== 'undefined') {
               document.querySelectorAll('#page-content pre > code').forEach((el) => {
-                if (!el.classList.contains('hljs')) {
+                if (!el.classList.contains('hljs') && !el.classList.contains('language-mermaid')) {
                   try { hljs.highlightElement(el); } catch (_) {}
                 }
               });
+            }
+
+            // 触发 mermaid 渲染
+            if (typeof Blog._scheduleMermaidRender === 'function') {
+              Blog._scheduleMermaidRender();
+            } else if (typeof Blog._renderMermaid === 'function') {
+              Blog._renderMermaid();
             }
 
             Blog.addLineNumbers(document.getElementById('page-content'));
