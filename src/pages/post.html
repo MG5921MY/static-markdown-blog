@@ -110,7 +110,7 @@
         task: async () => {
           // Load DOMPurify (required for sanitization), hljs in background
           await Blog.loadMarkdownDeps();
-          Blog.loadHighlightDeps(); // non-blocking, use if available
+          await Blog.loadHighlightDeps();
 
           const post = await Blog.loadPostContent(postId);
 
@@ -129,6 +129,16 @@
           } else {
             document.getElementById('post-body').innerHTML = Blog.renderMarkdown(post.content);
           }
+
+          // 对预渲染的代码块应用 hljs 高亮（构建时没有 hljs）
+          if (typeof hljs !== 'undefined') {
+            document.querySelectorAll('#post-body pre > code').forEach((el) => {
+              if (!el.classList.contains('hljs')) {
+                try { hljs.highlightElement(el); } catch (_) {}
+              }
+            });
+          }
+
           Blog.addLineNumbers(document.getElementById('post-body'));
           Blog.generateTOC();
 

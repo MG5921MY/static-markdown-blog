@@ -137,7 +137,7 @@
 
           if (page.type === 'markdown') {
             await Blog.loadMarkdownDeps();
-            Blog.loadHighlightDeps(); // non-blocking
+            await Blog.loadHighlightDeps();
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
             if (page.renderedToHtml) {
@@ -146,6 +146,16 @@
             } else {
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
             }
+
+            // 对预渲染的代码块应用 hljs 高亮（构建时没有 hljs）
+            if (typeof hljs !== 'undefined') {
+              document.querySelectorAll('#page-content pre > code').forEach((el) => {
+                if (!el.classList.contains('hljs')) {
+                  try { hljs.highlightElement(el); } catch (_) {}
+                }
+              });
+            }
+
             Blog.addLineNumbers(document.getElementById('page-content'));
             document.getElementById('page-markdown').style.display = 'block';
             return;

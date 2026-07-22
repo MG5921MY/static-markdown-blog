@@ -1,13 +1,14 @@
 window.BlogRender = {
 
-  // 为指定容器内的 <pre><code> 块添加行号（独立于 highlight.js，可用于预渲染 HTML）
+  // 为指定容器内的 <pre><code> 块添加行号（保留 hljs 高亮标记）
   addLineNumbers(container) {
     const scope = container || document;
     scope.querySelectorAll('pre > code').forEach((codeEl) => {
       const pre = codeEl.parentElement;
       if (pre.classList.contains('hljs-ln')) return; // already processed
-      const text = codeEl.textContent || '';
-      const lines = text.split('\n');
+      // 使用 innerHTML 保留 hljs 高亮标记，textContent 会丢失 HTML
+      const source = codeEl.innerHTML || '';
+      const lines = source.split('\n');
       if (lines.length < 2) return;
       const padLen = String(lines.length).length;
       const numbered = lines.map((line, i) =>
@@ -175,7 +176,19 @@ window.BlogRender = {
           theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
           securityLevel: 'strict'
         });
-      } catch (_) { return; }
+      } catch (_) {
+        // CDN 加载失败，显示原始代码
+        placeholders.forEach((el) => {
+          const idx = parseInt(el.getAttribute('data-mermaid-id'), 10);
+          const code = window._mermaidBlocks?.[idx];
+          if (code) {
+            el.innerHTML = `<pre><code>${this.escapeHtml(code)}</code></pre>`;
+            el.classList.remove('mermaid-placeholder');
+          }
+        });
+        console.warn('Mermaid CDN load failed. Diagrams rendered as code blocks.');
+        return;
+      }
     }
 
     for (let i = 0; i < placeholders.length; i++) {
