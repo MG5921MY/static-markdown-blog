@@ -258,6 +258,18 @@
         Blog.setNavSiteName();
 
         galleryData = Blog.config?.features?.gallery;
+
+        const galleryDesc = galleryData?.description;
+        if (galleryDesc) {
+          const descEl = document.querySelector('[data-i18n="gallery.description"]');
+          if (descEl) descEl.textContent = galleryDesc;
+        }
+
+        const gallerySectionCopy = galleryData?.sectionCopy;
+        if (gallerySectionCopy) {
+          const copyEl = document.querySelector('[data-i18n="gallery.galleryCopy"]');
+          if (copyEl) copyEl.textContent = gallerySectionCopy;
+        }
         if (!galleryData || !galleryData.enabled) {
           Blog.renderState(galleryContentEl, Blog.t ? Blog.t('gallery.notEnabled') : '图库功能未启用。', Blog.t ? Blog.t('gallery.title') : '图库');
           return;

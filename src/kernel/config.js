@@ -218,6 +218,7 @@ function loadConfig(cwd, pkgRoot) {
   return {
     site: raw.site || {},
     deployment: raw.deployment || { basePath: 'auto' },
+    seo: raw.seo || {},
     theme: raw.theme || {},
     categories: raw.content?.categories || [],
     pages: normalizePageRecords(raw.content?.pages || []),
@@ -227,6 +228,7 @@ function loadConfig(cwd, pkgRoot) {
     display: raw.display || {},
     beian: raw.beian || { enabled: false },
     comments: raw.comments || { enabled: false },
+    disclaimer: raw.disclaimer || {},
     _raw: raw,
     _siteRoot: siteRoot,
     _pkgRoot: pkgRoot,

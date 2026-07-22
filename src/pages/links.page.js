@@ -63,6 +63,12 @@
           return;
         }
 
+        const linksDesc = linksData?.description;
+        if (linksDesc) {
+          const descEl = document.querySelector('[data-i18n="links.subtitle"]');
+          if (descEl) descEl.textContent = linksDesc;
+        }
+
         const groups = linksData.groups || [];
         const links = linksData.links || [];
         if (links.length === 0) {

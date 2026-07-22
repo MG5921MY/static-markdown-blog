@@ -124,12 +124,16 @@ features:
   moments:
     enabled: true
     source: content/data/moments.yml     # 瞬间数据文件
+    description: "记录想法与瞬间。"       # 页面描述
   links:
     enabled: true
     source: content/data/links.yml       # 友链数据文件
+    description: "收藏的参考资源与工具。"  # 页面描述
   gallery:
     enabled: true
     source: content/data/gallery.yml     # 图库数据文件
+    description: "浏览图片资源。"         # 页面描述
+    sectionCopy: "图片资源按分组展示。"    # 图库区块描述
 
 # ── 备案信息 ────────────────────────────────────────────
 # 默认关闭，中国大陆网站需要配置
@@ -161,12 +165,26 @@ comments:
     reactionsEnabled: true
     emitMetadata: false
 
+# ── 免责声明 ────────────────────────────────────────────
+# 用户可自定义免责声明内容，留空则使用默认值
+disclaimer:
+  subtitle: ""                           # 副标题（留空则使用默认值）
+  items: []                              # 条款列表（留空则使用默认示例）
+
 # ── 显示设置 ────────────────────────────────────────────
 display:
   postsPerPage: 6                        # 首页每页文章数
   summaryLength: 140                     # 文章摘要截取长度（字符）
-  heroBadge: "Markdown First"            # Hero 区徽章文字
-  heroSubtitle: "少配置、强主题、可部署到任意子路径。"
+  heroBadge: "Markdown First"            # Hero 区顶部徽章文字
+  heroSubtitle: "少配置、强主题、可部署到任意子路径。"  # Hero 区副标题
+  # Hero 区底部标签（数组，最多 3 个）
+  heroBadges:
+    - "Markdown 优先"
+    - "主题 token 驱动"
+    - "支持任意子路径部署"
+  heroLearnMorePage: about               # "了解更多"按钮指向的页面 ID
+  latestContentCopy: "最新发布的文章。"   # 最新内容区块描述
+  siteInfoCopy: "站点的基本信息与联系方式。"  # 站点信息区块描述
   showSiteInfo: true                     # 是否显示站点信息区
   siteType: 静态博客                      # 站点类型标签
   contentDirection: Markdown / Themes / Notes

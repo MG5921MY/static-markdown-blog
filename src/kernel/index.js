@@ -64,7 +64,8 @@ async function build(userOptions) {
     features: { ...config.features, ...buildFeatures(config, config._siteRoot) },
     display: config.display,
     beian: config.beian,
-    comments: config.comments
+    comments: config.comments,
+    disclaimer: config.disclaimer
   };
   const contentIndex = { categories, allPosts: posts.map(({ html, ...rest }) => rest) };
 

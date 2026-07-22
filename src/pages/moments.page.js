@@ -57,6 +57,12 @@
           return;
         }
 
+        const momentsDesc = momentsData?.description;
+        if (momentsDesc) {
+          const descEl = document.querySelector('[data-i18n="moments.subtitle"]');
+          if (descEl) descEl.textContent = momentsDesc;
+        }
+
         const moments = momentsData.moments || [];
         if (moments.length === 0) {
           Blog.renderState(contentEl, Blog.t ? Blog.t('moments.noMoments') : '还没有记录任何瞬间。');
