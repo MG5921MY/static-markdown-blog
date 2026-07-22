@@ -5,7 +5,7 @@ const { scanContent, fileHash } = require('./content');
 const { writeBuildOutputs, cleanDir, writeJson, buildFeatures, buildPagesContent, scanAvailableThemes, generateLocaleIndex } = require('./output');
 
 function loadPlugins() {
-  const names = ['static-copy', 'rss', 'sitemap', 'search-index', 'ssg'];
+  const names = ['static-copy', 'rss', 'sitemap', 'search-index', 'ssg', 'robots'];
   const plugins = [];
   for (const name of names) {
     try { plugins.push(require(`../plugins/${name}`)); }
@@ -56,6 +56,7 @@ async function build(userOptions) {
   const siteConfig = {
     site: config.site,
     deployment: config.deployment,
+    seo: config.seo,
     theme: { ...config.theme, available: availableThemes },
     pages: pagesMap,
     nav: config.nav,

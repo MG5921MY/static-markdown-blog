@@ -47,11 +47,28 @@ function copyDirRecursive(src, dest) {
 }
 
 module.exports = function staticCopyPlugin(buildResult) {
-  const { pkgRoot, distDir, siteRoot } = buildResult;
+  const { pkgRoot, distDir, siteRoot, config } = buildResult;
+  const seo = config?.seo || {};
+  const robotsContent = seo.allowIndex === false ? 'noindex, nofollow' : 'index, follow';
   let count = 0;
 
   for (const f of STATIC_FILES) {
-    if (copyFileSafe(path.join(pkgRoot, f.src), path.join(distDir, f.dest))) count++;
+    const srcPath = path.join(pkgRoot, f.src);
+    const destPath = path.join(distDir, f.dest);
+    if (!fs.existsSync(srcPath)) continue;
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+
+    // HTML 文件注入 <meta name="robots">
+    if (f.dest.endsWith('.html')) {
+      let html = fs.readFileSync(srcPath, 'utf8');
+      if (!html.includes('name="robots"')) {
+        html = html.replace('</head>', `  <meta name="robots" content="${robotsContent}" />\n</head>`);
+      }
+      fs.writeFileSync(destPath, html, 'utf8');
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+    count++;
   }
 
   for (const d of ['locales', 'vendor']) {

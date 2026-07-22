@@ -18,6 +18,12 @@ deployment:
   basePath: auto                          # 子路径：auto = 自动检测，或手动指定如 /blog/
   siteUrl: ""                             # 完整站点 URL（用于 RSS/sitemap），如 https://example.com
 
+# ── SEO 配置 ────────────────────────────────────────────
+# allowIndex: true  → 允许搜索引擎收录（生成 robots.txt 允许爬虫，生成 sitemap.xml）
+# allowIndex: false → 禁止搜索引擎收录（生成 robots.txt 禁止爬虫，不生成 sitemap.xml）
+seo:
+  allowIndex: true
+
 # ── 主题 ────────────────────────────────────────────────
 # 可选: graphite / aurora / paper / mono / terminal
 # 自定义主题: 将主题放在 site/themes/custom/<theme-id>/

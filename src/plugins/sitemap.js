@@ -7,6 +7,13 @@ function escapeXml(value) {
 
 module.exports = function sitemapPlugin(buildResult) {
   const { config, pathMap, distDir } = buildResult;
+
+  // SEO 开关：allowIndex 为 false 时不生成 sitemap
+  const seo = config.seo || {};
+  if (seo.allowIndex === false) {
+    return { file: 'sitemap.xml', count: 0 };
+  }
+
   const deployment = config.deployment || {};
   const siteUrl = (deployment.siteUrl || '').replace(/\/+$/, '');
   const rawBase = String(deployment.basePath || '').trim();
