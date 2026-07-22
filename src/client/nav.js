@@ -106,6 +106,12 @@ window.BlogNav = {
     if (meta) meta.content = mode === 'auto' ? 'light dark' : mode;
   },
 
+  applyCodeWrap() {
+    const codeWrap = this.config?.display?.codeWrap;
+    if (codeWrap) document.body.classList.add('code-wrap');
+    else document.body.classList.remove('code-wrap');
+  },
+
   loadComments() {
     const container = document.getElementById('comments');
     if (!container) return;

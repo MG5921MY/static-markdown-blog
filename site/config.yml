@@ -188,6 +188,7 @@ display:
   showSiteInfo: true                     # 是否显示站点信息区
   siteType: 静态博客                      # 站点类型标签
   contentDirection: Markdown / Themes / Notes
+  codeWrap: false                        # false = 代码块横向滚动，true = 代码块自动换行
   hero:
     immersive: false                     # 沉浸式首页
     background:

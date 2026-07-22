@@ -17,6 +17,7 @@ window.BlogCore = {
       if (window.BlogI18n) await BlogI18n.load(this.config?.site?.locale);
       this.applyI18n();
       this.applyColorScheme();
+      this.applyCodeWrap();
       await this.loadTheme();
       this.renderBeian();
       this.setFavicon();
@@ -285,6 +286,15 @@ window.BlogCore = {
 
   async loadHighlightDeps() {
     await this.loadCDN('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js');
+    // hljs 加载完成后，重新高亮已渲染的代码块
+    if (typeof hljs !== 'undefined') {
+      document.querySelectorAll('pre > code.hljs').forEach((el) => {
+        if (!el.dataset.highlighted) {
+          try { hljs.highlightElement(el); } catch (_) {}
+          el.dataset.highlighted = 'true';
+        }
+      });
+    }
     return true;
   },
 

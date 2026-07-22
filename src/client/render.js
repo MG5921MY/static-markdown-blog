@@ -36,9 +36,12 @@ window.BlogRender = {
         const code = typeof codeBlock === 'object' ? codeBlock.text : codeBlock;
         const lang = typeof codeBlock === 'object' ? codeBlock.lang : arguments[1];
 
-        // Mermaid: return placeholder div for async rendering
+        // Mermaid: store code in JS variable, use data-mermaid-id to reference
         if (lang === 'mermaid') {
-          return `<div class="mermaid-placeholder" data-mermaid="${self.escapeHtml(code)}"></div>`;
+          window._mermaidBlocks = window._mermaidBlocks || [];
+          const id = window._mermaidBlocks.length;
+          window._mermaidBlocks.push(code);
+          return `<div class="mermaid-placeholder" data-mermaid-id="${id}"></div>`;
         }
 
         let highlighted = self.escapeHtml(code);
@@ -88,7 +91,7 @@ window.BlogRender = {
 
       html = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'em', 'strong', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'data-math-block', 'data-math-inline', 'data-mermaid'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'data-math-block', 'data-math-inline', 'data-mermaid-id'],
         ALLOW_DATA_ATTR: true
       });
 
@@ -161,7 +164,7 @@ window.BlogRender = {
 
   async _renderMermaid() {
     this._mermaidScheduled = false;
-    const placeholders = document.querySelectorAll('.mermaid-placeholder[data-mermaid]');
+    const placeholders = document.querySelectorAll('.mermaid-placeholder[data-mermaid-id]');
     if (placeholders.length === 0) return;
 
     if (typeof mermaid === 'undefined') {
@@ -177,7 +180,8 @@ window.BlogRender = {
 
     for (let i = 0; i < placeholders.length; i++) {
       const el = placeholders[i];
-      const code = el.getAttribute('data-mermaid');
+      const idx = parseInt(el.getAttribute('data-mermaid-id'), 10);
+      const code = window._mermaidBlocks?.[idx];
       if (!code) continue;
       try {
         const id = `mermaid-${Date.now()}-${i}`;
@@ -185,7 +189,7 @@ window.BlogRender = {
         el.innerHTML = svg;
         el.classList.remove('mermaid-placeholder');
         el.classList.add('mermaid');
-        el.removeAttribute('data-mermaid');
+        el.removeAttribute('data-mermaid-id');
       } catch (_) {
         el.innerHTML = `<pre><code>${this.escapeHtml(code)}</code></pre>`;
         el.classList.remove('mermaid-placeholder');

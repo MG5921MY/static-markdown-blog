@@ -1240,6 +1240,22 @@ img.nav-logo {
   background: transparent;
 }
 
+/* ── Code Wrap Mode ──────────────────────────────────── */
+/* 当 config.yml display.codeWrap=true 时，body 添加 code-wrap 类 */
+body.code-wrap .markdown-body pre,
+body.code-wrap .moment-content pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+body.code-wrap .markdown-body pre .hljs,
+body.code-wrap .moment-content pre .hljs {
+  overflow-x: visible;
+  white-space: pre-wrap;
+}
+body.code-wrap .hljs-ln {
+  flex-wrap: wrap;
+}
+
 /* ── Line Numbers ─────────────────────────────────────── */
 .hljs-ln {
   display: flex;
