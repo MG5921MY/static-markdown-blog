@@ -38,7 +38,7 @@
 
       <div id="page-markdown" style="display: none;">
         <section class="hero hero-compact">
-          <div class="hero-kicker">Page</div>
+          <div class="hero-kicker" data-i18n="page.kicker">Page</div>
           <h1 class="hero-title" id="page-title"></h1>
           <p class="hero-subtitle" id="page-desc"></p>
         </section>
@@ -51,7 +51,7 @@
 
       <div id="page-category" style="display: none;">
         <section class="hero hero-compact">
-          <div class="hero-kicker">Category</div>
+          <div class="hero-kicker" data-i18n="page.kicker">Category</div>
           <h1 class="hero-title" id="cat-title"></h1>
           <p class="hero-subtitle" id="cat-desc"></p>
         </section>
@@ -66,7 +66,7 @@
 
       <div id="page-html" style="display: none;">
         <section class="hero hero-compact">
-          <div class="hero-kicker">Page</div>
+          <div class="hero-kicker" data-i18n="page.kicker">Page</div>
           <h1 class="hero-title" id="html-title"></h1>
           <p class="hero-subtitle" id="html-desc"></p>
         </section>
@@ -117,7 +117,7 @@
 
       const pageId = Blog.getUrlParam('id');
       if (!pageId) {
-        Blog.showPageError(loadingEl, errorEl, errorDetail, '缺少页面参数。');
+        Blog.showPageError(loadingEl, errorEl, errorDetail, Blog.t('page.missingParam'));
         return;
       }
 
@@ -129,7 +129,7 @@
         errorDetailEl: errorDetail,
         task: async () => {
           const page = Blog.getPage(pageId);
-          if (!page) throw new Error('页面不存在。');
+          if (!page) throw new Error(Blog.t('page.pageNotFound'));
 
           document.title = `${page.name} | ${Blog.config?.site?.name || Blog.t('site.defaultName')}`;
           document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || Blog.t('site.defaultName');
@@ -153,7 +153,7 @@
 
           if (page.type === 'category') {
             const category = Blog.index?.categories?.[page.categoryId];
-            if (!category) throw new Error('分类不存在。');
+            if (!category) throw new Error(Blog.t('page.categoryNotFound'));
 
             document.getElementById('cat-title').textContent = `${page.icon || category.icon || ''} ${page.name}`;
             document.getElementById('cat-desc').textContent = page.description || category.description || '';
@@ -265,7 +265,7 @@
             return;
           }
 
-          throw new Error(`Unsupported page type: ${page.type}`);
+          throw new Error(`${Blog.t('page.unsupportedType')} ${page.type}`);
         }
       });
     })();

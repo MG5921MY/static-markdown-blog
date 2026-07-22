@@ -49,11 +49,15 @@
     "missingParam": "Missing article parameter."
   },
   "page": {
+    "kicker": "Page",
     "loading": "Loading page...",
     "notFound": "Page Not Found",
     "notFoundDetail": "The page you're looking for doesn't exist.",
     "backHome": "Back to Home",
-    "missingParam": "Missing page parameter."
+    "missingParam": "Missing page parameter.",
+    "pageNotFound": "Page not found.",
+    "categoryNotFound": "Category not found.",
+    "unsupportedType": "Unsupported page type."
   },
   "ui": {
     "backToTop": "Back to Top",
@@ -75,9 +79,13 @@
     "prevPage": "Previous",
     "nextPage": "Next",
     "readMore": "Read More",
-    "empty": "Empty"
+    "empty": "Empty",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "copyFailed": "Failed"
   },
   "gallery": {
+    "kicker": "Gallery",
     "title": "Gallery",
     "description": "Browse image resources.",
     "visualAssets": "Visual Assets",
@@ -97,6 +105,7 @@
     "close": "Close"
   },
   "moments": {
+    "kicker": "Moments",
     "title": "Moments",
     "subtitle": "Record thoughts and moments.",
     "loading": "Loading moments...",
@@ -106,6 +115,7 @@
     "imageAlt": "Moment image"
   },
   "links": {
+    "kicker": "References",
     "title": "References & Collections",
     "subtitle": "Collected reference resources and tools.",
     "loading": "Loading resources...",
@@ -116,6 +126,7 @@
     "moreCollection": "More Collections"
   },
   "disclaimer": {
+    "kicker": "Notice",
     "title": "Disclaimer",
     "subtitle": "Disclaimer regarding the content of this site.",
     "item1Title": "Content Nature",

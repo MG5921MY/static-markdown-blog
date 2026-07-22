@@ -306,10 +306,17 @@
       siteInfoCopyEl.textContent = display.siteInfoCopy;
     }
 
-    const learnMoreLink = document.querySelector('.hero-actions a[href*="page.html"]');
-    if (learnMoreLink) {
-      const learnMorePage = display.heroLearnMorePage || 'about';
-      learnMoreLink.href = `./page.html?id=${encodeURIComponent(learnMorePage)}`;
+    const heroActionsEl = document.getElementById('hero-actions');
+    if (heroActionsEl) {
+      const actions = Array.isArray(display.heroActions) ? display.heroActions : [];
+      if (actions.length > 0) {
+        heroActionsEl.innerHTML = actions
+          .filter(a => a && a.label && a.url)
+          .map(a => `<a href="${Blog.escapeHtml(a.url)}" class="btn btn-${a.style === 'secondary' ? 'secondary' : 'primary'}">${Blog.escapeHtml(a.label)}</a>`)
+          .join('');
+      } else {
+        heroActionsEl.innerHTML = `<a href="./page.html?id=${encodeURIComponent(display.heroLearnMorePage || 'about')}" class="btn btn-primary">${Blog.t('hero.learnMore')}</a>`;
+      }
     }
   }
 

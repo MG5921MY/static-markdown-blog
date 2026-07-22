@@ -135,7 +135,7 @@ window.BlogNav = {
       script.setAttribute('data-emit-metadata', g.emitMetadata ? '1' : '0');
       script.setAttribute('data-input-position', 'bottom');
       script.setAttribute('data-theme', giscusTheme);
-      script.setAttribute('data-lang', 'zh-CN');
+      script.setAttribute('data-lang', BlogI18n?.locale === 'en' ? 'en' : 'zh-CN');
       script.setAttribute('data-loading', 'lazy');
       script.crossOrigin = 'anonymous';
       script.async = true;

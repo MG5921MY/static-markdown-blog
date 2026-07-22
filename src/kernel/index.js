@@ -65,7 +65,8 @@ async function build(userOptions) {
     display: config.display,
     beian: config.beian,
     comments: config.comments,
-    disclaimer: config.disclaimer
+    disclaimer: config.disclaimer,
+    error404: config.error404
   };
   const contentIndex = { categories, allPosts: posts.map(({ html, ...rest }) => rest) };
 

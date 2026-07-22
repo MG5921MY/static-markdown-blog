@@ -229,6 +229,7 @@ function loadConfig(cwd, pkgRoot) {
     beian: raw.beian || { enabled: false },
     comments: raw.comments || { enabled: false },
     disclaimer: raw.disclaimer || {},
+    error404: raw.error404 || {},
     _raw: raw,
     _siteRoot: siteRoot,
     _pkgRoot: pkgRoot,

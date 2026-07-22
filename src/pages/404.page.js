@@ -17,6 +17,19 @@
         Blog.setupCardAnimations();
       }
 
+      const errorActionsEl = document.getElementById('error-actions');
+      if (errorActionsEl) {
+        const actions = Blog.config?.error404?.actions || [];
+        if (actions.length > 0) {
+          errorActionsEl.innerHTML = actions
+            .filter(a => a && a.label && a.url)
+            .map(a => `<a href="${Blog.escapeHtml(a.url)}" class="btn btn-${a.style === 'secondary' ? 'secondary' : 'primary'}">${Blog.escapeHtml(a.label)}</a>`)
+            .join('');
+        } else {
+          errorActionsEl.innerHTML = `<a href="./index.html" class="btn btn-primary">${Blog.t('error404.backHome')}</a>`;
+        }
+      }
+
       searchInputEl.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' && event.target.value.trim()) {
           window.location.href = Blog.resolvePageUrl('index.html', {

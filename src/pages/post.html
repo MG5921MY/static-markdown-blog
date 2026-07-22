@@ -40,7 +40,7 @@
 
       <article id="post-content" class="post-article" style="display: none;">
         <header class="post-header">
-          <a href="./index.html" class="back-link">返回首页</a>
+          <a href="./index.html" class="back-link" data-i18n="post.backHome">返回首页</a>
           <div class="post-meta">
             <span class="post-category" id="post-category"></span>
             <span class="post-date" id="post-date"></span>
@@ -97,7 +97,7 @@
 
       const postId = Blog.getUrlParam('id');
       if (!postId) {
-        Blog.showPageError(loadingEl, errorEl, errorDetail, '缺少文章参数。');
+        Blog.showPageError(loadingEl, errorEl, errorDetail, Blog.t('post.missingParam'));
         return;
       }
 

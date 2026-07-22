@@ -49,11 +49,15 @@
     "missingParam": "缺少文章参数。"
   },
   "page": {
+    "kicker": "页面",
     "loading": "正在加载页面...",
     "notFound": "页面未找到",
     "notFoundDetail": "你访问的页面不存在。",
     "backHome": "返回首页",
-    "missingParam": "缺少页面参数。"
+    "missingParam": "缺少页面参数。",
+    "pageNotFound": "页面不存在。",
+    "categoryNotFound": "分类不存在。",
+    "unsupportedType": "不支持的页面类型。"
   },
   "ui": {
     "backToTop": "返回顶部",
@@ -75,9 +79,13 @@
     "prevPage": "上一页",
     "nextPage": "下一页",
     "readMore": "阅读全文",
-    "empty": "空"
+    "empty": "空",
+    "copy": "复制",
+    "copied": "已复制",
+    "copyFailed": "复制失败"
   },
   "gallery": {
+    "kicker": "图库",
     "title": "图库",
     "description": "浏览图片资源。",
     "visualAssets": "视觉资产",
@@ -97,6 +105,7 @@
     "close": "关闭"
   },
   "moments": {
+    "kicker": "瞬间",
     "title": "瞬间",
     "subtitle": "记录想法与瞬间。",
     "loading": "正在加载瞬间...",
@@ -106,6 +115,7 @@
     "imageAlt": "瞬间配图"
   },
   "links": {
+    "kicker": "参考",
     "title": "参考与收藏",
     "subtitle": "收藏的参考资源与工具。",
     "loading": "正在加载资源...",
@@ -116,6 +126,7 @@
     "moreCollection": "更多收藏"
   },
   "disclaimer": {
+    "kicker": "通知",
     "title": "免责声明",
     "subtitle": "关于本站内容的免责声明。",
     "item1Title": "内容性质",
