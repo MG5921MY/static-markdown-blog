@@ -170,7 +170,7 @@ window.BlogRender = {
 
     if (typeof mermaid === 'undefined') {
       try {
-        await Blog.loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js');
+        await Blog.loadScript('./vendor/mermaid.min.js');
         mermaid.initialize({
           startOnLoad: false,
           theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',

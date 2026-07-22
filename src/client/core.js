@@ -279,13 +279,13 @@ window.BlogCore = {
 
   async loadMarkdownDeps() {
     await Promise.all([
-      this.loadCDN('https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js'),
-      this.loadCDN('https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js')
+      this.loadScript('./vendor/purify.min.js'),
+      this.loadScript('./vendor/marked.min.js')
     ]);
   },
 
   async loadHighlightDeps() {
-    await this.loadCDN('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js');
+    await this.loadScript('./vendor/hljs.min.js');
     return true;
   },
 
