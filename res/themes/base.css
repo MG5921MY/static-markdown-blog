@@ -2552,8 +2552,8 @@ mark {
   opacity: 0.5;
 }
 
-/* ── Logout Button ───────────────────────────────────── */
-.auth-logout-btn {
+/* ── Auth Clear Button (always visible) ──────────────── */
+.auth-clear-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2565,16 +2565,21 @@ mark {
   cursor: pointer;
   color: var(--text-muted);
   opacity: 0.6;
-  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
-.auth-logout-btn:hover {
+.auth-clear-btn:hover {
   opacity: 1;
   color: var(--accent);
   border-color: var(--border);
 }
 
-.auth-logout-btn svg {
+.auth-clear-btn:active {
+  transform: scale(0.9);
+  opacity: 0.8;
+}
+
+.auth-clear-btn svg {
   width: 16px;
   height: 16px;
 }

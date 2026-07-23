@@ -72,10 +72,8 @@ async function build(userOptions) {
       session: { ttl: config.auth.session?.ttl ?? 7200 }
     } : { enabled: false }
   };
-  const contentIndex = { categories, allPosts: posts.map(({ html, ...rest }) => rest) };
 
-  writeBuildOutputs({ siteConfig, contentIndex, pathMap, posts, pkgRoot, distDir });
-
+  // ── 认证插件（获取密码和哈希）────────────────────────
   const pluginResults = [];
   const buildResult = {
     config, posts, categories, pathMap,
@@ -86,6 +84,34 @@ async function build(userOptions) {
   for (const plugin of loadPlugins()) {
     pluginResults.push(await plugin(buildResult));
   }
+
+  // ── 真加密：构建时 AES-256-GCM 加密文章内容 ──────────
+  const authData = buildResult._auth || {};
+  const encryptedDir = path.join(distDir, 'encrypted');
+
+  // 清理旧的加密文件（无论是否开启加密）
+  if (fs.existsSync(encryptedDir)) {
+    fs.rmSync(encryptedDir, { recursive: true, force: true });
+  }
+
+  if (authData.enabled && authData.password) {
+    const { encryptContent } = require('../plugins/encryption');
+    fs.mkdirSync(encryptedDir, { recursive: true });
+
+    for (const post of posts) {
+      if (!post.html || !post._outputPath) continue;
+      const encrypted = encryptContent(post.html, authData.password);
+      const encFile = post.id + '.json';
+      fs.writeFileSync(path.join(encryptedDir, encFile), JSON.stringify(encrypted));
+      post._encrypted = true;
+      post._encryptedFile = `encrypted/${encFile}`;
+    }
+    console.log(`[AUTH] 加密了 ${posts.length} 篇文章 → dist/encrypted/`);
+  }
+
+  const contentIndex = { categories, allPosts: posts.map(({ html, ...rest }) => rest) };
+
+  writeBuildOutputs({ siteConfig, contentIndex, pathMap, posts, pkgRoot, distDir });
 
   // Generate locale index for dynamic locale discovery
   const localeCount = generateLocaleIndex(distDir);

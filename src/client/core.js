@@ -204,11 +204,40 @@ window.BlogCore = {
     if (!mapping) throw new Error('Post not found');
     const categoryData = this.index?.categories?.[mapping.category];
     if (!categoryData) throw new Error('Category not found');
+
+    const postInfo = (categoryData.posts || []).find((item) => item.id === postId);
+
+    // 检查是否为加密文章
+    const isEncrypted = mapping.encrypted === true;
+    if (isEncrypted && window.BlogAuth) {
+      const password = sessionStorage.getItem('blog-auth-pw');
+      if (password) {
+        try {
+          const encResponse = await fetch(this.resolveAsset(`./encrypted/${postId}.json`));
+          if (encResponse.ok) {
+            const encData = await encResponse.json();
+            const html = await BlogAuth.decryptPost(password, encData);
+            return {
+              id: postId, category: mapping.category, categoryName: categoryData.name, categoryIcon: categoryData.icon,
+              title: postInfo?.title || 'Untitled', date: postInfo?.date || '', tags: postInfo?.tags || [],
+              content: html, rendered: true, prev: mapping.prev || null, next: mapping.next || null
+            };
+          }
+        } catch (_) {}
+      }
+      // 无密码或解密失败，返回空内容（auth gate 会拦截）
+      return {
+        id: postId, category: mapping.category, categoryName: categoryData.name, categoryIcon: categoryData.icon,
+        title: postInfo?.title || 'Untitled', date: postInfo?.date || '', tags: postInfo?.tags || [],
+        content: '', rendered: true, prev: mapping.prev || null, next: mapping.next || null
+      };
+    }
+
+    // 非加密文章：正常加载
     const outputPath = mapping.outputPath || `posts/${mapping.category}/${mapping.file}`;
     const response = await fetch(this.resolveAsset(`./${outputPath}`));
     if (!response.ok) throw new Error('Failed to load post content');
     const content = await response.text();
-    const postInfo = (categoryData.posts || []).find((item) => item.id === postId);
     const isRendered = mapping.rendered === true || outputPath.endsWith('.html');
     if (isRendered) {
       return {

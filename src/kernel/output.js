@@ -269,6 +269,8 @@ function writeBuildOutputs({ siteConfig, contentIndex, pathMap, posts, distDir }
   if (posts) {
     for (const post of posts) {
       if (!post.html || !post._outputPath) continue;
+      // 加密文章不写入明文 HTML，只写入 dist/encrypted/*.json
+      if (post._encrypted) continue;
       writeText(path.join(distDir, post._outputPath), post.html);
     }
   }

@@ -232,6 +232,8 @@
       const hash = await hashPassword(password, config.siteName);
       if (hash === config.passwordHash) {
         saveSession(config.passwordHash, config.sessionTtl);
+        // 存储密码到 sessionStorage（用于解密文章，tab 关闭即清除）
+        sessionStorage.setItem('blog-auth-pw', password);
         onUnlock();
       } else {
         error.style.display = 'block';
@@ -250,17 +252,45 @@
     return container;
   }
 
-  function addLogoutButton() {
-    if (document.querySelector('.auth-logout-btn')) return;
-    const navLinks = document.querySelector('.nav-links');
-    if (!navLinks) return;
+  /**
+   * AES-256-GCM 解密文章
+   * @param {string} password - 用户密码
+   * @param {object} encData - { v, salt, iv, ct, tag }
+   * @returns {Promise<string>} 解密后的 HTML
+   */
+  async function decryptPost(password, encData) {
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
 
-    const btn = document.createElement('button');
-    btn.className = 'auth-logout-btn';
-    btn.innerHTML = ICONS.logout;
-    btn.title = t('auth.logout', '登出');
-    btn.addEventListener('click', logout);
-    navLinks.appendChild(btn);
+    // Base64 解码
+    const salt = Uint8Array.from(atob(encData.salt), c => c.charCodeAt(0));
+    const iv = Uint8Array.from(atob(encData.iv), c => c.charCodeAt(0));
+    const ct = Uint8Array.from(atob(encData.ct), c => c.charCodeAt(0));
+    const tag = Uint8Array.from(atob(encData.tag), c => c.charCodeAt(0));
+
+    // PBKDF2 派生密钥
+    const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+      baseKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['decrypt']
+    );
+
+    // 拼接 ct + tag（Web Crypto 要求）
+    const data = new Uint8Array(ct.length + tag.length);
+    data.set(ct);
+    data.set(tag, ct.length);
+
+    // AES-GCM 解密
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv, tagLength: 128 },
+      key,
+      data.buffer
+    );
+
+    return dec.decode(plain);
   }
 
   async function init() {
@@ -280,8 +310,7 @@
     // 检查会话
     const session = getSession();
     if (session && session.hash === config.passwordHash) {
-      addLogoutButton();
-      return;
+      return; // 会话有效，不干预
     }
 
     // 无有效会话，显示密码门
@@ -289,7 +318,6 @@
     const gate = createAuthUI(config, () => {
       gate.remove();
       document.body.style.overflow = '';
-      addLogoutButton();
     });
     document.body.appendChild(gate);
   }
@@ -300,5 +328,5 @@
     init();
   }
 
-  window.BlogAuth = { getSession, logout, clearAuthData };
+  window.BlogAuth = { getSession, logout, clearAuthData, decryptPost };
 })();

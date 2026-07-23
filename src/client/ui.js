@@ -186,6 +186,7 @@ window.BlogUI = {
     this.setupDirTreePanel();
     this.setupThemeToggle();
     this.setupLanguageSwitch();
+    this.setupAuthClearButton();
   },
 
   setupCodeCopyButtons() {
@@ -403,5 +404,36 @@ window.BlogUI = {
     wrap.appendChild(btn);
     wrap.appendChild(panel);
     navLinks.appendChild(wrap);
+  },
+
+  /* ── Auth Clear Button (always visible) ──────────────── */
+  setupAuthClearButton() {
+    if (document.querySelector('.auth-clear-btn')) return;
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'auth-clear-btn';
+    btn.type = 'button';
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+    btn.title = (Blog.t ? Blog.t('auth.logout') : null) || '登出';
+    btn.addEventListener('click', () => {
+      // 清除所有认证数据
+      localStorage.removeItem('blog-auth');
+      sessionStorage.removeItem('blog-auth-pw');
+      // 如果 auth 开启，刷新页面显示密码门
+      try {
+        const el = document.getElementById('auth-config');
+        if (el) {
+          const config = JSON.parse(el.textContent);
+          if (config && config.enabled) {
+            location.href = location.pathname + '?_=' + Date.now();
+            return;
+          }
+        }
+      } catch (_) {}
+      // auth 未开启，只清除缓存（无需刷新）
+    });
+    navLinks.appendChild(btn);
   }
 };
