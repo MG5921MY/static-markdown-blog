@@ -25,6 +25,11 @@
     return fallback;
   }
 
+  function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function getAuthConfig() {
     try {
       const el = document.getElementById('auth-config');
@@ -104,8 +109,35 @@
           </div>
           <div class="lang-switch"></div>
         </div>
+        <div class="auth-beian" id="auth-beian"></div>
       </div>
     `;
+
+    // 渲染备案信息
+    const beianEl = container.querySelector('#auth-beian');
+    if (config.beian && beianEl) {
+      const beian = config.beian;
+      const lines = [];
+      if (beian.displayName) lines.push(`<span>${escapeHtml(beian.displayName)}</span>`);
+      if (beian.icp?.enabled && beian.icp?.number) {
+        const url = beian.icp.url ? ` href="${escapeHtml(beian.icp.url)}" target="_blank" rel="noopener noreferrer"` : '';
+        lines.push(`<a${url}>${escapeHtml(beian.icp.number)}</a>`);
+      }
+      if (beian.police?.enabled) {
+        if (beian.police.number && beian.police.url) {
+          lines.push(`<a href="${escapeHtml(beian.police.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(beian.police.number)}</a>`);
+        } else if (beian.police.statusText) {
+          lines.push(`<span>${escapeHtml(beian.police.statusText)}</span>`);
+        }
+      }
+      if (lines.length > 0) {
+        beianEl.innerHTML = lines.join('<span class="auth-beian-sep"> · </span>');
+      } else {
+        beianEl.remove();
+      }
+    } else if (beianEl) {
+      beianEl.remove();
+    }
 
     // 主题切换逻辑
     const themeWrap = container.querySelector('.theme-toggle');

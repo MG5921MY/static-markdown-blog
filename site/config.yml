@@ -29,6 +29,7 @@ seo:
 # auth:
 #   enabled: false                    # 是否开启认证
 #   password: ""                      # 留空则自动生成随机密钥（保存到 site/.auth-key）
+#   showBeian: true                   # 登录页面是否显示备案信息（默认开启）
 #   session:
 #     ttl: 7200                       # 过期时间（秒），-1 = 永不过期
 

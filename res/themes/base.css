@@ -2526,6 +2526,32 @@ mark {
   display: block;
 }
 
+/* ── Auth Beian ──────────────────────────────────────── */
+.auth-beian {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--text-xxs, 11px);
+  color: var(--text-muted);
+  line-height: 1.8;
+  word-break: break-all;
+}
+
+.auth-beian a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.auth-beian a:hover {
+  color: var(--text-secondary);
+}
+
+.auth-beian-sep {
+  margin: 0 4px;
+  opacity: 0.5;
+}
+
 /* ── Logout Button ───────────────────────────────────── */
 .auth-logout-btn {
   display: inline-flex;

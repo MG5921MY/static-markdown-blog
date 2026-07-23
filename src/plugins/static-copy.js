@@ -63,6 +63,11 @@ module.exports = function staticCopyPlugin(buildResult) {
       siteName: config?.site?.name || 'Blog',
       sessionTtl: auth.sessionTtl
     };
+    // 备案信息（登录页面显示）
+    const beian = config?.beian;
+    if (beian?.enabled && auth.showBeian !== false) {
+      authConfig.beian = beian;
+    }
     authScript = `\n<script type="application/json" id="auth-config">${JSON.stringify(authConfig)}</script>`;
   }
 
