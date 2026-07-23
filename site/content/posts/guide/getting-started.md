@@ -12,15 +12,16 @@ summary: 从安装到第一篇文章发布，5 分钟内完成。
 ### 源码构建
 
 ```bash
-git clone <repo>
-cd 静态博客
+git clone https://github.com/MG5921MY/static-markdown-blog.git
+cd static-markdown-blog
 node init.js          # 初始化 site/ 工作区
 ```
 
 ### Docker
 
 ```bash
-docker compose -f deploy/docker/docker-compose.yml up -d --build
+cd deploy/docker
+docker compose up -d --build
 ```
 
 ### npm（开发中）
