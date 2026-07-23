@@ -1,15 +1,35 @@
 # Static Markdown Blog
 
-A zero-dependency, token-driven theme, sub-path deployable static blog platform.
+AI accumulates vast knowledge while helping you solve problems — debugging methods, architectural decisions, code patterns. But this knowledge stays locked in conversation history: invisible, unsearchable, inaccessible.
 
-## Why This Exists
+This platform lets AI turn knowledge into Markdown, build it into a searchable website, and deploy it anywhere. AI maintains it autonomously, users access it anytime.
 
-This project aims to provide a **zero-dependency, beautiful themes, works out of the box** static blog platform.
+## What Problem Does This Solve
 
-Design principles:
-- **Zero dependencies** — No npm runtime dependencies (vendored libs only)
-- **Beautiful themes** — 5 original themes, 45+ CSS tokens, 3-state dark mode
-- **Works out of the box** — Self-contained build output, deployable anywhere
+| Pain Point | Solution |
+|-----------|----------|
+| AI knowledge locked in chat | AI writes Markdown, builds into browsable website |
+| Existing blog tools need human operation | AI directly reads/writes `site/`, one command to build |
+| Headless AI agents have no "face" | Docker multi-instance, each agent gets its own knowledge base |
+| Privacy & security | Built-in security mechanisms to prevent sensitive data leaks |
+
+## Who Is This For
+
+- **Developers using AI** — Let AI maintain technical notes and debugging experience
+- **People learning with AI** — Let AI organize study notes and knowledge graphs
+- **AI agents themselves** — Give yourself a persistent, searchable web presence
+- **Teams** — Let AI maintain documentation and knowledge bases
+- **Anyone wanting a clean blog** — Zero dependencies, 3 minutes to live
+
+## 3-Minute Start
+
+```bash
+git clone <repo>
+cd static-blog
+node init.js && node build.js && node serve.js
+```
+
+Open http://localhost:8080
 
 ## Live Demo
 
@@ -32,7 +52,53 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | **Deploy** | GitHub Pages, Docker, any static hosting, sub-path auto-detection |
 | **Extend** | Plugin architecture, custom themes, custom pages (standalone/embedded), comments (Giscus), language switching (auto-discovery) |
 
-## Quick Start
+## Built-in Themes
+
+| Theme | Style | Design Language | Best For |
+|-------|-------|----------------|----------|
+| graphite | Industrial blueprint | Inter font, high contrast, specs-table hero layout | Tech blogs, documentation |
+| aurora | Brand showcase | Playfair Display serif headings, gradient hero, project cards | Personal branding, portfolios |
+| paper | Reading-first | Caveat handwriting headings, paper texture, loose typography | Long-form reading, notes |
+| mono | Black & white minimal | Pure black & white, Consolas monospace, minimal hero | Minimalists |
+| terminal | CRT cyberpunk | Orbitron sci-fi headings, scanline overlay, green palette | Developers, cyberpunk enthusiasts |
+
+Themes are auto-discovered at build time from `res/themes/` (system) and `site/themes/custom/` (user). Adding a custom theme requires no configuration changes.
+
+## AI Maintenance
+
+This platform is designed for AI-driven knowledge base maintenance:
+
+```bash
+# AI workflow
+1. Write Markdown → site/content/posts/<category>/
+2. node build.js → Build to dist/
+3. git push → Deploy (requires user confirmation)
+```
+
+**Security mechanisms:**
+- AI only operates in `site/` directory, never touches platform code
+- Deploy operations (git push, docker compose up) require user confirmation
+- Sensitive info (email, repo) in config.yml is never written to public content
+- API keys, tokens are never written to any file
+
+Detailed guide: `skills/static-blog/SKILL.md`
+
+### What AI Can Do
+
+AI doesn't just write articles — it can build a complete knowledge showcase:
+
+| Capability | Description |
+|-----------|-------------|
+| **Articles** | Structured knowledge, debugging experience, architectural decisions |
+| **Moments** | Daily memory index, thinking log, "dream" journal |
+| **Links** | Knowledge graph nodes, learning resources, reference tools |
+| **Gallery** | Mind maps, architecture diagrams, visual memory |
+| **Custom pages** | Skill matrix, experience timeline, interactive dashboards |
+| **Design themes** | AI can create CSS themes with tokens, choosing visual languages for different knowledge domains |
+
+AI can design its own themes — using CSS tokens to control colors, fonts, and layouts. Cold industrial style for technical notes, warm brand style for creative content. See `skills/static-blog/SKILL.md`.
+
+## Quick Start (Detailed)
 
 ### Source Build
 
@@ -82,41 +148,6 @@ blog serve
 
 The `dist/` directory is the complete output. Deploy directly to Vercel / Netlify / Cloudflare Pages / GitHub Pages / Nginx.
 
-## dist/ Design Philosophy
-
-`dist/` is a **complete, self-contained static site**. No Node.js, no build tools, no serve.js required.
-
-```text
-dist/
-├── *.html              Pages (self-contained, directly deployable)
-├── client/             Platform runtime modules
-├── themes/             Theme CSS (auto-discovered, user themes copied here)
-├── vendor/             Third-party libs (lunr, katex, marked)
-├── locales/            i18n translations + index.json (auto-discovered)
-├── assets/             User resources
-├── posts/              Pre-rendered article HTML + SSG pages
-├── site-config.json    Site config (includes theme.available auto-discovery)
-├── content-index.json  Content index
-├── feed.xml            RSS
-├── sitemap.xml         Sitemap
-└── search-index.json   Search index
-```
-
-**Core resources are fully local.** CDN is only used for optional enhancements (syntax highlighting, XSS filtering), all non-blocking with graceful degradation.
-
-## CLI
-
-```bash
-blog init                  # Initialize workspace
-blog build                 # Build
-blog build --incremental   # Incremental build
-blog serve [port]          # Dev server
-blog serve --no-live       # Disable hot-reload
-blog --help                # Help (auto-detects language)
-blog --help --lang en      # English help
-blog --version             # Version
-```
-
 ## Directory Structure
 
 ```text
@@ -146,17 +177,40 @@ serve.js                Dev server (hot-reload)
 test.js                 Automated tests
 ```
 
-## Built-in Themes
+## dist/ Design Philosophy
 
-| Theme | Style | Design Reference |
-|-------|-------|-----------------|
-| graphite | Industrial blueprint | Linear + Vercel |
-| aurora | Brand showcase | Stripe |
-| paper | Reading-first | Notion + Claude |
-| mono | Black & white minimal | Vercel |
-| terminal | CRT cyberpunk | DiskScope |
+`dist/` is a **complete, self-contained static site**. No Node.js, no build tools, no serve.js required.
 
-Themes are auto-discovered at build time from `res/themes/` (system) and `site/themes/custom/` (user). Adding a custom theme requires no configuration changes.
+```text
+dist/
+├── *.html              Pages (self-contained, directly deployable)
+├── client/             Platform runtime modules
+├── themes/             Theme CSS (auto-discovered, user themes copied here)
+├── vendor/             Third-party libs (hljs, lunr, katex, marked, mermaid, purify)
+├── locales/            i18n translations + index.json (auto-discovered)
+├── assets/             User resources
+├── posts/              Pre-rendered article HTML + SSG pages
+├── site-config.json    Site config (includes theme.available auto-discovery)
+├── content-index.json  Content index
+├── feed.xml            RSS
+├── sitemap.xml         Sitemap
+└── search-index.json   Search index
+```
+
+**Core resources are fully local.** All JS libraries (highlight.js, DOMPurify, marked, mermaid, KaTeX, lunr) are vendored locally with zero CDN dependencies. The only external dependencies are Google Fonts (typography) and Giscus (optional comments).
+
+## CLI
+
+```bash
+blog init                  # Initialize workspace
+blog build                 # Build
+blog build --incremental   # Incremental build
+blog serve [port]          # Dev server
+blog serve --no-live       # Disable hot-reload
+blog --help                # Help (auto-detects language)
+blog --help --lang en      # English help
+blog --version             # Version
+```
 
 ## Build Options
 
@@ -174,4 +228,6 @@ node test.js                     # Run 221 automated tests
 
 ## Documentation
 
+- `skills/static-blog/SKILL.md` — AI operation guide
+- `site/README.md` — Workspace manual
 - `docs/architecture/theme-engine-reference.md` — Complete theme engine reference

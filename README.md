@@ -1,15 +1,35 @@
 # Static Markdown Blog
 
-零依赖、Token 驱动主题、支持任意子路径部署的静态博客平台。
+AI 在帮你解决问题的过程中积累了大量知识——调试方法、架构决策、代码模式。但这些知识锁在对话历史里，你看不到、搜不到、用不到。
 
-## 为什么做这个
+这个平台让 AI 可以把知识写成 Markdown，一键构建为可搜索的网站，部署到任何地方。AI 自主维护，用户随时查阅。
 
-本项目的目标是提供一个**零依赖、精品主题、即开即用**的静态博客平台。
+## 解决什么问题
 
-设计原则：
-- **零依赖** — 不引入 npm 运行时依赖，vendored 库除外
-- **精品主题** — 5 个原创主题，45+ CSS Token，三态亮暗切换
-- **即开即用** — 构建产物自包含，可部署到任意静态托管
+| 痛点 | 方案 |
+|------|------|
+| AI 的知识锁在对话里 | AI 直接写 Markdown，构建为可浏览的网站 |
+| 现有博客工具需要人工操作 | AI 直接读写 `site/` 目录，一行命令构建 |
+| 无界面 AI agent 没有"脸" | Docker 多实例，每个 agent 一个知识库 |
+| 隐私安全 | 内置安全机制，防止敏感信息泄露 |
+
+## 谁适合用
+
+- **用 AI 写代码的开发者** — 让 AI 维护技术笔记和调试经验
+- **用 AI 学习的人** — 让 AI 整理学习笔记和知识图谱
+- **AI agent 本身** — 给自己一个持久的、可搜索的网络存在
+- **团队** — 让 AI 维护文档和知识库
+- **想要简洁博客的人** — 零依赖，3 分钟上线
+
+## 3 分钟开始
+
+```bash
+git clone <repo>
+cd 静态博客
+node init.js && node build.js && node serve.js
+```
+
+打开 http://localhost:8080
 
 ## 在线演示
 
@@ -32,7 +52,53 @@ https://mg5921my.github.io/static-markdown-blog/
 | **部署** | GitHub Pages、Docker、通用静态托管、子路径自动适应 |
 | **扩展** | 插件架构、自定义主题、自定义页面（standalone/嵌入）、评论集成（Giscus）、语言切换（自动发现） |
 
-## 快速开始
+## 内置主题
+
+| 主题 | 风格 | 设计语言 | 适合场景 |
+|------|------|----------|---------|
+| graphite | 工业蓝图 | Inter 字体，高对比度，specs-table hero 布局 | 技术博客、文档 |
+| aurora | 品牌展示 | Playfair Display 衬线标题，渐变 hero，项目卡片 | 个人品牌、作品集 |
+| paper | 阅读优先 | Caveat 手写体标题，纸张质感，宽松排版 | 长文阅读、笔记 |
+| mono | 黑白极简 | 纯黑白色，Consolas 等宽，极简 hero | 极简主义者 |
+| terminal | CRT 赛博 | Orbitron 科技感标题，扫描线叠加，绿色调 | 开发者、赛博朋克爱好者 |
+
+主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/custom/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。
+
+## AI 维护
+
+本项目适合 AI 自动维护知识库：
+
+```bash
+# AI 的工作流
+1. 写 Markdown → site/content/posts/<分类>/
+2. node build.js → 构建到 dist/
+3. git push → 部署（需用户确认）
+```
+
+**安全机制：**
+- AI 只操作 `site/` 目录，不碰平台代码
+- 部署操作（git push、docker compose up）需用户确认
+- config.yml 中的 email、repo 等敏感信息不写入公开内容
+- API Key、Token 等不写入任何文件
+
+详细指南：`skills/static-blog/SKILL.md`
+
+### AI 能做什么
+
+AI 不只是写文章，还可以用这个平台打造完整的知识展示台：
+
+| 能力 | 说明 |
+|------|------|
+| **写文章** | 结构化知识、调试经验、架构决策 |
+| **瞬间** | 每日记忆索引、思考日志、"梦境"记录 |
+| **友链** | 知识图谱节点、学习资源、参考工具 |
+| **图库** | 思维导图、架构图、可视化记忆 |
+| **自定义页面** | 技能矩阵、经验时间线、交互式仪表盘 |
+| **设计主题** | AI 可以自己创建 CSS 主题，为不同知识领域选择视觉语言 |
+
+AI 可以设计自己的主题——用 CSS Token 控制颜色、字体、布局，为技术笔记用冷色调工业风格，为创意内容用暖色调品牌风格。详见 `skills/static-blog/SKILL.md`。
+
+## 快速开始（详细）
 
 ### 源码构建
 
@@ -82,41 +148,6 @@ blog serve
 
 `dist/` 目录即完整产物，可直接部署到 Vercel / Netlify / Cloudflare Pages / GitHub Pages / Nginx。
 
-## dist/ 设计理念
-
-`dist/` 是一个**完整的、自包含的静态站点**。不依赖 Node.js，不依赖构建工具，不依赖 serve.js。
-
-```text
-dist/
-├── *.html              页面（自包含，可直接部署）
-├── client/             平台运行时模块
-├── themes/             主题 CSS（自动发现，用户自定义主题也会复制到这里）
-├── vendor/             第三方库（lunr, katex, marked）
-├── locales/            i18n 翻译 + index.json（自动发现可用语言）
-├── assets/             用户资源
-├── posts/              预渲染的文章 HTML + SSG 页面
-├── site-config.json    站点配置（含 theme.available 自动发现列表）
-├── content-index.json  内容索引
-├── feed.xml            RSS
-├── sitemap.xml         Sitemap
-└── search-index.json   搜索索引
-```
-
-**核心资源全部本地化。** CDN 只用于可选增强（代码高亮、XSS 过滤），全部非阻塞加载，CDN 不可用时优雅降级。
-
-## CLI
-
-```bash
-blog init                  # 初始化工作区
-blog build                 # 构建
-blog build --incremental   # 增量构建
-blog serve [port]          # 开发服务器
-blog serve --no-live       # 禁用热重载
-blog --help                # 帮助（自动检测语言）
-blog --help --lang en      # 英文帮助
-blog --version             # 版本号
-```
-
 ## 目录结构
 
 ```text
@@ -146,17 +177,40 @@ serve.js                开发服务器（热重载）
 test.js                 自动化测试
 ```
 
-## 内置主题
+## dist/ 设计理念
 
-| 主题 | 风格 | 设计参考 |
-|------|------|----------|
-| graphite | 工业蓝图 | Linear + Vercel |
-| aurora | 品牌展示 | Stripe |
-| paper | 阅读优先 | Notion + Claude |
-| mono | 黑白极简 | Vercel |
-| terminal | CRT 赛博 | DiskScope |
+`dist/` 是一个**完整的、自包含的静态站点**。不依赖 Node.js，不依赖构建工具，不依赖 serve.js。
 
-主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/custom/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。
+```text
+dist/
+├── *.html              页面（自包含，可直接部署）
+├── client/             平台运行时模块
+├── themes/             主题 CSS（自动发现，用户自定义主题也会复制到这里）
+├── vendor/             第三方库（hljs, lunr, katex, marked, mermaid, purify）
+├── locales/            i18n 翻译 + index.json（自动发现可用语言）
+├── assets/             用户资源
+├── posts/              预渲染的文章 HTML + SSG 页面
+├── site-config.json    站点配置（含 theme.available 自动发现列表）
+├── content-index.json  内容索引
+├── feed.xml            RSS
+├── sitemap.xml         Sitemap
+└── search-index.json   搜索索引
+```
+
+**核心资源全部本地化。** 所有 JS 库（highlight.js、DOMPurify、marked、mermaid、KaTeX、lunr）均以 vendor 方式本地加载，零 CDN 依赖。外部依赖仅剩 Google Fonts（字体）和 Giscus（可选评论系统）。
+
+## CLI
+
+```bash
+blog init                  # 初始化工作区
+blog build                 # 构建
+blog build --incremental   # 增量构建
+blog serve [port]          # 开发服务器
+blog serve --no-live       # 禁用热重载
+blog --help                # 帮助（自动检测语言）
+blog --help --lang en      # 英文帮助
+blog --version             # 版本号
+```
 
 ## 构建选项
 
@@ -174,4 +228,6 @@ node test.js                     # 运行 221 项自动化测试
 
 ## 文档
 
+- `skills/static-blog/SKILL.md` — AI 操作指南
+- `site/README.md` — 工作区操作手册
 - `docs/architecture/theme-engine-reference.md` — 主题引擎完整参考
