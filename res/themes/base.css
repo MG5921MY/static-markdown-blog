@@ -2390,12 +2390,13 @@ mark {
 .auth-card {
   max-width: 380px;
   width: 90%;
-  padding: 3rem 2.5rem;
+  padding: 3rem 2.5rem 4rem;
   border-radius: var(--radius-lg, 12px);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   text-align: center;
+  overflow: visible;
 }
 
 .auth-icon {
@@ -2480,6 +2481,49 @@ mark {
   color: #c0392b;
   font-size: var(--text-xs, 13px);
   font-family: var(--font-body);
+}
+
+/* ── Auth Controls (theme + language) ────────────────── */
+.auth-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 10;
+}
+
+.auth-controls .theme-toggle,
+.auth-controls .lang-switch {
+  position: relative;
+}
+
+.auth-controls .theme-toggle-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 160px;
+  z-index: 20;
+  display: none;
+}
+
+.auth-controls .lang-switch-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 120px;
+  z-index: 20;
+  display: none;
+}
+
+.auth-controls .theme-toggle.is-open .theme-toggle-panel,
+.auth-controls .lang-switch.is-open .lang-switch-panel {
+  display: block;
 }
 
 /* ── Logout Button ───────────────────────────────────── */

@@ -84,6 +84,14 @@
     "copied": "Copied!",
     "copyFailed": "Failed"
   },
+  "auth": {
+    "title": "Site Encrypted",
+    "desc": "Enter password to continue",
+    "submit": "Unlock",
+    "error": "Wrong password",
+    "verifying": "Verifying...",
+    "logout": "Logout"
+  },
   "gallery": {
     "kicker": "Gallery",
     "title": "Gallery",
