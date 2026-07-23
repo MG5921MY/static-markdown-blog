@@ -61,7 +61,8 @@ module.exports = function staticCopyPlugin(buildResult) {
       enabled: true,
       passwordHash: auth.passwordHash,
       siteName: config?.site?.name || 'Blog',
-      sessionTtl: auth.sessionTtl
+      sessionTtl: auth.sessionTtl,
+      autoLock: config?.security?.autoLock ?? 900
     };
     // 备案信息（登录页面显示）
     const beian = config?.beian;
@@ -77,14 +78,22 @@ module.exports = function staticCopyPlugin(buildResult) {
     if (!fs.existsSync(srcPath)) continue;
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
 
-    // HTML 文件注入 meta + auth config
+    // HTML 文件注入 meta 标签
     if (f.dest.endsWith('.html')) {
       let html = fs.readFileSync(srcPath, 'utf8');
+      // robots meta
       if (!html.includes('name="robots"')) {
         html = html.replace('</head>', `  <meta name="robots" content="${robotsContent}" />\n</head>`);
       }
+      // auth config
       if (authScript && !html.includes('id="auth-config"')) {
         html = html.replace('</head>', `  ${authScript}\n</head>`);
+      }
+      // CSP meta（根据 security.csp 配置决定是否注入）
+      const security = config?.security || {};
+      if (security.csp !== false && !html.includes('http-equiv="Content-Security-Policy"')) {
+        const csp = '<meta http-equiv="Content-Security-Policy" content="style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https: http:; object-src \'none\'; base-uri \'none\'; form-action \'self\'" />';
+        html = html.replace('</head>', `  ${csp}\n</head>`);
       }
       fs.writeFileSync(destPath, html, 'utf8');
     } else {

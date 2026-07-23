@@ -231,6 +231,7 @@ function loadConfig(cwd, pkgRoot) {
     disclaimer: raw.disclaimer || {},
     error404: raw.error404 || {},
     auth: raw.auth || { enabled: false },
+    security: raw.security || { csp: true, markdownHtmlFilter: true, autoLock: 900 },
     _raw: raw,
     _siteRoot: siteRoot,
     _pkgRoot: pkgRoot,

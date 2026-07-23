@@ -70,7 +70,8 @@ async function build(userOptions) {
     auth: config.auth ? {
       enabled: !!config.auth.enabled,
       session: { ttl: config.auth.session?.ttl ?? 7200 }
-    } : { enabled: false }
+    } : { enabled: false },
+    security: config.security || { csp: true, markdownHtmlFilter: true, autoLock: 900 }
   };
 
   // ── 认证插件（获取密码和哈希）────────────────────────

@@ -142,7 +142,9 @@
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
             if (page.renderedToHtml) {
-              const safe = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(page.content || '') : (page.content || '');
+              const safe = (page.sanitize !== false && typeof DOMPurify !== 'undefined')
+                ? DOMPurify.sanitize(page.content || '')
+                : (page.content || '');
               document.getElementById('page-content').innerHTML = safe;
             } else {
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
@@ -231,10 +233,12 @@
           }
 
           if (page.type === 'html') {
-            await Blog.loadScript('./vendor/purify.min.js');
+            if (page.sanitize !== false) {
+              await Blog.loadScript('./vendor/purify.min.js');
+            }
             document.getElementById('html-title').textContent = page.title || page.name;
             document.getElementById('html-desc').textContent = page.description || '';
-            const htmlContent = typeof DOMPurify !== 'undefined'
+            const htmlContent = (page.sanitize !== false && typeof DOMPurify !== 'undefined')
               ? DOMPurify.sanitize(page.content || '', { ADD_ATTR: ['target', 'rel'] })
               : (page.content || '');
             document.getElementById('html-content').innerHTML = htmlContent;

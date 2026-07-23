@@ -44,10 +44,12 @@ function makeSummary(body, maxLength) {
  * @param {object|null} manifest - 构建清单，用于增量判断
  * @returns {{ posts: object[], groups: object }} 文章列表和分组映射
  */
-function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDrafts, manifest) {
+function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDrafts, manifest, security) {
   const sourceDir = path.join(siteRoot, category.path);
   const result = { posts: [], groups: {} };
   if (!fs.existsSync(sourceDir)) return result;
+
+  const allowHtml = security?.markdownHtmlFilter === false;
 
   function walk(currentDir) {
     for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
@@ -83,7 +85,7 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
         sourcePath: fullPath,
         sourceRelative: relative,
         draft: parsed.meta.draft === true,
-        html: isCached ? null : renderMarkdown(parsed.body),
+        html: isCached ? null : renderMarkdown(parsed.body, { allowHtml }),
         _outputPath: outputPath,
         _needsWrite: !isCached,
         _cached: isCached
@@ -111,7 +113,7 @@ function scanContent(config, options) {
     if (!category.id || !category.path) continue;
     const scanned = scanCategoryPosts(
       category, config.display?.summaryLength || 140,
-      siteRoot, distDir, includeDrafts, manifest
+      siteRoot, distDir, includeDrafts, manifest, config.security
     );
     categories[category.id] = {
       name: category.name || category.id,

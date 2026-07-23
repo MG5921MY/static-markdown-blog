@@ -11,6 +11,8 @@
   'use strict';
 
   const STORAGE_KEY = 'blog-auth';
+  let _lockTimer = null;
+  let _autoLockMs = 15 * 60 * 1000; // 默认 15 分钟，init 时从 config 读取
 
   const ICONS = {
     lock: '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>',
@@ -69,12 +71,47 @@
 
   function clearAuthData() {
     localStorage.removeItem(STORAGE_KEY);
-    sessionStorage.clear();
+    sessionStorage.removeItem('blog-auth-pw');
+    stopAutoLock();
+  }
+
+  function lock() {
+    clearAuthData();
+    // 清除已渲染的明文内容
+    const targets = ['post-body', 'page-content', 'gallery-view', 'moments-list', 'links-list', 'disclaimer-content'];
+    targets.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '';
+    });
+    // 重新显示密码门
+    const config = getAuthConfig();
+    if (config && config.enabled) {
+      location.href = location.pathname + '?_=' + Date.now();
+    }
+  }
+
+  function refreshLock() {
+    clearTimeout(_lockTimer);
+    _lockTimer = setTimeout(lock, _autoLockMs);
+  }
+
+  function startActivityTracking() {
+    ['click', 'keydown', 'scroll'].forEach(evt =>
+      window.addEventListener(evt, refreshLock, { passive: true })
+    );
+    refreshLock();
+  }
+
+  function stopAutoLock() {
+    clearTimeout(_lockTimer);
+    _lockTimer = null;
+    ['click', 'keydown', 'scroll'].forEach(evt =>
+      window.removeEventListener(evt, refreshLock)
+    );
   }
 
   function logout() {
-    clearAuthData();
-    location.href = location.pathname + '?_=' + Date.now();
+    lock();
   }
 
   function createAuthUI(config, onUnlock) {
@@ -302,6 +339,11 @@
       return;
     }
 
+    // 读取自动锁定时间
+    if (config.autoLock && config.autoLock > 0) {
+      _autoLockMs = config.autoLock * 1000;
+    }
+
     // 加载 i18n（auth 门需要语言切换）
     if (window.BlogI18n) {
       try { await BlogI18n.load(); } catch (_) {}
@@ -310,7 +352,8 @@
     // 检查会话
     const session = getSession();
     if (session && session.hash === config.passwordHash) {
-      return; // 会话有效，不干预
+      startActivityTracking(); // 启动自动锁定计时
+      return;
     }
 
     // 无有效会话，显示密码门
@@ -318,6 +361,7 @@
     const gate = createAuthUI(config, () => {
       gate.remove();
       document.body.style.overflow = '';
+      startActivityTracking(); // 解锁后启动自动锁定计时
     });
     document.body.appendChild(gate);
   }
@@ -328,5 +372,5 @@
     init();
   }
 
-  window.BlogAuth = { getSession, logout, clearAuthData, decryptPost };
+  window.BlogAuth = { getSession, logout, lock, clearAuthData, decryptPost };
 })();

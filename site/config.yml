@@ -33,6 +33,17 @@ seo:
 #   session:
 #     ttl: 7200                       # 过期时间（秒），-1 = 永不过期
 
+# ── 安全配置 ────────────────────────────────────────────
+# 控制构建时和运行时的安全行为。默认全部开启。
+security:
+  csp: true                    # CSP meta 标签（防 CSS/img/object 注入）
+  markdownHtmlFilter: true     # Markdown 原始 HTML 过滤（防 <script> 注入）
+  autoLock: 900                # 无操作自动锁定（秒），0 = 不锁定
+  # 关闭示例（不推荐）：
+  # csp: false               # 关闭后：CSS/img/object 注入风险增加
+  # markdownHtmlFilter: false # 关闭后：Markdown 中的 <script>、<iframe> 等原始 HTML 会被保留
+  # autoLock: 0              # 关闭后：用户需手动点击退出按钮清除会话
+
 # ── 主题 ────────────────────────────────────────────────
 # 可选: graphite / aurora / paper / mono / terminal
 # 自定义主题: 将主题放在 site/themes/<theme-id>/
@@ -60,6 +71,12 @@ content:
   # type: markdown  — Markdown 内容页面（构建时渲染）
   # type: custom    — 自定义 HTML 页面（支持数据嵌入、JS 执行、独立模式）
   # type: category  — 分类文章列表页面
+  #
+  # 页面级安全选项：
+  #   sanitize: true   — DOMPurify 消毒（默认，移除 <video>、<style>、data-* 等）
+  #   sanitize: false  — 跳过消毒（信任自己的 HTML，保留所有标签和属性）
+  #   scripts: true    — 启用 JS 执行（自定义页面专用）
+  #   standalone: true — 独立模式（iframe 沙盒隔离，隐藏平台导航栏/页脚）
   pages:
     - id: about
       name: 关于
@@ -73,6 +90,7 @@ content:
       type: custom
       source: content/pages/skills.html
       scripts: true                   # 取消注释以启用 JS（计数器动画）
+      # sanitize: false               # 跳过 DOMPurify（信任自己的 HTML，保留 <video>、<style> 等）
 
     - id: portfolio
       name: 作品集

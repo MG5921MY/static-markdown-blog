@@ -52,7 +52,8 @@ module.exports = function authPlugin(buildResult) {
     password,
     passwordHash,
     sessionTtl: authConfig.session?.ttl ?? 7200,
-    showBeian: authConfig.showBeian !== false
+    showBeian: authConfig.showBeian !== false,
+    autoLock: authConfig.autoLock ?? 900
   };
   
   console.log(`[AUTH] 会话过期: ${authConfig.session?.ttl === -1 ? '永不过期' : (authConfig.session?.ttl || 7200) + '秒'}`);
