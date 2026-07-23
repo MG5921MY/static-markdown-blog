@@ -26,7 +26,7 @@ site/
 │       ├── gallery.yml     图库
 │       └── projects.yml    项目
 ├── assets/                 资源文件（图片、图标等）
-└── themes/custom/          自定义主题
+└── themes/                 自定义主题
 ```
 
 ---
@@ -271,7 +271,7 @@ theme:
 
 可选值：`graphite` / `aurora` / `paper` / `mono` / `terminal`
 
-自定义主题：使用 `custom/<theme-id>` 格式，详见下方"自定义主题"章节。
+自定义主题：直接使用主题 ID，详见下方"自定义主题"章节。
 
 ### 3.5 content.categories — 内容分类
 
@@ -542,185 +542,311 @@ theme:
 
 ### 5.1 目录结构
 
-将自定义主题放在 `site/themes/custom/<theme-id>/` 下：
+将自定义主题放在 `site/themes/<theme-id>/` 下：
 
 ```
-site/themes/custom/<theme-id>/
+site/themes/<theme-id>/
 ├── theme.yml       ← 元数据（必须）
-├── theme.css       ← 样式（必须，必须 @import "../base.css"）
-├── theme.js        ← 可选
-├── fonts/          ← 可选
-└── templates/      ← 可选
+├── theme.css       ← 样式（必须，@import "../base.css"）
+├── theme.js        ← 可选：自定义交互
+├── fonts/          ← 可选：本地字体
+└── templates/      ← 可选：HTML 模板覆盖
 ```
 
-### 5.2 命名规则
+**命名规则：**
 
 - `theme-id` 只能包含小写字母、数字和连字符（如 `my-theme`）
 - 不能以数字开头
-- 不能与内置主题 ID 重复
+- 不能与内置主题 ID 重复（`graphite` / `aurora` / `paper` / `mono` / `terminal`）
 
-### 5.3 theme.yml 完整字段
+### 5.2 theme.yml 完整字段
 
 ```yaml
-name: 主题名                     # 主题显示名称（必须）
-version: 1.0.0                   # 版本号（必须）
-author: 作者名                   # 作者（必须）
-description: 描述                # 主题描述（必须）
-references:                      # 设计参考（可选）
-  - reference-site.com
+# 必填
+id: my-theme              # 主题 ID（必须等于目录名）
+name: My Theme            # 显示名称
+version: 1.0.0            # 语义化版本号
+author: Author Name       # 作者
+description: 描述          # 简介（50 字以内）
+
+# 可选
+license: MIT                          # 开源协议
+homepage: https://example.com         # 主题主页
+references:                           # 设计参考网站
+  - linear.app
+  - stripe.com
+fonts:                                # 字体声明
+  - name: Inter                       # 字体名称
+    source: google                    # 来源：bundled | google | none
+    weights: [400, 700]              # 字重
+  - name: JetBrains Mono
+    source: google
+    weights: [400, 500]
+colorModes: [dark, light]             # 支持的颜色模式
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
+| `id` | string | ✅ | 主题 ID，**必须等于目录名** |
 | `name` | string | ✅ | 主题显示名称 |
-| `version` | string | ✅ | 语义版本号 |
+| `version` | string | ✅ | 语义版本号（如 `1.0.0`） |
 | `author` | string | ✅ | 作者名称 |
-| `description` | string | ✅ | 主题描述 |
-| `references` | string[] | ❌ | 设计参考链接 |
+| `description` | string | ✅ | 主题描述（50 字以内） |
+| `license` | string | ❌ | 开源协议（如 `MIT`、`Apache-2.0`） |
+| `homepage` | string | ❌ | 主题主页 URL |
+| `references` | string[] | ❌ | 设计参考网站列表 |
+| `fonts` | object[] | ❌ | 字体声明数组 |
+| `fonts[].name` | string | ✅ | 字体名称（如 `Inter`） |
+| `fonts[].source` | string | ✅ | `bundled` = 本地 `fonts/` 目录；`google` = Google Fonts CDN；`none` = 系统字体 |
+| `fonts[].weights` | number[] | ❌ | 需要加载的字重（如 `[400, 600, 700]`） |
+| `colorModes` | string[] | ❌ | 支持的颜色模式。`[dark]` 仅暗色；`[dark, light]` 支持亮暗切换 |
 
-### 5.4 theme.css 结构
+### 5.3 theme.css 完整结构
 
-必须以 `@import "../base.css";` 开头，继承基础样式。通过 CSS 自定义属性（Token）控制视觉表现，只需覆盖需要修改的 Token，未覆盖的继承 `base.css` 默认值。
+`theme.css` 必须以 `@import "../base.css";` 开头，继承基础样式。通过 CSS 自定义属性（Token）控制视觉表现，只需覆盖需要修改的 Token，未覆盖的继承 `base.css` 默认值。
 
-#### 基本结构
+文件结构分为 6 层，按顺序排列：
 
 ```css
+/* ① 必须：引入基础样式（必须是第一行） */
 @import "../base.css";
 
-/* 暗色（默认） */
+/* ② 可选：引入 Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ③ 暗色 Token（默认值，写在 :root） */
 :root {
   --bg-primary: #0b0d12;
   --bg-secondary: #11141b;
-  --text-primary: #f5f7fb;
   --accent: #6f7cff;
-  /* 更多 token... */
+  /* ... */
 }
 
-/* 亮色 */
+/* ④ 亮色 Token 覆盖 */
 [data-color-scheme="light"] {
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
-  --text-primary: #1a1a1a;
-  /* 更多 token... */
+  --accent: #3b82f6;
+  /* ... */
 }
 
-/* 跟随系统 */
+/* ⑤ 跟随系统偏好 */
 @media (prefers-color-scheme: light) {
   [data-color-scheme="auto"] {
-    /* 亮色 token */
+    /* 亮色 token（同 ④） */
   }
 }
+@media (prefers-color-scheme: dark) {
+  [data-color-scheme="auto"] {
+    /* 暗色 token（同 ③，可省略，因为 :root 已是暗色默认） */
+  }
+}
+
+/* ⑥ 可选：组件样式覆盖 */
+body { /* 自定义背景纹理等 */ }
+.post-card { /* 自定义卡片样式 */ }
 ```
 
-#### 说明
+**各层说明：**
 
-- `:root` — 暗色模式下的 Token 值，也是默认值
-- `[data-color-scheme="light"]` — 用户手动切换到亮色时的覆盖值
-- `@media (prefers-color-scheme: light)` + `[data-color-scheme="auto"]` — 跟随系统偏好时的亮色覆盖
+| 层 | 作用 | 是否必须 |
+|----|------|:--------:|
+| ① `@import "../base.css"` | 继承所有基础组件样式 | ✅ 必须 |
+| ② Google Fonts `@import` | 加载远程字体 | ❌ 可选 |
+| ③ `:root` | 定义暗色模式 Token 默认值 | ✅ 必须 |
+| ④ `[data-color-scheme="light"]` | 用户手动切换亮色时的覆盖 | ⚠️ 支持亮色时必须 |
+| ⑤ `@media (prefers-color-scheme:*)` | 跟随系统偏好 | ⚠️ 支持 auto 时必须 |
+| ⑥ 组件覆盖 | 背景纹理、动效、布局微调 | ❌ 可选 |
 
-### 5.5 常用 Token 列表
+> **注意：** ④ 的优先级高于 ⑤。`[data-color-scheme="light"]` 是属性选择器，优先级高于 `@media` 查询。这意味着用户手动选择的颜色模式始终优先于系统偏好。
 
-所有 Token 均定义在 `base.css` 中，自定义主题只需覆盖需要修改的。
+### 5.4 Token 完整参考
 
-#### 颜色
+所有 Token 均定义在 `base.css` 中，自定义主题只需覆盖需要修改的。未覆盖的继承默认值。
 
-| Token | 用途 | 示例值 |
+#### 颜色 Token（13 个）
+
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--bg-primary` | 主背景色 | `#0b0d12` / `#ffffff` |
-| `--bg-secondary` | 次级背景色 | `#11141b` / `#f8f9fa` |
-| `--bg-elevated` | 悬浮/卡片背景 | `#1a1d27` / `#ffffff` |
-| `--text-primary` | 主文本色 | `#f5f7fb` / `#1a1a1a` |
-| `--text-secondary` | 次要文本色 | `#a0a6b8` / `#6b7280` |
-| `--text-muted` | 弱化文本色 | `#5a6178` / `#9ca3af` |
-| `--border` | 边框色 | `#23273a` / `#e5e7eb` |
-| `--accent` | 强调色 | `#6f7cff` / `#3b82f6` |
-| `--accent-soft` | 弱化强调色背景 | `rgba(111,124,255,0.12)` |
-| `--accent-strong` | 强化强调色 | `#8b96ff` |
+| `--bg-primary` | 主背景色 | `#0b0d12` |
+| `--bg-secondary` | 次级背景色 | `#11141b` |
+| `--bg-elevated` | 提升层背景（弹窗、下拉菜单） | `#161b24` |
+| `--text-primary` | 主文本色 | `#f5f7fb` |
+| `--text-secondary` | 次级文本色 | `#b7c0cf` |
+| `--text-muted` | 弱化文本色 | `#7f8794` |
+| `--border` | 边框色 | `rgba(255,255,255,0.08)` |
+| `--accent` | 强调色（按钮、链接、高亮） | `#6f7cff` |
+| `--accent-soft` | 弱化强调色（背景、hover） | `rgba(111,124,255,0.16)` |
+| `--accent-strong` | 增强强调色（hover 态） | `#8c95ff` |
 | `--brand-start` | 品牌渐变起始色 | `#6f7cff` |
 | `--brand-end` | 品牌渐变终止色 | `#8c95ff` |
 | `--brand-shadow` | 品牌阴影色 | `rgba(111,124,255,0.18)` |
 
-#### 排版
+#### 阴影 Token（3 个）
 
-| Token | 用途 | 示例值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--font-display` | 标题字体 | `"Inter", sans-serif` |
-| `--font-body` | 正文字体 | `"Inter", sans-serif` |
-| `--font-mono` | 等宽字体 | `"JetBrains Mono", monospace` |
+| `--shadow-sm` | 小阴影 | `0 10px 30px rgba(0,0,0,0.12)` |
+| `--shadow-md` | 中阴影 | `0 18px 50px rgba(0,0,0,0.18)` |
+| `--shadow-lg` | 大阴影 | `0 24px 80px rgba(0,0,0,0.24)` |
 
-#### 字号阶梯
+#### 字号阶梯 Token（13 个）
 
-| Token | 用途 | 默认值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--text-xxs` | 极小文本 | `11px` |
-| `--text-xs` | 超小文本 | `13px` |
-| `--text-caption` | 说明文字 | `12px` |
-| `--text-sm` | 小号文本 | `14px` |
-| `--text-sm-md` | 中小号文本 | `15px` |
-| `--text-body` | 正文默认 | `17px` |
-| `--text-body-lg` | 大号正文（响应式） | `clamp(15px, 1.6vw, 17px)` |
+| `--text-xxs` | 超小 | `11px` |
+| `--text-xs` | 小 | `13px` |
+| `--text-caption` | 标注/说明 | `12px` |
+| `--text-sm` | 小正文 | `14px` |
+| `--text-sm-md` | 中小 | `15px` |
+| `--text-body` | 正文 | `17px` |
+| `--text-body-lg` | 大正文（响应式） | `clamp(15px,1.6vw,17px)` |
 | `--text-h3` | 三级标题 | `24px` |
 | `--text-h4` | 四级标题 | `20px` |
 | `--text-h5` | 五级标题 | `18px` |
-| `--text-h1` | 一级标题（响应式） | `clamp(28px, 4vw, 52px)` |
-| `--text-section` | 区块标题（响应式） | `clamp(22px, 2.6vw, 28px)` |
-| `--text-hero` | Hero 标题（响应式） | `clamp(40px, 6.2vw, 68px)` |
+| `--text-h1` | 一级标题（响应式） | `clamp(28px,4vw,52px)` |
+| `--text-section` | 区块标题（响应式） | `clamp(22px,2.6vw,28px)` |
+| `--text-hero` | Hero 标题（响应式） | `clamp(40px,6.2vw,68px)` |
 
-#### 间距
+#### 字体 Token（3 个）
 
-| Token | 用途 | 默认值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--space-xxs` | 极小间距 | `4px` |
-| `--space-xs` | 超小间距 | `6px` |
-| `--space-sm` | 小间距 | `12px` |
+| `--font-display` | 标题字体 | `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif` |
+| `--font-body` | 正文字体 | 同上 |
+| `--font-mono` | 等宽字体 | `Consolas,"SFMono-Regular","JetBrains Mono",monospace` |
+
+#### 间距 Token（7 个）
+
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--space-xxs` | 超小间距 | `4px` |
+| `--space-xs` | 小间距 | `6px` |
+| `--space-sm` | 中小间距 | `12px` |
 | `--space-md` | 中间距 | `20px` |
 | `--space-lg` | 大间距 | `32px` |
 | `--space-xl` | 超大间距 | `56px` |
-| `--layout-gutter` | 布局排水槽（响应式） | `clamp(16px, 4vw, 40px)` |
-| `--layout-moments` | 瞬间页面最大宽度 | `860px` |
+| `--layout-gutter` | 页面内边距（响应式） | `clamp(16px,4vw,40px)` |
 
-#### 圆角
+#### 圆角 Token（8 个）
 
-| Token | 用途 | 默认值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
 | `--radius-sm` | 小圆角 | `4px` |
 | `--radius-md` | 中圆角 | `8px` |
 | `--radius-lg` | 大圆角 | `12px` |
-| `--radius-xl` | 极大圆角 | `16px` |
-| `--radius-full` | 胶囊/圆形圆角 | `999px` |
+| `--radius-xl` | 超大圆角 | `18px` |
+| `--radius-full` | 胶囊/圆形 | `999px` |
 | `--card-radius` | 卡片圆角 | `0` |
 | `--btn-radius` | 按钮圆角 | `0` |
-| `--tag-radius` | 标签圆角 | `0` |
+| `--tag-radius` | 标签/胶囊圆角 | `0` |
 
-#### 布局
+#### 布局 Token（16 个）
 
-| Token | 用途 | 默认值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--layout-width` | 内容最大宽度 | `1080px` |
-| `--layout-nav-height` | 导航栏高度 | `56px` |
-| `--layout-hero` | Hero 区高度 | `420px` |
-| `--layout-prose` | 正文最大宽度 | `720px` |
+| `--layout-width` | 内容最大宽度 | `1120px` |
+| `--layout-nav-height` | 导航栏高度 | `64px` |
+| `--layout-hero` | Hero 区高度 | `64vh` |
+| `--layout-prose` | 正文最大宽度 | `760px` |
+| `--layout-moments` | 瞬间页面最大宽度 | `860px` |
+| `--layout-sidebar-width` | 侧边栏宽度 | `0px` |
+| `--layout-sidebar-position` | 侧边栏位置 | `right` |
 | `--card-min-width` | 卡片最小宽度 | `260px` |
 | `--card-gap` | 卡片间距 | `18px` |
 | `--card-direction` | 卡片排列方向 | `column` |
-| `--hero-align` | Hero 区域对齐方式 | `center` |
-| `--hero-min-height` | Hero 区域最小高度 | `min(var(--layout-hero), 720px)` |
+| `--card-padding` | 卡片内边距 | `var(--space-md)` |
+| `--hero-align` | Hero 对齐方式 | `center` |
+| `--hero-min-height` | Hero 最小高度 | `min(var(--layout-hero),720px)` |
 | `--post-article-width` | 文章页面宽度 | `880px` |
-| `--post-article-padding` | 文章页面内边距 | `clamp(20px, 4vw, 42px)` |
-| `--nav-justify` | 导航栏内容对齐 | `space-between` |
-| `--layout-sidebar-width` | 侧边栏宽度 | `0` |
-| `--layout-sidebar-position` | 侧边栏位置 | `right` |
+| `--post-article-padding` | 文章页面内边距 | `clamp(20px,4vw,42px)` |
+| `--nav-justify` | 导航栏对齐 | `space-between` |
 
-#### 代码
+#### 代码块 Token（14 个）
 
-| Token | 用途 | 示例值 |
+| Token | 说明 | 默认值 |
 |-------|------|--------|
-| `--code-bg` | 代码块背景 | `#161822` / `#f6f8fa` |
-| `--code-text` | 代码文本色 | `#e6e8f0` / `#24292f` |
-| `--code-muted` | 代码注释/弱色 | `#5a6178` / `#6a737d` |
-| `--code-accent-1` | 代码高亮色 1 | `#7c8aff` |
-| `--code-accent-2` | 代码高亮色 2 | `#ff6b8a` |
-| `--code-accent-3` | 代码高亮色 3 | `#4ecdc4` |
+| `--code-bg` | 代码块背景 | `#121722` |
+| `--code-border` | 代码块边框 | `rgba(255,255,255,0.08)` |
+| `--code-text` | 代码文本色 | `#eaf1ff` |
+| `--code-muted` | 弱化文本（注释） | `#8f9ab0` |
+| `--code-inline-bg` | 行内代码背景 | `rgba(255,255,255,0.06)` |
+| `--code-inline-text` | 行内代码文本 | `#f3f7ff` |
+| `--code-selection` | 代码选区背景 | `rgba(255,255,255,0.1)` |
+| `--code-accent-1` | 高亮色 1（关键字） | `#8fb4ff` |
+| `--code-accent-2` | 高亮色 2（字符串） | `#9ce3c3` |
+| `--code-accent-3` | 高亮色 3（类型/数字） | `#ffc98f` |
+| `--code-line-num-color` | 行号颜色 | `var(--code-muted)` |
+| `--code-line-num-bg` | 行号背景 | `color-mix(in srgb,var(--code-bg) 85%,var(--code-text))` |
+| `--code-line-num-border` | 行号分隔线 | `var(--code-border)` |
+| `--code-wrap` | 代码块换行模式 | 未定义（横向滚动） |
+
+> **提示：** `--code-line-num-color`、`--code-line-num-bg`、`--code-line-num-border` 使用 `var()` 回退值，不定义时自动取合理默认。`--code-wrap` 由 `config.yml` 的 `display.codeWrap` 控制，一般不需要在主题中设置。
+
+### 5.5 暗色模式
+
+主题必须处理三种颜色状态。以下是完整的三态模式：
+
+```css
+/* ─── 暗色（默认，写在 :root） ─── */
+:root {
+  --bg-primary: #0b0d12;
+  --bg-secondary: #11141b;
+  --bg-elevated: #161b24;
+  --text-primary: #f5f7fb;
+  --text-secondary: #b7c0cf;
+  --text-muted: #7f8794;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #6f7cff;
+  --accent-soft: rgba(111, 124, 255, 0.16);
+  --accent-strong: #8c95ff;
+  --code-bg: #121722;
+  --code-text: #eaf1ff;
+  /* ... */
+}
+
+/* ─── 亮色（用户手动切换） ─── */
+[data-color-scheme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-elevated: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border: rgba(0, 0, 0, 0.08);
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.08);
+  --accent-strong: #2563eb;
+  --code-bg: #f6f8fa;
+  --code-text: #24292f;
+  /* ... */
+}
+
+/* ─── 跟随系统 ─── */
+@media (prefers-color-scheme: light) {
+  [data-color-scheme="auto"] {
+    /* 同亮色 token */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    /* ... */
+  }
+}
+@media (prefers-color-scheme: dark) {
+  [data-color-scheme="auto"] {
+    /* 暗色 token — 通常可省略，因为 :root 已是暗色默认 */
+  }
+}
+```
+
+**三种状态的关系：**
+
+| 用户选择 | 实际生效 | 说明 |
+|----------|----------|------|
+| 暗色 | `:root` 中的值 | 默认状态 |
+| 亮色 | `[data-color-scheme="light"]` 中的值 | 属性选择器覆盖 `:root` |
+| 跟随系统 | `@media` + `[data-color-scheme="auto"]` 中的值 | 系统亮 → 亮色 token；系统暗 → `:root` 暗色 token |
+
+**只支持暗色的主题**只需写 `:root`，省略 ④ 和 ⑤。但建议至少提供亮色支持以覆盖更多用户。
 
 ### 5.6 theme.js 生命周期
 
@@ -772,24 +898,67 @@ description: 修改强调色的最小主题。
 
 ### 5.8 启用自定义主题
 
-在 `config.yml` 中使用 `custom/<theme-id>` 格式：
+在 `config.yml` 中使用主题 ID：
 
 ```yaml
 theme:
-  active: custom/my-theme        # 使用 custom/<theme-id> 格式
+  active: my-theme                 # 直接写主题 ID，不需要前缀
 ```
 
 ### 5.9 完整开发流程
 
-1. 在 `site/themes/custom/` 下创建主题目录
-2. 创建 `theme.yml` 填写元数据
+1. 在 `site/themes/` 下创建主题目录（如 `site/themes/my-theme/`）
+2. 创建 `theme.yml` 填写元数据（**必须包含 `id` 字段**）
 3. 创建 `theme.css`，先 `@import "../base.css"`，再按需覆盖 Token
 4. （可选）创建 `theme.js` 添加交互逻辑
 5. （可选）将自定义字体放入 `fonts/` 目录
-6. 修改 `config.yml` 的 `theme.active` 为 `custom/<theme-id>`
+6. 修改 `config.yml` 的 `theme.active` 为主题 ID
 7. 运行 `node build.js` 构建
 8. 运行 `node serve.js` 预览效果
 9. 亮/暗模式均需测试：切换 `data-color-scheme` 属性验证两种配色
+
+### 5.10 常见陷阱
+
+1. **不要从零写 CSS** — 下载现有主题作为基础，只改 Token 值。从零写会导致大量组件样式缺失
+2. **只覆盖 base.css 中已有的 Token** — 自创 CSS 变量不会生效
+3. **用 `[data-color-scheme]` 而不是 `@media`** — `@media` 优先级低于 `[data-color-scheme]`，暗色模式可能不生效
+4. **theme.yml 必须有 `id` 字段** — 没有 `id` 的主题不会被识别
+5. **`@import "../base.css"` 是必须的** — 不写这行，所有组件样式都不会加载
+6. **不要只改颜色** — 好的主题需要独特的设计语言：背景纹理、字体、圆角、阴影、动效
+7. **Token 值必须和视觉一致** — 用 `--card-radius: 12px` 控制圆角，不要在组件里写 `border-radius: 12px`
+
+### 5.11 设计参考
+
+学习现有主题是最快的设计方法。每个内置主题的 `theme.css` 顶部都有设计注释，说明视觉语言和灵感来源。
+
+| 主题 | 设计语言 | 关键特征 |
+|------|----------|----------|
+| `graphite` | 工业蓝图 | 方角（`radius: 0`）、无阴影（`shadow: 0 0 0 1px`）、细线边框、刻度尺背景 |
+| `aurora` | 品牌展示 | 圆角（`radius: 12px`）、渐变色彩、大留白、阴影层次 |
+| `paper` | 纸质阅读 | 稿纸纹理背景、衬线字体、暖色调、舒适行距 |
+| `mono` | 极简单色 | 纯黑白、等宽字体混排、编号系统、§ 序号 |
+| `terminal` | 黑客终端 | CRT 扫描线叠加、霓虹绿（`#39ff14`）、深色底、hex logo |
+| `sakura` | 日式樱花 | 暖色调、圆角、衬线字体、柔和配色 |
+
+**设计差异对比：**
+
+```
+graphite: --card-radius: 0;   --shadow-sm: 0 0 0 1px var(--border);
+aurora:   --card-radius: 12px; --shadow-sm: 0 10px 30px rgba(0,0,0,0.12);
+paper:    --card-radius: 8px;  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+mono:     --card-radius: 0;   --shadow-sm: none;
+terminal: --card-radius: 0;   --shadow-sm: 0 0 12px rgba(57,255,20,0.08);
+```
+
+**创建主题的建议流程：**
+
+1. 选择一个最接近目标风格的内置主题作为起点
+2. 阅读其 `theme.css` 顶部的设计注释
+3. 复制到 `site/themes/your-theme/`
+4. 修改 `theme.yml` 元数据
+5. 逐项调整 Token 值，每改一组就 `node build.js && node serve.js` 预览
+6. 测试亮/暗两种模式
+7. （可选）在 ⑥ 层添加背景纹理、动效等个性化样式
 
 ---
 

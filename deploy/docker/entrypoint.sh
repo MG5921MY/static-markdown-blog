@@ -27,7 +27,7 @@ is_empty_dir() {
 
 # 创建空目录结构（不含示例内容）
 create_empty_structure() {
-  mkdir -p "$WORKSPACE_DIR"/{content/{posts,pages,data},assets,themes/custom}
+  mkdir -p "$WORKSPACE_DIR"/{content/{posts,pages,data},assets,themes}
   # 创建最小配置文件
   if [ ! -f "$WORKSPACE_DIR/config.yml" ]; then
     cat > "$WORKSPACE_DIR/config.yml" <<'EOF'

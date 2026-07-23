@@ -292,7 +292,7 @@ function scanThemeDir(dirPath, source) {
     }
     if (!meta.id) meta.id = entry.name;
     meta.source = source;
-    meta.path = source === 'system' ? `themes/${entry.name}` : `themes/custom/${entry.name}`;
+    meta.path = `themes/${entry.name}`;
     themes.push(meta);
   }
   return themes;
@@ -300,7 +300,7 @@ function scanThemeDir(dirPath, source) {
 
 function scanAvailableThemes(pkgRoot, siteRoot) {
   const systemThemes = scanThemeDir(path.join(pkgRoot, 'res', 'themes'), 'system');
-  const userThemes = scanThemeDir(path.join(siteRoot, 'themes', 'custom'), 'user');
+  const userThemes = scanThemeDir(path.join(siteRoot, 'themes'), 'user');
   // User themes override system themes with same id
   const map = {};
   for (const t of systemThemes) map[t.id] = t;

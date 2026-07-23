@@ -70,7 +70,7 @@ function createPaths(cwd, pkgRoot) {
         locales: path.join(resolvedPkg, 'res', 'locales'),
         vendor: path.join(resolvedPkg, 'res', 'vendor'),
         userAssets: path.join(resolvedCwd, 'site', 'assets'),
-        userThemes: path.join(resolvedCwd, 'site', 'themes', 'custom'),
+        userThemes: path.join(resolvedCwd, 'site', 'themes'),
       };
     },
 

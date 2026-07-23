@@ -79,8 +79,8 @@ module.exports = function staticCopyPlugin(buildResult) {
   if (siteRoot) {
     const wsAssets = path.join(siteRoot, 'assets');
     if (fs.existsSync(wsAssets)) count += copyDirRecursive(wsAssets, path.join(distDir, 'assets'));
-    const wsThemes = path.join(siteRoot, 'themes', 'custom');
-    if (fs.existsSync(wsThemes)) count += copyDirRecursive(wsThemes, path.join(distDir, 'themes', 'custom'));
+    const wsThemes = path.join(siteRoot, 'themes');
+    if (fs.existsSync(wsThemes)) count += copyDirRecursive(wsThemes, path.join(distDir, 'themes'));
   }
 
   return { file: 'static-copy', count };

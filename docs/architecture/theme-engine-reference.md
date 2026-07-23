@@ -37,7 +37,7 @@ themes/<theme-id>/
 用户自定义主题存放在工作区目录，接口完全一致：
 
 ```
-workspace/site/themes/custom/<theme-id>/
+workspace/site/themes/<theme-id>/
   theme.yml
   theme.css
   theme.js        ← 可选
@@ -47,7 +47,7 @@ workspace/site/themes/custom/<theme-id>/
 
 ### 构建行为
 
-- `build.js` 自动将 `themes/*/fonts/` 和 `themes/custom/*/fonts/` 复制到 `dist/` 对应目录
+- `build.js` 自动将 `themes/*/fonts/` 复制到 `dist/` 对应目录
 - `theme.css` 必须以 `@import "../base.css";` 开头，确保继承基础样式
 - `theme.js` 在博客初始化后自动加载（如果存在）
 - `templates/` 中的 HTML 文件会在运行时被注入到对应位置

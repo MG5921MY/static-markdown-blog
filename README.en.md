@@ -62,7 +62,9 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | mono | Black & white minimal | Pure black & white, Consolas monospace, minimal hero | Minimalists |
 | terminal | CRT cyberpunk | Orbitron sci-fi headings, scanline overlay, green palette | Developers, cyberpunk enthusiasts |
 
-Themes are auto-discovered at build time from `res/themes/` (system) and `site/themes/custom/` (user). Adding a custom theme requires no configuration changes.
+Themes are auto-discovered at build time from `res/themes/` (system) and `site/themes/` (user). Adding a custom theme requires no configuration changes.
+
+**Theme design reference:** Complete token list, component selectors, layout control, and dark mode implementation: [Theme Engine Reference](docs/architecture/theme-engine-reference.md). Custom theme guide: `site/README.md` or `skills/static-blog/SKILL.md`.
 
 ## AI Maintenance
 
@@ -161,7 +163,7 @@ site/                   User workspace (the only directory users touch)
   config.yml            Site configuration
   content/              Content (posts/, pages/, data/)
   assets/               Asset files
-  themes/custom/        Custom themes
+  themes/               Custom themes
 
 res/                    Platform resources (copied to dist/ at build time)
   themes/               5 built-in themes (auto-discovered)

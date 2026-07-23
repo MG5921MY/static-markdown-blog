@@ -70,7 +70,9 @@ https://mg5921my.github.io/static-markdown-blog/
 |------|----------|
 | ![mono](docs/screenshots/theme-mono.png) | ![terminal](docs/screenshots/theme-terminal.png) |
 
-主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/custom/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。AI 也可以自己设计主题。
+主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。AI 也可以自己设计主题。
+
+**主题设计参考：** 完整的 Token 列表、组件选择器、布局控制、暗色模式实现见 [主题引擎参考手册](docs/architecture/theme-engine-reference.md)。自定义主题指南见 `site/README.md` 或 `skills/static-blog/SKILL.md`。
 
 ## AI 维护
 
@@ -169,7 +171,7 @@ site/                   用户工作区（用户唯一需要碰的目录）
   config.yml            站点配置
   content/              内容（posts/, pages/, data/）
   assets/               资源文件
-  themes/custom/        自定义主题
+  themes/               自定义主题
 
 res/                    平台资源（构建时复制到 dist/）
   themes/               5 个内置主题（自动发现）

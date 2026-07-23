@@ -26,7 +26,7 @@ seo:
 
 # ── 主题 ────────────────────────────────────────────────
 # 可选: graphite / aurora / paper / mono / terminal
-# 自定义主题: 将主题放在 site/themes/custom/<theme-id>/
+# 自定义主题: 将主题放在 site/themes/<theme-id>/
 theme:
   active: graphite
 

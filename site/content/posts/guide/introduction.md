@@ -125,7 +125,7 @@ site/                   用户工作区（唯一需要碰的目录）
   config.yml            站点配置
   content/              内容
   assets/               资源
-  themes/custom/        自定义主题
+  themes/               自定义主题
 
 res/                    平台资源
   themes/               5 个内置主题

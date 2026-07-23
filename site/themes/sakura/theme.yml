@@ -1,0 +1,15 @@
+id: sakura
+name: Sakura
+version: 1.0.0
+author: static-markdown-blog
+description: 日式樱花风格，暖色调，圆角，适合个人笔记与散文。
+fonts:
+  - name: Noto Serif SC
+    source: google
+    weights: [400, 600, 700]
+  - name: JetBrains Mono
+    source: google
+    weights: [400, 500]
+colorModes:
+  - dark
+  - light
