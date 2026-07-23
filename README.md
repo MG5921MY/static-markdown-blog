@@ -62,7 +62,15 @@ https://mg5921my.github.io/static-markdown-blog/
 | mono | 黑白极简 | 纯黑白色，Consolas 等宽，极简 hero | 极简主义者 |
 | terminal | CRT 赛博 | Orbitron 科技感标题，扫描线叠加，绿色调 | 开发者、赛博朋克爱好者 |
 
-主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/custom/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。
+| graphite | aurora | paper |
+|----------|--------|-------|
+| ![graphite](docs/screenshots/theme-graphite.png) | ![aurora](docs/screenshots/theme-aurora.png) | ![paper](docs/screenshots/theme-paper.png) |
+
+| mono | terminal |
+|------|----------|
+| ![mono](docs/screenshots/theme-mono.png) | ![terminal](docs/screenshots/theme-terminal.png) |
+
+主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/custom/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。AI 也可以自己设计主题。
 
 ## AI 维护
 
