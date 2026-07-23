@@ -24,8 +24,8 @@ This platform lets AI turn knowledge into Markdown, build it into a searchable w
 ## 3-Minute Start
 
 ```bash
-git clone <repo>
-cd static-blog
+git clone https://github.com/MG5921MY/static-markdown-blog.git
+cd static-markdown-blog
 node init.js && node build.js && node serve.js
 ```
 
@@ -103,8 +103,8 @@ AI can design its own themes — using CSS tokens to control colors, fonts, and 
 ### Source Build
 
 ```bash
-git clone <repo>
-cd static-blog
+git clone https://github.com/MG5921MY/static-markdown-blog.git
+cd static-markdown-blog
 node init.js          # Initialize site/ workspace
 node build.js         # Build to dist/
 node serve.js         # Preview at http://localhost:8080
