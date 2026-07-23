@@ -230,6 +230,7 @@ function loadConfig(cwd, pkgRoot) {
     comments: raw.comments || { enabled: false },
     disclaimer: raw.disclaimer || {},
     error404: raw.error404 || {},
+    auth: raw.auth || { enabled: false },
     _raw: raw,
     _siteRoot: siteRoot,
     _pkgRoot: pkgRoot,

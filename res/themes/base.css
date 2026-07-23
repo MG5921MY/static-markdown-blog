@@ -2376,6 +2376,150 @@ mark {
   }
 }
 
+/* ── Auth Gate ───────────────────────────────────────── */
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+.auth-card {
+  max-width: 380px;
+  width: 90%;
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.auth-icon {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.auth-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h3, 24px);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.auth-desc {
+  color: var(--text-muted);
+  font-size: var(--text-sm, 14px);
+  margin: 0 0 2rem;
+  line-height: 1.5;
+}
+
+.auth-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.auth-password {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm, 14px);
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.auth-password:focus {
+  border-color: var(--accent);
+}
+
+.auth-password::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.auth-submit {
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius-md, 8px);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-sm, 14px);
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.auth-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-error {
+  margin-top: 1rem;
+  color: #c0392b;
+  font-size: var(--text-xs, 13px);
+  font-family: var(--font-body);
+}
+
+/* ── Logout Button ───────────────────────────────────── */
+.auth-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0.6;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.auth-logout-btn:hover {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--border);
+}
+
+.auth-logout-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.shake {
+  animation: shake 0.3s ease-in-out;
+}
+
 /* ── Print Styles ─────────────────────────────────────── */
 @media print {
   *,

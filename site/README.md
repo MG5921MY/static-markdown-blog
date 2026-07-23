@@ -262,7 +262,39 @@ seo:
 | `true` | 生成 `robots.txt` 允许爬虫，生成 `sitemap.xml` |
 | `false` | 生成 `robots.txt` 禁止爬虫，不生成 `sitemap.xml` |
 
-### 3.4 theme — 主题
+### 3.4 auth — 认证系统
+
+本项目内置轻量级访问控制机制，通过密码门阻止未授权访问。
+
+**⚠️ 这不是真正的认证系统。** 它是一个简单的访问控制手段，适合个人知识库、私密笔记等场景。不能替代服务器端认证。
+
+```yaml
+auth:
+  enabled: false                    # 默认关闭，设为 true 开启
+  password: ""                      # 留空则自动生成随机密钥（保存到 site/.auth-key）
+  session:
+    ttl: 7200                       # 过期时间（秒），-1 = 永不过期
+```
+
+**工作原理：**
+
+1. 构建时：读取密码 → 计算 SHA-256 哈希 → 注入到所有 HTML 页面
+2. 运行时：浏览器检查 localStorage 会话 → 无会话显示密码门 → 输入密码比对哈希
+3. 会话管理：验证成功后保存到 localStorage，支持配置过期时间
+
+**密码管理：**
+
+- `password: ""` — 自动生成 32 位随机密钥，保存到 `site/.auth-key`（已 gitignore）
+- `password: "your-password"` — 使用自定义密码
+- 首次构建时打印密钥到日志，请妥善保管
+
+**安全说明：**
+
+- **能保护的：** 防止路过者直接看到内容、防止搜索引擎收录、防止 AI 爬虫抓取
+- **不能保护的：** 不能防御查看网页源码、不能防御技术攻击者、不能用于高敏感信息
+- **局限性：** 密码验证在前端完成，哈希在页面源码中可见。如需真正安全保护，应使用 Cloudflare Access 或 Nginx Basic Auth
+
+### 3.5 theme — 主题
 
 ```yaml
 theme:
@@ -273,7 +305,7 @@ theme:
 
 自定义主题：直接使用主题 ID，详见下方"自定义主题"章节。
 
-### 3.5 content.categories — 内容分类
+### 3.6 content.categories — 内容分类
 
 ```yaml
 content:
@@ -295,7 +327,7 @@ content:
 | `type` | `flat` = 平铺列表；`tree` = 按目录结构生成树形导航 |
 | `description` | 分类描述文字 |
 
-### 3.6 content.pages — 自定义页面
+### 3.7 content.pages — 自定义页面
 
 ```yaml
 content:
@@ -342,7 +374,7 @@ content:
 | `standalone` | `true` = 独立模式，隐藏平台导航栏和页脚 |
 | `data` | 数据文件映射（key-value），构建时嵌入为页面内 JSON |
 
-### 3.7 content.data — 功能数据文件
+### 3.8 content.data — 功能数据文件
 
 ```yaml
 content:
@@ -352,7 +384,7 @@ content:
     gallery: content/data/gallery.yml    # 图库数据
 ```
 
-### 3.8 nav — 导航栏
+### 3.9 nav — 导航栏
 
 ```yaml
 nav:
@@ -371,7 +403,7 @@ nav:
 | `page: <page-id>` | 引用 `content.pages` 中定义的页面 | `page: about` |
 | `url: <path>` | 直接指定 URL 路径 | `url: ./moments.html` |
 
-### 3.9 navActions — 导航栏图标按钮
+### 3.10 navActions — 导航栏图标按钮
 
 ```yaml
 navActions:
@@ -391,7 +423,7 @@ navActions:
 | `url` | 链接地址（仅 `type: link`） |
 | `title` | 鼠标悬停提示文字 |
 
-### 3.10 features — 功能模块开关
+### 3.11 features — 功能模块开关
 
 ```yaml
 features:
@@ -410,7 +442,7 @@ features:
     sectionCopy: "图片资源按分组展示。"  # 图库区块描述
 ```
 
-### 3.11 beian — 备案信息
+### 3.12 beian — 备案信息
 
 中国大陆网站需要配置，默认关闭。
 
@@ -429,7 +461,7 @@ beian:
     statusText: ""               # 无链接时的纯文本替代
 ```
 
-### 3.12 comments — 评论系统
+### 3.13 comments — 评论系统
 
 默认关闭，基于 GitHub Discussions 的 Giscus 评论系统。
 
@@ -449,7 +481,7 @@ comments:
 
 配置指南：访问 https://giscus.app/zh-CN 获取 `repoId` 和 `categoryId`。
 
-### 3.13 display — 显示设置
+### 3.14 display — 显示设置
 
 ```yaml
 display:
@@ -492,7 +524,7 @@ display:
       blur: 0                    # 模糊程度（px）
 ```
 
-### 3.14 disclaimer — 免责声明
+### 3.15 disclaimer — 免责声明
 
 ```yaml
 disclaimer:
@@ -500,7 +532,7 @@ disclaimer:
   items: []                      # 条款列表（留空使用默认示例）
 ```
 
-### 3.15 error404 — 404 页面
+### 3.16 error404 — 404 页面
 
 ```yaml
 error404:

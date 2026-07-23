@@ -24,6 +24,14 @@ deployment:
 seo:
   allowIndex: true
 
+# ── 认证配置 ────────────────────────────────────────────
+# 默认关闭。开启后全站需要密码才能访问。
+# auth:
+#   enabled: false                    # 是否开启认证
+#   password: ""                      # 留空则自动生成随机密钥（保存到 site/.auth-key）
+#   session:
+#     ttl: 7200                       # 过期时间（秒），-1 = 永不过期
+
 # ── 主题 ────────────────────────────────────────────────
 # 可选: graphite / aurora / paper / mono / terminal
 # 自定义主题: 将主题放在 site/themes/<theme-id>/

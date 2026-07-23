@@ -34,3 +34,6 @@ desktop.ini
 *.swo
 *~
 static-markdown-blog-1.0.0.tgz
+
+# Auth key (auto-generated, never commit)
+.auth-key

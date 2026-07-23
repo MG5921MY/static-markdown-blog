@@ -17,6 +17,7 @@ const STATIC_FILES = [
   { src: 'src/client/ui.js', dest: 'client/ui.js' },
   { src: 'src/client/i18n.js', dest: 'client/i18n.js' },
   { src: 'src/client/blog.js', dest: 'client/blog.js' },
+  { src: 'src/client/auth.js', dest: 'client/auth.js' },
   { src: 'src/pages/index.page.js', dest: 'index.page.js' },
   { src: 'src/pages/404.page.js', dest: '404.page.js' },
   { src: 'src/pages/moments.page.js', dest: 'moments.page.js' },
@@ -50,7 +51,20 @@ module.exports = function staticCopyPlugin(buildResult) {
   const { pkgRoot, distDir, siteRoot, config } = buildResult;
   const seo = config?.seo || {};
   const robotsContent = seo.allowIndex === false ? 'noindex, nofollow' : 'index, follow';
+  const auth = buildResult._auth || {};
   let count = 0;
+
+  // 生成 auth-config 注入脚本
+  let authScript = '';
+  if (auth.enabled) {
+    const authConfig = {
+      enabled: true,
+      passwordHash: auth.passwordHash,
+      siteName: config?.site?.name || 'Blog',
+      sessionTtl: auth.sessionTtl
+    };
+    authScript = `\n<script type="application/json" id="auth-config">${JSON.stringify(authConfig)}</script>`;
+  }
 
   for (const f of STATIC_FILES) {
     const srcPath = path.join(pkgRoot, f.src);
@@ -58,11 +72,14 @@ module.exports = function staticCopyPlugin(buildResult) {
     if (!fs.existsSync(srcPath)) continue;
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
 
-    // HTML 文件注入 <meta name="robots">
+    // HTML 文件注入 meta + auth config
     if (f.dest.endsWith('.html')) {
       let html = fs.readFileSync(srcPath, 'utf8');
       if (!html.includes('name="robots"')) {
         html = html.replace('</head>', `  <meta name="robots" content="${robotsContent}" />\n</head>`);
+      }
+      if (authScript && !html.includes('id="auth-config"')) {
+        html = html.replace('</head>', `  ${authScript}\n</head>`);
       }
       fs.writeFileSync(destPath, html, 'utf8');
     } else {

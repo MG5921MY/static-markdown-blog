@@ -100,6 +100,45 @@ AI doesn't just write articles — it can build a complete knowledge showcase:
 
 AI can design its own themes — using CSS tokens to control colors, fonts, and layouts. Cold industrial style for technical notes, warm brand style for creative content. See `skills/static-blog/SKILL.md`.
 
+## Authentication System
+
+This project includes a **lightweight access control mechanism** suitable for personal knowledge bases and private notes.
+
+**⚠️ Important:** This is a simple access control method, NOT a true authentication system. It uses a password gate to block unauthorized access, but does not provide encryption, session management, or enterprise-grade features. See details below.
+
+### How It Works
+
+1. At build time, read the password (from config or auto-generated)
+2. Compute SHA-256 hash of the password, inject into all pages
+3. Browser checks localStorage for a valid session
+4. No session → show full-screen password gate covering all content
+5. User enters password → frontend computes hash comparison
+6. Match → save session, show content; no match → show error
+
+### Configuration
+
+```yaml
+# site/config.yml
+auth:
+  enabled: false                    # Disabled by default
+  password: ""                      # Leave empty to auto-generate (saved to site/.auth-key)
+  session:
+    ttl: 7200                       # Expiry in seconds, -1 = never expires
+```
+
+### Security Boundary
+
+| Can Protect | Cannot Protect |
+|-------------|----------------|
+| ✅ Prevents passersby from seeing page content | ❌ Cannot prevent viewing page source code |
+| ✅ Prevents search engine indexing (with seo.allowIndex: false) | ❌ Cannot defend against technical attackers |
+| ✅ Prevents content leaks via shared links | ❌ Cannot replace server-side authentication |
+| ✅ Prevents AI crawlers from scraping content | ❌ Cannot protect highly sensitive information |
+
+**Why this exists:** Static blogs have no server, so true server-side authentication is impossible. But many users (especially AI knowledge base scenarios) need a simple "lock" to prevent casual access. This solution achieves "password required to view" with minimal cost.
+
+**Limitations:** Password verification happens on the frontend, and the hash is visible in the page source. Technical users can bypass the password gate by analyzing the page source. For true security, use server-side authentication (e.g., Cloudflare Access, Nginx Basic Auth).
+
 ## Quick Start (Detailed)
 
 ### Source Build

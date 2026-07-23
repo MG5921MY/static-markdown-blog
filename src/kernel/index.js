@@ -5,7 +5,7 @@ const { scanContent, fileHash } = require('./content');
 const { writeBuildOutputs, cleanDir, writeJson, buildFeatures, buildPagesContent, scanAvailableThemes, generateLocaleIndex } = require('./output');
 
 function loadPlugins() {
-  const names = ['static-copy', 'rss', 'sitemap', 'search-index', 'ssg', 'robots'];
+  const names = ['auth', 'static-copy', 'rss', 'sitemap', 'search-index', 'ssg', 'robots'];
   const plugins = [];
   for (const name of names) {
     try { plugins.push(require(`../plugins/${name}`)); }
@@ -66,7 +66,11 @@ async function build(userOptions) {
     beian: config.beian,
     comments: config.comments,
     disclaimer: config.disclaimer,
-    error404: config.error404
+    error404: config.error404,
+    auth: config.auth ? {
+      enabled: !!config.auth.enabled,
+      session: { ttl: config.auth.session?.ttl ?? 7200 }
+    } : { enabled: false }
   };
   const contentIndex = { categories, allPosts: posts.map(({ html, ...rest }) => rest) };
 
