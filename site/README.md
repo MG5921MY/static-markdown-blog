@@ -636,6 +636,9 @@ references:                      # 设计参考（可选）
 | `--accent` | 强调色 | `#6f7cff` / `#3b82f6` |
 | `--accent-soft` | 弱化强调色背景 | `rgba(111,124,255,0.12)` |
 | `--accent-strong` | 强化强调色 | `#8b96ff` |
+| `--brand-start` | 品牌渐变起始色 | `#6f7cff` |
+| `--brand-end` | 品牌渐变终止色 | `#8c95ff` |
+| `--brand-shadow` | 品牌阴影色 | `rgba(111,124,255,0.18)` |
 
 #### 排版
 
@@ -645,33 +648,68 @@ references:                      # 设计参考（可选）
 | `--font-body` | 正文字体 | `"Inter", sans-serif` |
 | `--font-mono` | 等宽字体 | `"JetBrains Mono", monospace` |
 
+#### 字号阶梯
+
+| Token | 用途 | 默认值 |
+|-------|------|--------|
+| `--text-xxs` | 极小文本 | `11px` |
+| `--text-xs` | 超小文本 | `13px` |
+| `--text-caption` | 说明文字 | `12px` |
+| `--text-sm` | 小号文本 | `14px` |
+| `--text-sm-md` | 中小号文本 | `15px` |
+| `--text-body` | 正文默认 | `17px` |
+| `--text-body-lg` | 大号正文（响应式） | `clamp(15px, 1.6vw, 17px)` |
+| `--text-h3` | 三级标题 | `24px` |
+| `--text-h4` | 四级标题 | `20px` |
+| `--text-h5` | 五级标题 | `18px` |
+| `--text-h1` | 一级标题（响应式） | `clamp(28px, 4vw, 52px)` |
+| `--text-section` | 区块标题（响应式） | `clamp(22px, 2.6vw, 28px)` |
+| `--text-hero` | Hero 标题（响应式） | `clamp(40px, 6.2vw, 68px)` |
+
 #### 间距
 
-| Token | 用途 | 示例值 |
+| Token | 用途 | 默认值 |
 |-------|------|--------|
-| `--space-xs` | 极小间距 | `4px` |
-| `--space-sm` | 小间距 | `8px` |
-| `--space-md` | 中间距 | `16px` |
-| `--space-lg` | 大间距 | `24px` |
-| `--space-xl` | 极大间距 | `40px` |
+| `--space-xxs` | 极小间距 | `4px` |
+| `--space-xs` | 超小间距 | `6px` |
+| `--space-sm` | 小间距 | `12px` |
+| `--space-md` | 中间距 | `20px` |
+| `--space-lg` | 大间距 | `32px` |
+| `--space-xl` | 超大间距 | `56px` |
+| `--layout-gutter` | 布局排水槽（响应式） | `clamp(16px, 4vw, 40px)` |
+| `--layout-moments` | 瞬间页面最大宽度 | `860px` |
 
 #### 圆角
 
-| Token | 用途 | 示例值 |
+| Token | 用途 | 默认值 |
 |-------|------|--------|
 | `--radius-sm` | 小圆角 | `4px` |
 | `--radius-md` | 中圆角 | `8px` |
 | `--radius-lg` | 大圆角 | `12px` |
 | `--radius-xl` | 极大圆角 | `16px` |
+| `--radius-full` | 胶囊/圆形圆角 | `999px` |
+| `--card-radius` | 卡片圆角 | `0` |
+| `--btn-radius` | 按钮圆角 | `0` |
+| `--tag-radius` | 标签圆角 | `0` |
 
 #### 布局
 
-| Token | 用途 | 示例值 |
+| Token | 用途 | 默认值 |
 |-------|------|--------|
 | `--layout-width` | 内容最大宽度 | `1080px` |
 | `--layout-nav-height` | 导航栏高度 | `56px` |
 | `--layout-hero` | Hero 区高度 | `420px` |
 | `--layout-prose` | 正文最大宽度 | `720px` |
+| `--card-min-width` | 卡片最小宽度 | `260px` |
+| `--card-gap` | 卡片间距 | `18px` |
+| `--card-direction` | 卡片排列方向 | `column` |
+| `--hero-align` | Hero 区域对齐方式 | `center` |
+| `--hero-min-height` | Hero 区域最小高度 | `min(var(--layout-hero), 720px)` |
+| `--post-article-width` | 文章页面宽度 | `880px` |
+| `--post-article-padding` | 文章页面内边距 | `clamp(20px, 4vw, 42px)` |
+| `--nav-justify` | 导航栏内容对齐 | `space-between` |
+| `--layout-sidebar-width` | 侧边栏宽度 | `0` |
+| `--layout-sidebar-position` | 侧边栏位置 | `right` |
 
 #### 代码
 

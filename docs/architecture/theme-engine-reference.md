@@ -86,21 +86,44 @@ workspace/site/themes/custom/<theme-id>/
 
 ### 2.2 排版 Token
 
+#### 字体栈
+
 | Token | 说明 | 默认值 |
 |-------|------|--------|
 | `--font-display` | 标题字体栈 | `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif` |
 | `--font-body` | 正文字体栈 | `"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif` |
 | `--font-mono` | 等宽字体栈 | `Consolas,"SFMono-Regular","JetBrains Mono",monospace` |
 
+#### 字号阶梯（Typography Scale）
+
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--text-xxs` | 极小文本 | `11px` |
+| `--text-xs` | 超小文本 | `13px` |
+| `--text-caption` | 说明文字 | `12px` |
+| `--text-sm` | 小号文本 | `14px` |
+| `--text-sm-md` | 中小号文本 | `15px` |
+| `--text-body` | 正文默认 | `17px` |
+| `--text-body-lg` | 大号正文（响应式） | `clamp(15px, 1.6vw, 17px)` |
+| `--text-h3` | 三级标题 | `24px` |
+| `--text-h4` | 四级标题 | `20px` |
+| `--text-h5` | 五级标题 | `18px` |
+| `--text-h1` | 一级标题（响应式） | `clamp(28px, 4vw, 52px)` |
+| `--text-section` | 区块标题（响应式） | `clamp(22px, 2.6vw, 28px)` |
+| `--text-hero` | Hero 标题（响应式） | `clamp(40px, 6.2vw, 68px)` |
+
 ### 2.3 间距 Token
 
 | Token | 说明 | 默认值 |
 |-------|------|--------|
+| `--space-xxs` | 极小间距 | `4px` |
 | `--space-xs` | 超小间距 | `6px` |
 | `--space-sm` | 小间距 | `12px` |
 | `--space-md` | 中间距 | `20px` |
 | `--space-lg` | 大间距 | `32px` |
 | `--space-xl` | 超大间距 | `56px` |
+| `--layout-gutter` | 布局排水槽（响应式） | `clamp(16px, 4vw, 40px)` |
+| `--layout-moments` | 瞬间页面最大宽度 | `860px` |
 
 ### 2.4 圆角 Token
 
@@ -110,6 +133,10 @@ workspace/site/themes/custom/<theme-id>/
 | `--radius-md` | 中圆角 | `8px` |
 | `--radius-lg` | 大圆角 | `12px` |
 | `--radius-xl` | 超大圆角 | `18px` |
+| `--radius-full` | 胶囊/圆形圆角 | `999px` |
+| `--card-radius` | 卡片圆角 | `0` |
+| `--btn-radius` | 按钮圆角 | `0` |
+| `--tag-radius` | 标签圆角 | `0` |
 
 ### 2.5 阴影 Token
 
@@ -140,7 +167,7 @@ workspace/site/themes/custom/<theme-id>/
 | `--card-direction` | 卡片排列方向（`row` 变为列表） | `column` |
 | `--card-padding` | 卡片内边距 | `20px` |
 | `--card-radius` | 卡片圆角 | `0` |
-| `--hero-align` | Hero 区域对齐方式 | `left` |
+| `--hero-align` | Hero 区域对齐方式 | `center` |
 | `--hero-min-height` | Hero 区域最小高度 | `min(var(--layout-hero), 720px)` |
 | `--post-article-width` | 文章页面宽度 | `880px` |
 | `--post-article-padding` | 文章页面内边距 | `clamp(20px, 4vw, 42px)` |

@@ -49,6 +49,18 @@
   --layout-nav-height: 64px;
   --layout-hero: 60vh;
   --layout-prose: 720px;
+  --card-radius: 12px;
+  --btn-radius: 8px;
+  --tag-radius: 999px;
+  --radius-full: 999px;
+
+  /* ── Typography Scale ── */
+  --text-xxs: 16px;
+  --text-xs: 14px;
+  --text-body-lg: 17px;
+  --text-h1: clamp(28px, 4vw, 38px);
+  --text-section: clamp(32px, 4vw, 44px);
+  --text-hero: clamp(48px, 7.2vw, 88px);
 }
 
 body {
@@ -249,7 +261,7 @@ body {
 .post-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 26px 28px 22px;
   display: grid;
   gap: 14px;
@@ -417,7 +429,7 @@ body {
 .post-article {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-md);
   padding: 56px 64px 64px;
   margin: 32px auto 64px;
@@ -556,7 +568,7 @@ body {
 .toc-container {
   border: 1px solid var(--border);
   background: var(--bg-elevated);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 18px 22px;
 }
 
@@ -618,7 +630,7 @@ body {
 .moment-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 22px 26px;
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease;
@@ -678,7 +690,7 @@ body {
   padding: 20px 22px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -741,14 +753,14 @@ body {
 .gallery-shell {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 28px 30px;
   box-shadow: var(--shadow-sm);
 }
 
 .gallery-item {
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--card-radius);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -770,7 +782,7 @@ body {
 .folder-card {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--card-radius);
   padding: 14px 18px;
   display: flex;
   align-items: center;
@@ -817,7 +829,7 @@ body {
   letter-spacing: 0.02em;
   text-transform: none;
   padding: 7px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   font-weight: 500;
 }
 
@@ -848,7 +860,7 @@ body {
   font-family: var(--font-body);
   font-size: 14px;
   color: var(--text-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--card-radius);
   padding: 8px 14px 8px 36px;
 }
 
@@ -923,7 +935,7 @@ body {
 .disclaimer-item {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 24px 28px;
   box-shadow: var(--shadow-sm);
 }
@@ -943,7 +955,7 @@ body {
   font-weight: 400;
   width: auto;
   height: auto;
-  border-radius: 0;
+  border-radius: var(--card-radius);
 }
 
 /* error */
@@ -985,7 +997,7 @@ body {
 .info-item {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--card-radius);
   padding: 18px 22px;
   box-shadow: var(--shadow-sm);
 }

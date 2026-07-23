@@ -40,6 +40,17 @@
   --layout-nav-height: 60px;
   --layout-hero: 60vh;
   --layout-prose: 720px;
+  --card-radius: 0;
+  --btn-radius: 0;
+  --tag-radius: 0;
+  --radius-full: 999px;
+
+  /* ── Typography Scale ── */
+  --text-xxs: 10px;
+  --text-xs: 12px;
+  --text-body-lg: 16px;
+  --text-h3: 20px;
+  --text-hero: clamp(34px, 5.4vw, 56px);
 }
 
 * {
@@ -116,6 +127,10 @@ body::before {
 .post-card-title {
   text-transform: none;
   letter-spacing: -0.02em;
+}
+
+.hero-content {
+  width: min(100%, 760px);
 }
 
 .hero-title {
@@ -407,7 +422,7 @@ body::before {
 
 /* gallery 卡片 */
 .gallery-item {
-  border-radius: 0;
+  border-radius: var(--card-radius);
   border: 1px solid var(--border);
 }
 
@@ -423,7 +438,7 @@ body::before {
 .folder-card {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
 }
 
 .folder-icon {
@@ -446,7 +461,7 @@ body::before {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 8px 12px;
-  border-radius: 0;
+  border-radius: var(--btn-radius);
 }
 
 .filter-btn.active,
@@ -516,7 +531,7 @@ body::before {
 }
 
 .disclaimer-item .num {
-  border-radius: 0;
+  border-radius: var(--card-radius);
   background: var(--accent);
   color: var(--bg-primary);
   font-size: 12px;

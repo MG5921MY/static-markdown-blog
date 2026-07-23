@@ -48,6 +48,19 @@
   --layout-nav-height: 60px;
   --layout-hero: 60vh;
   --layout-prose: 720px;
+  --card-radius: 0;
+  --btn-radius: 0;
+  --tag-radius: 0;
+  --radius-full: 999px;
+
+  /* ── Typography Scale ── */
+  --text-xxs: 10px;
+  --text-xs: 12px;
+  --text-body-lg: 16px;
+  --text-h1: clamp(28px, 4.4vw, 44px);
+  --text-h3: 22px;
+  --text-section: clamp(20px, 2.4vw, 26px);
+  --text-hero: clamp(44px, 6.4vw, 84px);
 }
 
 body {
@@ -248,7 +261,7 @@ body {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 22px 24px 20px;
   display: grid;
   gap: 14px;
@@ -344,7 +357,7 @@ body {
   padding: 2px 8px;
   border: 1px solid var(--border);
   background: transparent;
-  border-radius: 0;
+  border-radius: var(--tag-radius);
 }
 
 .post-tag::before {
@@ -392,7 +405,7 @@ body {
 .post-article {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   box-shadow: none;
   padding: 48px 56px;
   margin: 24px auto 48px;
@@ -543,7 +556,7 @@ body {
 .toc-container {
   border: 1px solid var(--border-strong);
   border-top: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   background: var(--bg-secondary);
   padding: 16px 20px;
 }
@@ -616,7 +629,7 @@ body {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 2px solid var(--border-strong);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 18px 22px;
   transition: border-left-color 0.15s ease;
 }
@@ -660,7 +673,7 @@ body {
   padding: 16px 18px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   transition: border-color 0.15s ease;
 }
 
@@ -722,13 +735,13 @@ body {
 .gallery-shell {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 22px 24px;
 }
 
 .gallery-item {
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   transition: border-color 0.15s ease;
 }
 
@@ -758,7 +771,7 @@ body {
 .folder-card {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 14px 16px;
   display: flex;
   align-items: center;
@@ -805,7 +818,7 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 6px 12px;
-  border-radius: 0;
+  border-radius: var(--btn-radius);
   font-weight: 500;
 }
 
@@ -838,7 +851,7 @@ body {
   font-size: 12px;
   letter-spacing: 0.04em;
   color: var(--text-primary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
 }
 
 .search-input:focus {
@@ -876,7 +889,7 @@ body {
   border: 1px solid var(--border-strong);
   background: var(--bg-primary);
   color: var(--text-primary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   font-family: var(--font-mono);
   font-size: 14px;
   box-shadow: none;
@@ -901,7 +914,7 @@ body {
 .disclaimer-item {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 18px 22px;
 }
 
@@ -920,7 +933,7 @@ body {
   font-weight: 600;
   width: 24px;
   height: 24px;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   letter-spacing: 0;
 }
 
@@ -957,7 +970,7 @@ body {
 .info-item {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 14px 18px;
   position: relative;
 }

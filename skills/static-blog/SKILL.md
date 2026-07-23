@@ -422,10 +422,17 @@ description: 描述
 |-------|------|
 | `--bg-primary` | 主背景色 |
 | `--bg-secondary` | 次级背景色（卡片、面板） |
+| `--bg-elevated` | 提升层背景色（悬浮、弹窗） |
 | `--text-primary` | 主文本色 |
 | `--text-secondary` | 次级文本色 |
-| `--accent` | 强调色（按钮、链接、高亮） |
+| `--text-muted` | 弱化文本色（标签、辅助信息） |
 | `--border` | 边框色 |
+| `--accent` | 强调色（按钮、链接、高亮） |
+| `--accent-soft` | 弱化强调色（背景点缀） |
+| `--accent-strong` | 增强强调色（hover 状态） |
+| `--brand-start` | 品牌渐变起始色 |
+| `--brand-end` | 品牌渐变终止色 |
+| `--brand-shadow` | 品牌阴影色 |
 
 **排版：**
 
@@ -435,14 +442,68 @@ description: 描述
 | `--font-body` | 正文字体栈 |
 | `--font-mono` | 等宽字体栈 |
 
+**字号阶梯：**
+
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--text-xxs` | 极小文本 | `11px` |
+| `--text-xs` | 超小文本 | `13px` |
+| `--text-caption` | 说明文字 | `12px` |
+| `--text-sm` | 小号文本 | `14px` |
+| `--text-sm-md` | 中小号文本 | `15px` |
+| `--text-body` | 正文默认 | `17px` |
+| `--text-body-lg` | 大号正文（响应式） | `clamp(15px, 1.6vw, 17px)` |
+| `--text-h3` | 三级标题 | `24px` |
+| `--text-h4` | 四级标题 | `20px` |
+| `--text-h5` | 五级标题 | `18px` |
+| `--text-h1` | 一级标题（响应式） | `clamp(28px, 4vw, 52px)` |
+| `--text-section` | 区块标题（响应式） | `clamp(22px, 2.6vw, 28px)` |
+| `--text-hero` | Hero 标题（响应式） | `clamp(40px, 6.2vw, 68px)` |
+
+**间距：**
+
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--space-xxs` | 极小间距 | `4px` |
+| `--space-xs` | 超小间距 | `6px` |
+| `--space-sm` | 小间距 | `12px` |
+| `--space-md` | 中间距 | `20px` |
+| `--space-lg` | 大间距 | `32px` |
+| `--space-xl` | 超大间距 | `56px` |
+| `--layout-gutter` | 布局排水槽（响应式） | `clamp(16px, 4vw, 40px)` |
+| `--layout-moments` | 瞬间页面最大宽度 | `860px` |
+
+**圆角：**
+
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--radius-sm` | 小圆角 | `4px` |
+| `--radius-md` | 中圆角 | `8px` |
+| `--radius-lg` | 大圆角 | `12px` |
+| `--radius-xl` | 超大圆角 | `18px` |
+| `--radius-full` | 胶囊/圆形圆角 | `999px` |
+| `--card-radius` | 卡片圆角 | `0` |
+| `--btn-radius` | 按钮圆角 | `0` |
+| `--tag-radius` | 标签圆角 | `0` |
+
 **布局：**
 
-| Token | 说明 |
-|-------|------|
-| `--layout-width` | 页面最大宽度 |
-| `--layout-nav-height` | 导航栏高度 |
-| `--layout-hero` | 首页 Hero 区域最小高度 |
-| `--layout-prose` | 正文区域最大宽度 |
+| Token | 说明 | 默认值 |
+|-------|------|--------|
+| `--layout-width` | 页面最大宽度 | `1120px` |
+| `--layout-nav-height` | 导航栏高度 | `64px` |
+| `--layout-hero` | 首页 Hero 区域最小高度 | `64vh` |
+| `--layout-prose` | 正文区域最大宽度 | `760px` |
+| `--card-min-width` | 卡片最小宽度 | `260px` |
+| `--card-gap` | 卡片间距 | `18px` |
+| `--card-direction` | 卡片排列方向 | `column` |
+| `--hero-align` | Hero 区域对齐方式 | `center` |
+| `--hero-min-height` | Hero 区域最小高度 | `min(var(--layout-hero), 720px)` |
+| `--post-article-width` | 文章页面宽度 | `880px` |
+| `--post-article-padding` | 文章页面内边距 | `clamp(20px, 4vw, 42px)` |
+| `--nav-justify` | 导航栏内容对齐 | `space-between` |
+| `--layout-sidebar-width` | 侧边栏宽度 | `0` |
+| `--layout-sidebar-position` | 侧边栏位置 | `right` |
 
 **代码：**
 
@@ -451,6 +512,18 @@ description: 描述
 | `--code-bg` | 代码块背景色 |
 | `--code-text` | 代码块文本色 |
 | `--code-muted` | 代码块弱化文本色（注释） |
+| `--code-accent-1` | 代码高亮色 1（关键字、标签） |
+| `--code-accent-2` | 代码高亮色 2（字符串、属性） |
+| `--code-accent-3` | 代码高亮色 3（数字、类型） |
+
+### 常见陷阱
+
+1. **不要从零写 CSS** — 下载现有主题作为基础，只改 Token 值
+2. **只覆盖 base.css 中已有的 Token** — 自创 CSS 变量不会生效
+3. **用 `[data-color-scheme]` 而不是 `@media`** — 无头浏览器的系统偏好可能和用户选择不一致
+4. **主题 ID 不需要 `custom/` 前缀** — 直接写 `miao`，不需要 `custom/miao`
+5. **部分组件有硬编码值** — 需要显式覆盖（如 `!important`）
+6. **config.yml 不要用 yaml.dump** — 直接写文件，保留原始格式
 
 ### 暗色模式
 

@@ -56,6 +56,21 @@
   --layout-nav-height: 60px;
   --layout-hero: 70vh;
   --layout-prose: 760px;
+  --card-radius: 0;
+  --btn-radius: 0;
+  --tag-radius: 0;
+  --radius-full: 999px;
+
+  /* ── Typography Scale ── */
+  --text-xxs: 10px;
+  --text-xs: 11px;
+  --text-body-lg: 14px;
+  --text-h3: 22px;
+  --text-h4: 18px;
+  --text-h5: 17px;
+  --text-h1: clamp(30px, 4.6vw, 50px);
+  --text-section: clamp(18px, 2.2vw, 24px);
+  --text-hero: clamp(40px, 6.4vw, 76px);
 }
 
 /* 全局：scanline 扫描线 + 顶部 1px 暗色 vignette */
@@ -412,7 +427,7 @@ img.nav-logo {
 .section-surface {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-sm);
   padding: clamp(20px, 2.4vw, 28px);
   position: relative;
@@ -490,7 +505,7 @@ img.nav-logo {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 20px 22px 18px;
   display: grid;
   gap: 12px;
@@ -600,7 +615,7 @@ img.nav-logo {
   padding: 3px 8px;
   background: var(--accent-soft);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--tag-radius);
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -632,7 +647,7 @@ img.nav-logo {
 .search-input {
   width: min(320px, 72vw);
   padding: 8px 12px 8px 32px;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -675,7 +690,7 @@ img.nav-logo {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 7px 14px;
-  border-radius: 0;
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
@@ -749,7 +764,7 @@ img.nav-logo {
 .post-article {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-md);
   padding: 48px 56px;
   margin: 24px auto 48px;
@@ -994,7 +1009,7 @@ img.nav-logo {
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
   background: var(--bg-secondary);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 16px 18px;
   margin: 0 0 24px;
   position: relative;
@@ -1143,7 +1158,7 @@ img.nav-logo {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 20px 22px;
   position: relative;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -1285,7 +1300,7 @@ img.nav-logo {
   padding: 16px 18px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   align-items: flex-start;
   min-height: 100%;
   box-shadow: none;
@@ -1382,7 +1397,7 @@ img.nav-logo {
 .gallery-shell {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-sm);
   display: grid;
   gap: 18px;
@@ -1483,7 +1498,7 @@ img.nav-logo {
   padding: 14px 16px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   text-align: left;
   box-shadow: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -1526,7 +1541,7 @@ img.nav-logo {
   position: relative;
   overflow: hidden;
   padding: 0;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   cursor: pointer;
@@ -1712,7 +1727,7 @@ img.nav-logo {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 22px 24px;
   position: relative;
   box-shadow: var(--shadow-sm);
@@ -1754,7 +1769,7 @@ img.nav-logo {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   text-shadow: none;
   box-shadow: 0 0 6px rgba(0, 255, 100, 0.4);
 }
@@ -1770,7 +1785,7 @@ img.nav-logo {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 16px 18px;
   position: relative;
   box-shadow: var(--shadow-sm);
@@ -1849,7 +1864,7 @@ img.nav-logo {
   bottom: 24px;
   width: 40px;
   height: 40px;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   border: 1px solid var(--accent);
   background: var(--bg-primary);
   color: var(--accent);
@@ -1998,7 +2013,7 @@ mark {
 .dir-tree-panel {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--card-radius);
   padding: 16px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
@@ -2023,7 +2038,7 @@ mark {
   justify-content: space-between;
   gap: 16px;
   padding: 8px 10px;
-  border-radius: 0;
+  border-radius: var(--card-radius);
   cursor: pointer;
   color: var(--text-secondary);
   border: 1px solid transparent;
@@ -2161,7 +2176,7 @@ mark {
   .nav-toggle {
     width: 36px;
     height: 36px;
-    border-radius: 0;
+    border-radius: var(--card-radius);
     background: transparent;
     border: 1px solid var(--border);
     color: var(--accent);
@@ -2187,7 +2202,7 @@ mark {
     padding: 12px;
     background: var(--bg-secondary);
     border: 1px solid var(--accent);
-    border-radius: 0;
+    border-radius: var(--card-radius);
     box-shadow: var(--shadow-lg);
     gap: 0;
   }
