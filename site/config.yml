@@ -1,0 +1,276 @@
+﻿# ═══════════════════════════════════════════════════════
+# Static Markdown Blog — 站点配置
+# 文档: docs/architecture/theme-engine-reference.md
+# ═══════════════════════════════════════════════════════
+
+# ── 站点信息 ────────────────────────────────────────────
+site:
+  name: Mijiao Notes                     # 站点名称（显示在导航栏和页脚）
+  alias: 静态 Markdown 博客               # 副标题（显示在 Hero 区域）
+  description: Markdown first, theme driven, base-path agnostic static blog.
+  author: MijiaoGame                      # 作者名称
+  email: ""                               # 联系邮箱（留空则不显示）
+  favicon: assets/favicon.svg             # 网站图标路径
+  logo: ""                                # Logo 图片路径（留空则显示文字）
+
+# ── 部署配置 ────────────────────────────────────────────
+deployment:
+  basePath: auto                          # 子路径：auto = 自动检测，或手动指定如 /blog/
+  siteUrl: ""                             # 完整站点 URL（用于 RSS/sitemap），如 https://example.com
+
+# ── SEO 配置 ────────────────────────────────────────────
+# allowIndex: true  → 允许搜索引擎收录（生成 robots.txt 允许爬虫，生成 sitemap.xml）
+# allowIndex: false → 禁止搜索引擎收录（生成 robots.txt 禁止爬虫，不生成 sitemap.xml）
+seo:
+  allowIndex: true
+
+# ── 认证配置 ────────────────────────────────────────────
+# 默认关闭。开启后全站需要密码才能访问。
+# auth:
+#   enabled: false                    # 是否开启认证
+#   password: ""                      # 留空则自动生成随机密钥（保存到 site/.auth-key）
+#   showBeian: true                   # 登录页面是否显示备案信息（默认开启）
+#   session:
+#     ttl: 7200                       # 过期时间（秒），-1 = 永不过期
+#
+#   # ── 认证模式联动（enabled: true 后自动生效）────────────
+#   # RSS (feed.xml) 自动关闭：RSS 是公开订阅出口，订阅器无法输入密码，
+#   #   保留会明文泄露全部文章的标题/摘要/URL/更新节奏。
+#   #   如你确认标题/摘要不敏感，可设置 keepRss: true 保留（自行评估泄露面）。
+#   # Sitemap (sitemap.xml) 自动关闭：不暴露文章 URL 与存在性。
+#   # robots.txt 自动改为 Disallow: /，页面 meta robots 注入 noindex：
+#   #   认证站点不应被搜索引擎收录（爬虫无法通过密码门，只会收录空壳页）。
+#   # 导航栏 RSS 订阅按钮自动隐藏：避免指向已关闭的 feed.xml 造成死链。
+#   #
+#   # ── 加密边界 ─────────────────────────────────────────
+#   # 正文以 AES-256-GCM 加密进入 dist/encrypted/（下载原始文件也无法读取），
+#   # 但文章标题/摘要仍以明文保存在 content-index.json 与 search-index.json
+#   # （首页展示与搜索功能需要）。敏感信息请勿写入标题/摘要。
+
+# ── 安全配置 ────────────────────────────────────────────
+# 控制构建时和运行时的安全行为。默认全部开启。
+security:
+  csp: true                    # CSP meta 标签（防 CSS/img/object 注入）
+  markdownHtmlFilter: true     # Markdown 原始 HTML 过滤（防 <script> 注入）
+  autoLock: 900                # 无操作自动锁定（秒），0 = 不锁定
+  # 关闭示例（不推荐）：
+  # csp: false               # 关闭后：CSS/img/object 注入风险增加
+  # markdownHtmlFilter: false # 关闭后：Markdown 中的 <script>、<iframe> 等原始 HTML 会被保留
+  # autoLock: 0              # 关闭后：用户需手动点击退出按钮清除会话
+
+# ── 主题 ────────────────────────────────────────────────
+# 可选: graphite / aurora / paper / mono / terminal
+# 自定义主题: 将主题放在 site/themes/<theme-id>/
+theme:
+  active: graphite
+
+# ── 内容 ────────────────────────────────────────────────
+content:
+  # 分类：每篇文章属于一个分类
+  categories:
+    - id: guide
+      name: 快速开始
+      icon: "->"
+      path: content/posts/guide          # Markdown 文件目录
+      type: flat                         # flat = 平铺，tree = 目录树导航
+      description: 新结构上手与部署入口。
+    - id: themes
+      name: 主题系统
+      icon: "*"
+      path: content/posts/themes
+      type: flat
+      description: 主题设计基线与 token 体系说明。
+
+  # 自定义页面
+  # type: markdown  — Markdown 内容页面（构建时渲染）
+  # type: custom    — 自定义 HTML 页面（支持数据嵌入、JS 执行、独立模式）
+  # type: category  — 分类文章列表页面
+  #
+  # 页面级安全选项：
+  #   sanitize: true   — DOMPurify 消毒（默认，移除 <video>、<style>、data-* 等）
+  #   sanitize: false  — 跳过消毒（信任自己的 HTML，保留所有标签和属性）
+  #   scripts: true    — 启用 JS 执行（自定义页面专用）
+  #   standalone: true — 独立模式（iframe 沙盒隔离，隐藏平台导航栏/页脚）
+  pages:
+    - id: about
+      name: 关于
+      icon: "i"
+      type: markdown
+      source: content/pages/about.md
+
+    - id: skills
+      name: 技能矩阵
+      icon: "+"
+      type: custom
+      source: content/pages/skills.html
+      scripts: true                   # 取消注释以启用 JS（计数器动画）
+      # sanitize: false               # 跳过 DOMPurify（信任自己的 HTML，保留 <video>、<style> 等）
+
+    - id: portfolio
+      name: 作品集
+      icon: "*"
+      type: custom
+      source: content/pages/portfolio.html
+      data:                              # 数据文件（构建时嵌入为 JSON）
+        projects: content/data/projects.yml
+      scripts: true                   # 取消注释以启用 JS（3D 倾斜卡片）
+
+    - id: playground
+      name: 工具箱
+      icon: ">"
+      type: custom
+      source: content/pages/playground.html
+      standalone: true                   # 独立模式：隐藏平台导航栏/页脚
+      scripts: true                   # 取消注释以启用 JS（打字机 + 主题预览）
+
+  # 功能数据文件
+  data:
+    moments: content/data/moments.yml
+    links: content/data/links.yml
+    gallery: content/data/gallery.yml
+
+# ── 导航栏 ──────────────────────────────────────────────
+# 支持两种方式：
+#   page: <page-id>  — 引用 content.pages 中的页面
+#   url: <path>      — 直接指定 URL
+nav:
+  - name: 首页
+    page: index
+  - name: 关于
+    page: about
+  - name: 技能
+    page: skills
+  - name: 作品
+    page: portfolio
+  - name: 工具
+    page: playground
+  - name: 瞬间
+    url: ./moments.html
+  - name: 参考
+    url: ./links.html
+  - name: 图库
+    url: ./gallery.html
+
+# 导航栏右侧图标按钮
+# type: link   — 链接按钮
+# type: button — 按钮（配合 theme.js 处理点击事件）
+navActions:
+  - type: link
+    icon: "RSS"
+    url: ./feed.xml
+    title: RSS 订阅
+
+# ── 功能模块 ────────────────────────────────────────────
+features:
+  moments:
+    enabled: true
+    source: content/data/moments.yml     # 瞬间数据文件
+    description: "记录想法与瞬间。"       # 页面描述
+  links:
+    enabled: true
+    source: content/data/links.yml       # 友链数据文件
+    description: "收藏的参考资源与工具。"  # 页面描述
+  gallery:
+    enabled: true
+    source: content/data/gallery.yml     # 图库数据文件
+    description: "浏览图片资源。"         # 页面描述
+    sectionCopy: "图片资源按分组展示。"    # 图库区块描述
+
+# ── 备案信息 ────────────────────────────────────────────
+# 默认关闭，中国大陆网站需要配置
+beian:
+  enabled: false
+  displayName: ""                        # 显示名称
+  icp:
+    enabled: false
+    number: ""                           # 如: 京ICP备XXXXXXXX号
+    url: "https://beian.miit.gov.cn/"
+  police:
+    enabled: false
+    number: ""                           # 如: 京公网安备XXXXXXXXXXXX号
+    url: ""
+    statusText: ""                       # 无链接时的纯文本替代
+
+# ── 评论系统 ────────────────────────────────────────────
+# 默认关闭，开启需要配置 GitHub 仓库
+# 文档: https://giscus.app/zh-CN
+comments:
+  enabled: false
+  provider: giscus
+  giscus:
+    repo: ""                             # 如: owner/repo
+    repoId: ""                           # GitHub Discussions repo ID
+    category: ""                         # Discussion 分类名
+    categoryId: ""                       # Discussion 分类 ID
+    mapping: pathname
+    reactionsEnabled: true
+    emitMetadata: false
+
+# ── 免责声明 ────────────────────────────────────────────
+# 用户可自定义免责声明内容，留空则使用默认值
+disclaimer:
+  subtitle: ""                           # 副标题（留空则使用默认值）
+  items: []                              # 条款列表（留空则使用默认示例）
+
+# ── 404 页面 ────────────────────────────────────────────
+error404:
+  # 操作按钮（数组，可增删改，留空则不显示）
+  actions:
+    - label: "返回首页"
+      url: "./index.html"
+      style: primary
+    - label: "关于本站"
+      url: "./page.html?id=about"
+      style: secondary
+
+# ── 显示设置 ────────────────────────────────────────────
+display:
+  postsPerPage: 6                        # 首页每页文章数
+  summaryLength: 140                     # 文章摘要截取长度（字符）
+  heroBadge: "Markdown First"            # Hero 区顶部徽章文字
+  heroSubtitle: "少配置、强主题、可部署到任意子路径。"  # Hero 区副标题
+  # Hero 区底部标签（数组，最多 3 个）
+  heroBadges:
+    - "Markdown 优先"
+    - "主题 token 驱动"
+    - "支持任意子路径部署"
+  heroLearnMorePage: about               # "了解更多"按钮指向的页面 ID
+  # Hero 区行动按钮（数组，可增删改，留空则不显示）
+  # style: primary / secondary
+  heroActions:
+    - label: "了解项目"
+      url: "./page.html?id=about"
+      style: primary
+    - label: "查看说明"
+      url: "./disclaimer.html"
+      style: secondary
+  latestContentCopy: "最新发布的文章。"   # 最新内容区块描述
+  siteInfoCopy: "站点的基本信息与联系方式。"  # 站点信息区块描述
+  showSiteInfo: true                     # 是否显示站点信息区
+  siteType: 静态博客                      # 站点类型标签
+  contentDirection: Markdown / Themes / Notes
+  codeWrap: false                        # false = 代码块横向滚动，true = 代码块自动换行
+  hero:
+    immersive: false                     # 沉浸式首页
+    background:
+      enabled: false
+      image: ""                          # 背景图片路径
+      focalPoint: "center center"
+      fit: "cover"
+      dimming: 0.42
+      blur: 0
+
+# ── 开发服务器热更新覆盖（可选）──────────────────────────
+# 热更新默认监听 site/ 下全部可自定义内容（Markdown、自定义页面 HTML、
+# 脚本、主题、数据、资源；隐藏文件/临时文件/node_modules 默认忽略）。
+# 需要调整监听行为时使用以下两项（均为"路径片段/后缀"数组，路径包含即命中）：
+#   include: []  — 强制监听被默认规则忽略的模式（优先级最高）。
+#                  示例：[".auth"] 监听隐藏目录内容、[".orig"] 恢复临时后缀文件
+#   ignore: []   — 追加忽略的模式（如站点内的缓存/构建输出目录、大文件后缀）。
+#                  示例：["_cache"]、[".zip"]
+# 修改本段后需重启 serve 生效（热更新范围本身仍即时覆盖全部支持类型）。
+dev:
+  serve:
+    watch:
+      include: []
+      ignore: []

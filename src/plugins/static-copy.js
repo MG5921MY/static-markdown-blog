@@ -1,0 +1,138 @@
+const fs = require('fs');
+const path = require('path');
+
+const STATIC_FILES = [
+  { src: 'src/pages/index.html', dest: 'index.html' },
+  { src: 'src/pages/post.html', dest: 'post.html' },
+  { src: 'src/pages/page.html', dest: 'page.html' },
+  { src: 'src/pages/moments.html', dest: 'moments.html' },
+  { src: 'src/pages/links.html', dest: 'links.html' },
+  { src: 'src/pages/gallery.html', dest: 'gallery.html' },
+  { src: 'src/pages/404.html', dest: '404.html' },
+  { src: 'src/pages/disclaimer.html', dest: 'disclaimer.html' },
+  { src: 'src/pages/about.html', dest: 'about.html' },
+  { src: 'src/client/core.js', dest: 'client/core.js' },
+  { src: 'src/client/nav.js', dest: 'client/nav.js' },
+  { src: 'src/client/render.js', dest: 'client/render.js' },
+  { src: 'src/client/ui.js', dest: 'client/ui.js' },
+  { src: 'src/client/i18n.js', dest: 'client/i18n.js' },
+  { src: 'src/client/blog.js', dest: 'client/blog.js' },
+  { src: 'src/client/auth.js', dest: 'client/auth.js' },
+  { src: 'src/pages/index.page.js', dest: 'index.page.js' },
+  { src: 'src/pages/404.page.js', dest: '404.page.js' },
+  { src: 'src/pages/moments.page.js', dest: 'moments.page.js' },
+  { src: 'src/pages/links.page.js', dest: 'links.page.js' },
+  { src: 'src/pages/gallery.page.js', dest: 'gallery.page.js' },
+  { src: 'src/pages/disclaimer.page.js', dest: 'disclaimer.page.js' },
+  { src: 'src/pages/favicon.ico', dest: 'favicon.ico' }
+];
+
+/**
+ * 复制文件（带瞬时锁重试）。
+ * 在杀毒软件/云同步等环境下，目标文件可能被短暂占用（EBUSY/EPERM），
+ * 或文件系统扫描导致瞬时 ENOENT。重试 3 次可避免偶发构建失败。
+ */
+function copyFileWithRetry(src, dest) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      fs.copyFileSync(src, dest);
+      return true;
+    } catch (err) {
+      if (attempt === 3) throw err;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 30 * attempt);
+    }
+  }
+  return false;
+}
+
+function copyFileSafe(src, dest) {
+  if (!fs.existsSync(src)) return false;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileWithRetry(src, dest);
+  return true;
+}
+
+function copyDirRecursive(src, dest) {
+  if (!fs.existsSync(src)) return 0;
+  fs.mkdirSync(dest, { recursive: true });
+  let count = 0;
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isDirectory()) count += copyDirRecursive(s, d);
+    else { copyFileWithRetry(s, d); count++; }
+  }
+  return count;
+}
+
+module.exports = function staticCopyPlugin(buildResult) {
+  const { pkgRoot, distDir, siteRoot, config } = buildResult;
+  const auth = buildResult._auth || {};
+  // 认证模式联动：auth 开启时页面一律 noindex（与 seo.allowIndex 无关），
+  // 避免搜索引擎收录认证站点的空壳页面
+  const seo = config?.seo || {};
+  const robotsContent = auth.enabled || seo.allowIndex === false ? 'noindex, nofollow' : 'index, follow';
+  let count = 0;
+
+  // 生成 auth-config 注入脚本
+  let authScript = '';
+  if (auth.enabled) {
+    const authConfig = {
+      enabled: true,
+      passwordHash: auth.passwordHash,
+      siteName: config?.site?.name || 'Blog',
+      sessionTtl: auth.sessionTtl,
+      autoLock: config?.security?.autoLock ?? 900
+    };
+    // 备案信息（登录页面显示）
+    const beian = config?.beian;
+    if (beian?.enabled && auth.showBeian !== false) {
+      authConfig.beian = beian;
+    }
+    authScript = `\n<script type="application/json" id="auth-config">${JSON.stringify(authConfig)}</script>`;
+  }
+
+  for (const f of STATIC_FILES) {
+    const srcPath = path.join(pkgRoot, f.src);
+    const destPath = path.join(distDir, f.dest);
+    if (!fs.existsSync(srcPath)) continue;
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+
+    // HTML 文件注入 meta 标签
+    if (f.dest.endsWith('.html')) {
+      let html = fs.readFileSync(srcPath, 'utf8');
+      // robots meta
+      if (!html.includes('name="robots"')) {
+        html = html.replace('</head>', `  <meta name="robots" content="${robotsContent}" />\n</head>`);
+      }
+      // auth config
+      if (authScript && !html.includes('id="auth-config"')) {
+        html = html.replace('</head>', `  ${authScript}\n</head>`);
+      }
+      // CSP meta（根据 security.csp 配置决定是否注入）
+      const security = config?.security || {};
+      if (security.csp !== false && !html.includes('http-equiv="Content-Security-Policy"')) {
+        const csp = '<meta http-equiv="Content-Security-Policy" content="style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: https: http:; object-src \'none\'; base-uri \'none\'; form-action \'self\'" />';
+        html = html.replace('</head>', `  ${csp}\n</head>`);
+      }
+      fs.writeFileSync(destPath, html, 'utf8');
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+    count++;
+  }
+
+  for (const d of ['locales', 'vendor']) {
+    count += copyDirRecursive(path.join(pkgRoot, 'res', d), path.join(distDir, d));
+  }
+  count += copyDirRecursive(path.join(pkgRoot, 'res', 'themes'), path.join(distDir, 'themes'));
+
+  if (siteRoot) {
+    const wsAssets = path.join(siteRoot, 'assets');
+    if (fs.existsSync(wsAssets)) count += copyDirRecursive(wsAssets, path.join(distDir, 'assets'));
+    const wsThemes = path.join(siteRoot, 'themes');
+    if (fs.existsSync(wsThemes)) count += copyDirRecursive(wsThemes, path.join(distDir, 'themes'));
+  }
+
+  return { file: 'static-copy', count };
+};

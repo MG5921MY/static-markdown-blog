@@ -1,0 +1,34 @@
+{
+  "name": "static-markdown-blog",
+  "version": "1.0.0",
+  "description": "Zero-dependency static blog platform with Markdown, token-driven themes, and Docker support.",
+  "main": "build.js",
+  "bin": {
+    "blog": "./bin/blog.js"
+  },
+  "files": [
+    "build.js",
+    "serve.js",
+    "init.js",
+    "test.js",
+    "bin/",
+    "src/",
+    "res/vendor/",
+    "res/themes/",
+    "res/locales/",
+    "site/",
+    "deploy/",
+    "*.json"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "serve": "node serve.js",
+    "init": "node init.js"
+  },
+  "keywords": ["blog", "static-site", "markdown", "themes", "zero-dependency"],
+  "author": "Yang Ming Guang",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

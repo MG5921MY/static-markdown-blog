@@ -1,0 +1,21 @@
+projects:
+  - name: Static Markdown Blog
+    status: active
+    tech: [Node.js, CSS, Markdown]
+    description: 零依赖、Token 驱动主题的静态博客平台。
+    link: https://github.com
+  - name: MijiaoGame VuePak
+    status: active
+    tech: [Vue, Vite, TypeScript]
+    description: 游戏工具集合的前端框架。
+    link: ""
+  - name: Desktop Pet
+    status: archived
+    tech: [Electron, CSS, Animation]
+    description: 桌面宠物应用，支持自定义模型。
+    link: ""
+  - name: Theme Engine
+    status: active
+    tech: [CSS, Design Tokens]
+    description: Token 驱动的主题引擎，支持亮暗切换和布局控制。
+    link: ""

@@ -1,0 +1,220 @@
+<style>
+/* ── Dark Grid Background ───────────────────────────── */
+.portfolio-section {
+  background: #0a0a0f;
+  background-image:
+    radial-gradient(circle, rgba(100,126,234,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+  padding: 80px 20px;
+  min-height: 100%;
+}
+.portfolio-container { max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+.portfolio-header { text-align: center; margin-bottom: 48px; }
+.portfolio-header h2 { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.portfolio-header p { color: rgba(255,255,255,0.5); font-size: 15px; }
+
+/* ── Card Grid ──────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ── 3D Tilt Card ───────────────────────────────────── */
+.tilt-card {
+  perspective: 1000px;
+}
+.tilt-card-inner {
+  position: relative;
+  background: #14141f;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 28px;
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+  will-change: transform;
+  overflow: hidden;
+}
+
+/* ── Gradient Border (on hover) ─────────────────────── */
+@property --border-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.tilt-card-inner::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: conic-gradient(from var(--border-angle), #667eea, #764ba2, #f093fb, #4facfe, #667eea);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.tilt-card:hover .tilt-card-inner::before {
+  opacity: 1;
+  animation: border-spin 3s linear infinite;
+}
+@keyframes border-spin { to { --border-angle: 360deg; } }
+
+/* ── Mouse Spotlight ────────────────────────────────── */
+.tilt-card-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.06), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.tilt-card:hover .tilt-card-inner::after { opacity: 1; }
+
+/* ── Card Content ───────────────────────────────────── */
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #fff;
+}
+.card-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+.card-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 16px; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.card-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  background: rgba(102,126,234,0.12);
+  color: #8b9cf7;
+  border-radius: 999px;
+  font-family: monospace;
+}
+
+/* ── Scroll Reveal ──────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+</style>
+
+<div class="portfolio-section">
+  <div class="portfolio-container">
+    <div class="portfolio-header reveal">
+      <h2>作品集</h2>
+      <p>Portfolio — 3D 倾斜卡片 + 渐变旋转边框 + 鼠标光斑 + 滚动揭示</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="tilt-card reveal reveal-d1">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">S</div>
+          <div class="card-title">Static Blog</div>
+          <div class="card-desc">零依赖、Token 驱动主题的静态博客平台。支持 Markdown 渲染、暗色模式、i18n、增量构建。</div>
+          <div class="card-tags">
+            <span class="card-tag">Node.js</span>
+            <span class="card-tag">CSS</span>
+            <span class="card-tag">Markdown</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tilt-card reveal reveal-d2">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">T</div>
+          <div class="card-title">Theme Engine</div>
+          <div class="card-desc">45+ CSS Token 驱动的主题引擎。支持三态亮暗切换、布局控制、自定义字体、模板覆盖。</div>
+          <div class="card-tags">
+            <span class="card-tag">CSS</span>
+            <span class="card-tag">Design Tokens</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tilt-card reveal reveal-d3">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">P</div>
+          <div class="card-title">Plugin System</div>
+          <div class="card-desc">可插拔的构建插件架构。RSS、Sitemap、搜索索引、SSG 各自独立，互不影响。</div>
+          <div class="card-tags">
+            <span class="card-tag">Architecture</span>
+            <span class="card-tag">Plugins</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tilt-card reveal reveal-d1">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">D</div>
+          <div class="card-title">Docker Deploy</div>
+          <div class="card-desc">原生 Docker 支持。挂载用户工作区、自动初始化、健康检查、128MB 内存限制。</div>
+          <div class="card-tags">
+            <span class="card-tag">Docker</span>
+            <span class="card-tag">Nginx</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tilt-card reveal reveal-d2">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);">I</div>
+          <div class="card-title">i18n System</div>
+          <div class="card-desc">中英双语完整支持。语言切换面板、自动检测可用语言、locale 文件自描述。</div>
+          <div class="card-tags">
+            <span class="card-tag">i18n</span>
+            <span class="card-tag">JSON</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tilt-card reveal reveal-d3">
+        <div class="tilt-card-inner">
+          <div class="card-icon" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">C</div>
+          <div class="card-title">Custom Pages</div>
+          <div class="card-desc">高级自定义页面系统。支持 standalone 独立模式、CSS 隔离、数据嵌入、JS 执行控制。</div>
+          <div class="card-tags">
+            <span class="card-tag">HTML</span>
+            <span class="card-tag">CSS</span>
+            <span class="card-tag">JS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // 3D Tilt + Spotlight
+  document.querySelectorAll('.tilt-card').forEach(function(card) {
+    var inner = card.querySelector('.tilt-card-inner');
+    card.addEventListener('mousemove', function(e) {
+      var rect = card.getBoundingClientRect();
+      var x = (e.clientX - rect.left) / rect.width - 0.5;
+      var y = (e.clientY - rect.top) / rect.height - 0.5;
+      inner.style.transform = 'perspective(1000px) rotateY(' + (x * 12) + 'deg) rotateX(' + (-y * 12) + 'deg) scale3d(1.02, 1.02, 1.02)';
+      inner.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+      inner.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+    });
+    card.addEventListener('mouseleave', function() {
+      inner.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale3d(1,1,1)';
+    });
+  });
+
+  // Scroll reveal
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+})();
+</script>
