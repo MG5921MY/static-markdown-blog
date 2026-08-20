@@ -85,6 +85,25 @@ function broadcast() {
   return sseClients.size;
 }
 
+// SSE 心跳：每 25s 发送注释行保持连接活跃。
+// 反向代理（nginx 等）对无活动 SSE 连接默认 60s 空闲超时断开；
+// 断开后 EventSource 虽会自动重连，但断开期间发生的 reload 事件会丢失，
+// 表现为"网页处于监听状态却不刷新"。心跳可避免代理断开。
+const SSE_HEARTBEAT_MS = 25000;
+function startHeartbeat() {
+  setInterval(() => {
+    const dead = [];
+    for (const res of sseClients) {
+      try {
+        res.write(':ping\n\n'); // SSE 注释行，客户端忽略
+      } catch (_) {
+        dead.push(res);
+      }
+    }
+    for (const res of dead) sseClients.delete(res);
+  }, SSE_HEARTBEAT_MS);
+}
+
 // ── Live Reload: 客户端脚本（动态生成，不写入 dist/） ──────────────────────
 const RELOAD_CLIENT_JS = `(function(){
   var retry=1000;
@@ -135,6 +154,27 @@ function runRebuild() {
   }
 }
 
+// 服务器行为配置（site/config.yml → dev.serve）：
+//   watch.include/ignore — 监听覆盖（见 isIgnoredWatch）
+//   readOnly            — 只读服务开关（默认 true：仅允许 GET/HEAD，
+//                         POST/PUT/DELETE 等写方法 405 拒绝；
+//                         设为 false 可放行写方法，供自定义页面等扩展场景使用）
+// 配置解析失败时降级为默认行为（watch 无覆盖、readOnly 开启）。
+const serveOptions = (() => {
+  try {
+    const { loadConfig } = require('./src/kernel/config');
+    const cfg = loadConfig(ROOT, __dirname);
+    const serve = cfg._raw?.dev?.serve || {};
+    return {
+      include: Array.isArray(serve.watch?.include) ? serve.watch.include.map(String).filter(Boolean) : [],
+      ignore: Array.isArray(serve.watch?.ignore) ? serve.watch.ignore.map(String).filter(Boolean) : [],
+      readOnly: serve.readOnly !== false,
+    };
+  } catch (_) {
+    return { include: [], ignore: [], readOnly: true };
+  }
+})();
+
 function startWatching() {
   // 统一使用 paths.getWatchPaths()（与构建内核共享同一份监听清单，
   // 覆盖 site/、res/themes、res/locales、全部页面模板、全部 client 模块）
@@ -156,29 +196,19 @@ function startWatching() {
     /\.(tmp|swp|bak|orig)(\.\d+)?$/i,    // 临时/备份文件
   ];
 
-  // 监听覆盖配置（site/config.yml → dev.serve.watch）：
-  //   include: [] — 强制监听被默认规则忽略的路径片段/后缀（include 优先）
-  //   ignore: []  — 追加忽略的路径片段/后缀（如缓存目录、大文件后缀）
-  // 匹配规则：归一化路径包含任一模式即命中；解析失败时降级为默认行为。
-  const watchOverrides = (() => {
-    try {
-      const { loadConfig } = require('./src/kernel/config');
-      const cfg = loadConfig(ROOT, __dirname);
-      const watch = cfg._raw?.dev?.serve?.watch;
-      return {
-        include: Array.isArray(watch?.include) ? watch.include.map(String).filter(Boolean) : [],
-        ignore: Array.isArray(watch?.ignore) ? watch.ignore.map(String).filter(Boolean) : [],
-      };
-    } catch (_) {
-      return { include: [], ignore: [] };
-    }
-  })();
   const normWatch = (s) => String(s).replace(/\\/g, '/').toLowerCase();
-  const isIgnoredWatch = (filename) => {
-    if (!filename) return true;
+  const isIgnoredWatch = (filename, eventType) => {
+    // filename 为 null 时（部分文件系统/挂载/rename 事件，Node fs.watch 文档
+    // 明确允许 null）：无法判断是哪个文件变化，保守触发重建（重建幂等，
+    // 防抖 300ms；宁可多重建一次，不可漏更新——漏更新会导致热更新失效）
+    if (!filename) return false;
     const p = normWatch(filename);
-    if (watchOverrides.include.some((pat) => p.includes(normWatch(pat)))) return false;
-    if (watchOverrides.ignore.some((pat) => p.includes(normWatch(pat)))) return true;
+    if (serveOptions.include.some((pat) => p.includes(normWatch(pat)))) return false;
+    if (serveOptions.ignore.some((pat) => p.includes(normWatch(pat)))) return true;
+    // rename 事件：临时文件也保守触发。编辑器 atomic 保存 =
+    // 写临时文件 + rename 覆盖，某些文件系统/事件合并只报出临时文件事件；
+    // 若按后缀忽略会漏掉整次保存。防抖会合并相邻事件，多余重建无害。
+    if (eventType === 'rename' && /\.(tmp|swp|bak|orig)(\.\d+)?$/i.test(p)) return false;
     return IGNORE_WATCH_RE.some((re) => re.test(p));
   };
 
@@ -189,7 +219,7 @@ function startWatching() {
     if (!fs.existsSync(dir)) continue;
     try {
       fs.watch(dir, { recursive: true }, (eventType, filename) => {
-        if (isIgnoredWatch(filename)) return;
+        if (isIgnoredWatch(filename, eventType)) return;
         console.log(`  [${new Date().toLocaleTimeString()}] Changed: ${filename}`);
         scheduleRebuild();
       });
@@ -232,6 +262,18 @@ if (!fs.existsSync(path.join(DIST_DIR, 'index.html'))) {
 
 // ── HTTP 服务器 ───────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
+  // 只读服务开关（dev.serve.readOnly，默认 true）：
+  // 仅允许 GET（HEAD 为 GET 的无响应体元请求，一并放行）。
+  // POST/PUT/DELETE 等写方法一律 405 拒绝——静态站点默认不提供写接口；
+  // 关闭（readOnly: false）后写方法按普通静态请求处理，供自定义扩展场景使用。
+  if (serveOptions.readOnly && req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Allow': 'GET, HEAD',
+    });
+    res.end('Method Not Allowed');
+    return;
+  }
   const urlPath = req.url;
 
   // ── SSE 端点：/__reload ──
@@ -318,6 +360,7 @@ server.listen(PORT, '0.0.0.0', () => {
 
   if (LIVE_RELOAD) {
     const { watchCount, watched } = startWatching();
+    startHeartbeat();
     console.log(`  Live reload: enabled`);
     console.log(`  Watching: ${watchCount} targets`);
     console.log(`  Debounce: ${DEBOUNCE_MS}ms`);

@@ -33,9 +33,14 @@ window.BlogCore = {
   async loadJson(urls) {
     const candidates = Array.isArray(urls) ? urls : [urls];
     let lastError = null;
+    // cache-busting：数据 JSON（site-config.json 等）每次加载强制取最新，
+    // 绕过浏览器/反向代理任何缓存层——保证热更新后页面刷新必然拿到新配置
+    const v = Date.now();
     for (const candidate of candidates) {
       try {
-        const response = await fetch(this.resolveAsset(candidate));
+        const resolved = this.resolveAsset(candidate);
+        const sep = resolved.includes('?') ? '&' : '?';
+        const response = await fetch(resolved + sep + 'v=' + v);
         if (!response.ok) throw new Error(`Failed to load ${candidate}`);
         return await response.json();
       } catch (error) { lastError = error; }
