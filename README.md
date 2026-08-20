@@ -181,12 +181,16 @@ node serve.js         # 预览 http://localhost:8080
 ```yaml
 dev:
   serve:
+    readOnly: true                   # 只读服务：仅允许 GET/HEAD（写方法 405 拒绝）。
+                                     # 设为 false 可放行 POST 等写方法（自定义页面扩展场景）。
     watch:
       include: []   # 强制监听被默认规则忽略的路径片段/后缀（如隐藏目录），优先级最高
       ignore: []    # 追加忽略的路径片段/后缀（如缓存目录、大文件后缀）
 ```
 
-默认忽略隐藏文件/目录（.git、.auth-key 等）、编辑器临时文件、node_modules；修改 `dev.serve.watch` 配置后需重启 serve 生效。
+默认忽略隐藏文件/目录（.git、.auth-key 等）、编辑器临时文件、node_modules；修改 `dev.serve` 配置后需重启 serve 生效。
+
+**可靠性设计**：热更新链路已加固——文件名缺失的 fs.watch 事件不会丢弃（保守触发重建）、编辑器原子保存（临时文件 + rename）也能触发、SSE 推送带 25s 心跳（防止反向代理空闲超时断开导致页面不刷新）、前端数据加载带 cache-busting（绕过浏览器/反代缓存层，保证刷新必然拿到最新配置）。
 
 ### Docker
 

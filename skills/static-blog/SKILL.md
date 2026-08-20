@@ -270,13 +270,21 @@ node serve.js 3000    # 指定端口
 ```yaml
 dev:
   serve:
+    readOnly: true                   # 只读服务：仅允许 GET/HEAD（写方法 405 拒绝）。
+                                     # 设为 false 可放行 POST 等写方法（自定义页面扩展场景）。
     watch:
       include: []   # 强制监听被默认规则忽略的路径片段/后缀（如隐藏目录），优先级最高
       ignore: []    # 追加忽略的路径片段/后缀（如缓存目录、大文件后缀）
 ```
 
 匹配规则：归一化路径包含任一模式即命中；include 优先于 ignore 与默认规则。
-修改 `dev.serve.watch` 后需**重启 serve** 生效；平台内核（src/kernel、src/plugins、build.js、serve.js）改动同样需重启。
+修改 `dev.serve` 后需**重启 serve** 生效；平台内核（src/kernel、src/plugins、build.js、serve.js）改动同样需重启。
+
+**可靠性设计**：
+- fs.watch 事件 filename 缺失时不丢弃（保守触发重建，防漏更新）
+- 编辑器原子保存（临时文件 + rename）也能触发重建
+- SSE 推送带 25s 心跳，防止反向代理空闲超时断开导致页面不自动刷新
+- 前端数据加载带 cache-busting（site-config.json 等绕过浏览器/反代缓存层，刷新必然拿最新配置）
 
 ### 运行测试
 
@@ -382,6 +390,7 @@ error404:
 # ── 开发服务器热更新覆盖（可选）──
 dev:
   serve:
+    readOnly: true   # 只读服务：仅允许 GET/HEAD（写方法 405 拒绝，可关闭）
     watch:
       include: []   # 强制监听被默认规则忽略的路径片段/后缀（优先级最高）
       ignore: []    # 追加忽略的路径片段/后缀（如缓存目录、大文件后缀）
