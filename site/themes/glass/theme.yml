@@ -1,0 +1,9 @@
+# ── 液态玻璃主题元数据 ────────────────────────────────
+# 壁纸说明：hero-piano.jpg 为本地私有文件（.gitignore 排除，不上传仓库）。
+# 更换壁纸：直接覆盖 site/themes/glass/hero-piano.jpg（保持文件名即可），
+#           若改用其他文件名需同步修改 theme.css 的 url() 引用。
+id: glass                    # 主题 ID（目录名）
+name: Liquid Glass           # 显示名称
+version: 1.0.0
+author: MijiaoGame
+description: 液态玻璃主题——壁纸全局背景 + 半透明玻璃卡片（backdrop-filter）。

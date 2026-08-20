@@ -128,7 +128,7 @@ site/                   用户工作区（唯一需要碰的目录）
   themes/               自定义主题
 
 res/                    平台资源
-  themes/               5 个内置主题
+  themes/               6 个内置主题
   locales/              中英双语
   vendor/               第三方库
 ```

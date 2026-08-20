@@ -1,0 +1,425 @@
+/* ═══════════════════════════════════════════════════════
+   Liquid Glass — 液态玻璃
+   视觉语言：
+    - 壁纸全局背景（hero-piano.jpg，同目录）
+    - 深色渐变遮罩保证文字可读性
+    - 半透明白玻璃卡片：blur + saturate + 高光细边框
+    - 导航栏悬浮玻璃
+    - 壁纸文件为本地私有（.gitignore 排除，不上传仓库）
+   ═══════════════════════════════════════════════════════ */
+
+@import "../base.css";
+
+:root {
+  /* ── 颜色：浅色文字（深色壁纸遮罩上） ───────────── */
+  --bg-primary: rgba(16, 20, 30, 0.40);
+  --bg-secondary: rgba(255, 255, 255, 0.14);
+  --bg-elevated: rgba(255, 255, 255, 0.22);
+  --text-primary: #f2f4f8;
+  --text-secondary: rgba(242, 244, 248, 0.86);
+  --text-muted: rgba(242, 244, 248, 0.60);
+  --border: rgba(255, 255, 255, 0.26);
+  --border-strong: rgba(255, 255, 255, 0.46);
+  --accent: #8ab4ff;
+  --accent-soft: rgba(138, 180, 255, 0.18);
+  --accent-strong: #a8c8ff;
+  --code-bg: rgba(10, 14, 22, 0.72);
+  --code-border: rgba(255, 255, 255, 0.18);
+  --code-text: #dfe6f5;
+  --code-muted: rgba(223, 230, 245, 0.6);
+  --code-inline-bg: rgba(138, 180, 255, 0.16);
+  --code-inline-text: #e8eefc;
+  --code-selection: rgba(138, 180, 255, 0.28);
+  --code-accent-1: #9cc0ff;
+  --code-accent-2: #7fe3c3;
+  --code-accent-3: #ffd39b;
+
+  /* ── 阴影：柔光 + 深投影 ────────────────────────── */
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.32);
+
+  /* ── 圆角：液态玻璃（收敛版，保证文字完整显示）── */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* ── 液态玻璃材质变量（Apple Liquid Glass 理念）────── */
+  --glass-bg: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.07) 55%,
+      rgba(255, 255, 255, 0.04) 100%);       /* 玻璃厚度渐变（顶部亮）· 清透 */
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.38);   /* 顶部高光描边 */
+  --glass-blur: blur(22px) saturate(170%);                       /* 强模糊+色彩增强（降强度防多层糊） */
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.26),
+                  inset 0 -1px 0 rgba(255, 255, 255, 0.06);     /* 悬浮阴影+底部暗边（收敛防覆盖） */
+
+  /* 嵌套衰减层：被外层玻璃包裹时的更透版本（.section-surface 等容器内） */
+  --glass-bg-nested: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.05) 55%,
+      rgba(255, 255, 255, 0.02) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   全局背景：壁纸 + 深色渐变遮罩
+   壁纸 hero-piano.jpg 位于本主题目录（dist/themes/glass/），
+   url 同目录引用；文件被 .gitignore 排除（本地私有）。
+   ═══════════════════════════════════════════════════════ */
+body {
+  background-image:
+    linear-gradient(180deg,
+      rgba(8, 10, 18, 0.58) 0%,
+      rgba(8, 10, 18, 0.34) 45%,
+      rgba(8, 10, 18, 0.62) 100%),
+    url("hero-piano.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: #10141e;
+}
+
+/* ═══════════════════════════════════════════════════════
+   玻璃导航栏
+   ═══════════════════════════════════════════════════════ */
+.nav {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════
+   玻璃卡片（全组件统一）
+   ═══════════════════════════════════════════════════════ */
+.post-card,
+.link-card,
+.moment-card,
+.disclaimer-item,
+.info-item,
+.folder-card,
+.gallery-item,
+.post-article,
+.dir-tree-panel,
+.links-group,
+.gallery-shell {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+  border-radius: var(--radius-lg);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-card:hover,
+.link-card:hover,
+.moment-card:hover,
+.folder-card:hover {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.12) 55%,
+      rgba(255, 255, 255, 0.07) 100%);
+  border-color: rgba(255, 255, 255, 0.48);
+  box-shadow: var(--glass-highlight), 0 20px 52px rgba(0, 0, 0, 0.32),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Hero 区域半透明（壁纸透出）
+   ═══════════════════════════════════════════════════════ */
+.hero {
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════
+   其他浮层：页脚 / 输入 / 按钮
+   ═══════════════════════════════════════════════════════ */
+.site-footer {
+  background: rgba(16, 20, 30, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+input[type="search"],
+input[type="text"],
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glass-highlight);
+  color: var(--text-primary);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+/* 按钮：胶囊形液态玻璃（padding 保证文字不贴弧线） */
+.btn-primary,
+.btn,
+.hero-actions .btn {               /* 覆盖 base .hero-actions .btn 的 6px 0 */
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  box-shadow: var(--glass-highlight), 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+
+/* ═══════════════════════════════════════════════════════
+   代码块深色玻璃
+   ═══════════════════════════════════════════════════════ */
+pre,
+.code-block {
+  background: rgba(10, 14, 22, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* ═══════════════════════════════════════════════════════
+   全组件圆润化（Apple Liquid Glass：所有组件统一玻璃语言）
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 标签/胶囊（内容安全 padding：文字距边缘 ≥ 圆角弧线）── */
+.post-tag,
+.post-category,
+.link-pill,
+.hero-kicker,
+.hero-badge {
+  border-radius: var(--radius-full);
+  padding: 5px 14px;
+  background: rgba(255, 255, 255, 0.11);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: var(--glass-highlight);
+}
+
+/* ── 筛选/分页按钮：胶囊（padding 保证文字完整）────── */
+.filter-btn,
+.page-btn,
+.group-btn,
+.load-more {
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  box-shadow: var(--glass-highlight);
+}
+
+.filter-btn.active,
+.page-btn.active,
+.group-btn.active {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.14) 100%);
+  border-color: rgba(255, 255, 255, 0.46);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── 目录面板：玻璃（圆角由容器统一负责，避免双圆角）── */
+.toc-container {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--glass-highlight), 0 8px 32px rgba(0, 0, 0, 0.20);
+}
+
+.toc-header {
+  border-radius: 0;
+}
+
+/* ── 返回顶部：圆形玻璃 ─────────────────────────────── */
+.back-to-top {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ── 阅读进度条：圆润 ───────────────────────────────── */
+.reading-progress {
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* ── 灯箱：深色玻璃遮罩 ─────────────────────────────── */
+.lightbox {
+  background: rgba(8, 10, 18, 0.55);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.lightbox-close,
+.lightbox-nav {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+}
+
+/* ── 瞬间时间轴：圆点圆形 ───────────────────────────── */
+.moment-dot {
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.14),
+              var(--glass-highlight);
+}
+
+.moment-item {
+  border-radius: var(--radius-md);
+}
+
+/* ── 图库悬浮层 / 链接头像 ──────────────────────────── */
+.gallery-item-overlay {
+  background: linear-gradient(180deg,
+      rgba(8, 10, 18, 0) 0%,
+      rgba(8, 10, 18, 0.55) 100%);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border-radius: var(--radius-md);
+}
+
+.link-avatar {
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight);
+}
+
+/* ── 区块表面 ───────────────────────────────────────── */
+.section-surface {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+/* ── 导航移动端控件：圆形 ───────────────────────────── */
+.nav-toggle,
+.theme-toggle-btn {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+}
+
+.nav-overlay {
+  background: rgba(8, 10, 18, 0.40);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* ── 搜索框容器 ─────────────────────────────────────── */
+.search-box {
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: var(--glass-highlight);
+}
+
+/* ── 空状态 / 错误页 ────────────────────────────────── */
+.empty-state,
+.error-page {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+/* ── Markdown 正文：图片/表格/引用块圆润 ────────────── */
+.markdown-body img {
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.markdown-body table {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+}
+
+.markdown-body blockquote {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.markdown-body hr {
+  border-radius: var(--radius-full);
+}
+
+/* ── 文章上下篇导航 ─────────────────────────────────── */
+.post-nav-link {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-highlight);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.post-nav-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.36);
+}
+
+/* ═══════════════════════════════════════════════════════
+   嵌套衰减：被外层玻璃容器包裹时，内层玻璃更透，
+   避免多层叠加视觉过厚（如 .section-surface 内的卡片）
+   ═══════════════════════════════════════════════════════ */
+.section-surface:has(.post-card),
+.section-surface:has(.info-item),
+.section-surface:has(.moment-card),
+.section-surface:has(.folder-card) {
+  background: var(--glass-bg-nested);
+}
+
+/* 灯箱按钮 / 移动端控件微降 */
+.lightbox-close,
+.lightbox-nav,
+.nav-toggle,
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* 页脚微降（贴近深色底部，避免过厚） */
+.site-footer {
+  background: rgba(16, 20, 30, 0.35);
+}
+
+/* ═══════════════════════════════════════════════════════
+   移动端：background-attachment 降级（iOS 不支持 fixed）
+   ═══════════════════════════════════════════════════════ */
+@supports not (background-attachment: fixed) {
+  body {
+    background-attachment: scroll;
+  }
+}

@@ -206,8 +206,17 @@ content:
 **修改 config.yml：**
 ```yaml
 theme:
-  active: graphite  # 可选: graphite / aurora / paper / mono / terminal
+  active: graphite  # 可选: graphite / aurora / paper / mono / terminal / glass
 ```
+
+> `glass`（液态玻璃）为工作区自定义主题示例：壁纸全局背景 + 半透明玻璃卡片（backdrop-filter）。
+> 主题内的壁纸等私有资源通过 `.gitignore` 排除（如 `site/themes/glass/*.jpg`），不入库。
+>
+> **壁纸文件约束（glass 主题）**：
+> - 壁纸固定命名为 `hero-piano.jpg`，位于 `site/themes/glass/`（主题 CSS 同目录引用 `url("hero-piano.jpg")`）
+> - 该文件被 `.gitignore` 排除（`site/themes/glass/*.jpg`）——**本地私有，不上传仓库**
+> - 更换壁纸：直接覆盖该文件（保持文件名）即可，无需改 CSS；若改用其他文件名，需同步修改 `theme.css` 的 `url()` 引用
+> - 构建产物位于 `dist/themes/glass/hero-piano.jpg`（随主题复制），页面加载依赖此路径
 
 ### 配置导航栏
 
@@ -316,7 +325,7 @@ seo:
 
 # ── 主题 ──
 theme:
-  active: graphite        # 主题名
+  active: graphite        # 主题名（graphite / aurora / paper / mono / terminal / glass）
 
 # ── 内容分类 ──
 content:
@@ -980,7 +989,7 @@ AI 创建主题时，以此模板为基础修改。这是覆盖所有组件的�
 
 ---
 
-### 5 个内置主题的设计分析
+### 内置主题的设计分析（6 个）
 
 每个主题都是设计决策的完整示例。分析它们可以帮助 AI 理解"什么样的设计决策组合会产生什么样的视觉效果"。
 
