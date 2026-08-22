@@ -1,0 +1,23 @@
+# ── 构建上下文排除 ────────────────────────────────────
+# 版本控制与工具目录
+.git/
+.tasks/
+.kilo/
+.workbuddy/
+.idea/
+.vscode/
+.cache/
+.tmp/
+.playwright-cli/
+.playwright-mcp/
+
+# 构建产物与依赖
+node_modules/
+dist/
+*.tgz
+
+# 隐私与本地素材（不上传）
+# 主题壁纸：本地私有素材，不进镜像（运行时由挂载的 site/ 提供）
+site/themes/glass/*.jpg
+# 认证密钥（运行时生成，不入镜像）
+site/.auth-key
