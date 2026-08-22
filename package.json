@@ -18,14 +18,22 @@
     "res/locales/",
     "site/",
     "deploy/",
-    "*.json"
+    "*.json",
+    "!site/themes/glass/*.jpg",
+    "!site/.auth-key"
   ],
   "scripts": {
     "build": "node build.js",
     "serve": "node serve.js",
     "init": "node init.js"
   },
-  "keywords": ["blog", "static-site", "markdown", "themes", "zero-dependency"],
+  "keywords": [
+    "blog",
+    "static-site",
+    "markdown",
+    "themes",
+    "zero-dependency"
+  ],
   "author": "Yang Ming Guang",
   "license": "Apache-2.0",
   "engines": {
