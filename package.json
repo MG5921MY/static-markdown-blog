@@ -19,7 +19,6 @@
     "site/",
     "deploy/",
     "*.json",
-    "!site/themes/glass/*.jpg",
     "!site/.auth-key"
   ],
   "scripts": {
