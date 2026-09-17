@@ -108,7 +108,7 @@ blog serve
 
 - **语言：** JavaScript（Node.js）
 - **许可证：** Apache-2.0
-- **测试：** 221 项自动化测试
+- **测试：** 253 项自动化测试
 - **依赖：** 运行时零依赖（vendored: marked.js, lunr.js, katex）
 - **CDN：** 可选增强（highlight.js, Mermaid, DOMPurify），全部非阻塞加载
 
@@ -128,7 +128,7 @@ site/                   用户工作区（唯一需要碰的目录）
   themes/               自定义主题
 
 res/                    平台资源
-  themes/               6 个内置主题
+  themes/               7 个内置主题
   locales/              中英双语
   vendor/               第三方库
 ```

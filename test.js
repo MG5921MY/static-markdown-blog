@@ -100,6 +100,105 @@ function testConfig() {
   } catch (e) { assert(false, `site-config valid: ${e.message}`); }
 }
 
+// ── Test: Config validation (strict syntax + type + unknown keys) ──
+function testConfigValidation() {
+  console.log('\n[Config Validation]');
+  const { parseYaml, validateConfig } = require('./src/kernel/config');
+
+  // L1：不支持语法必须报错（错误信息含行号）
+  const syntaxCases = [
+    ['flow mapping', 'site: {name: T}'],
+    ['anchor', 'base: &b\n  x: 1'],
+    ['alias', 'site:\n  ref: *b'],
+    ['multiline flow seq', 'nav: [a,\n  b]'],
+    ['block indicator', 'desc: |2\n  line'],
+  ];
+  for (const [label, input] of syntaxCases) {
+    let threwWithLine = false;
+    try {
+      parseYaml(input, { strict: true });
+    } catch (e) {
+      threwWithLine = /第 \d+ 行/.test(e.message);
+    }
+    assert(threwWithLine, `strict rejects ${label} with line number`);
+  }
+
+  // L1：已支持语法不得误伤
+  const supportedCases = [
+    ['inline array', 'tags: [a, b, c]'],
+    ['block scalar', 'desc: |\n  line1\n  line2'],
+    ['loose indent', 'site:\n  name: T\n   ok: tolerate'],
+  ];
+  for (const [label, input] of supportedCases) {
+    let ok = true;
+    try {
+      parseYaml(input, { strict: true });
+    } catch (_) {
+      ok = false;
+    }
+    assert(ok, `strict allows ${label}`);
+  }
+
+  // L2：关键字段类型与数组元素校验
+  const typeErrors = (input) => validateConfig(parseYaml(input)).errors;
+  assert(typeErrors('nav: hello').some((e) => e.includes('"nav"')), 'type error: nav must be array');
+  assert(typeErrors('theme:\n  active: 123').some((e) => e.includes('theme.active')), 'type error: theme.active must be string');
+  assert(typeErrors('content:\n  categories:\n    - id: a').some((e) => e.includes('path')), 'type error: categories item missing path');
+  assert(
+    typeErrors('site:\n  name: T\ncontent:\n  categories:\n    - id: a\n      path: posts/a\nnav:\n  - name: Home\n    page: index').length === 0,
+    'valid config has no errors'
+  );
+
+  // L3：未知顶层键——警告（不阻断）+ 相似键建议
+  const { warnings } = validateConfig(parseYaml('them:\n  active: g'));
+  assert(warnings.some((w) => w.includes('them') && w.includes('theme')), 'unknown key warns with suggestion');
+
+  // content.sort 枚举校验（by / order）
+  assert(
+    typeErrors('content:\n  sort:\n    - by: nope\n      order: desc').some((e) => e.includes('content.sort[0].by')),
+    'sort by enum validated'
+  );
+  assert(
+    typeErrors('content:\n  sort:\n    - by: date\n      order: sideways').some((e) => e.includes('content.sort[0].order')),
+    'sort order enum validated'
+  );
+  assert(typeErrors('content:\n  sort:\n    - by: date\n      order: asc').length === 0, 'valid sort config passes');
+}
+
+// ── Test: Sort comparator (multi-field + order) ──────────
+function testSortComparator() {
+  console.log('\n[Sort Config]');
+  const { buildPostComparator } = require('./src/kernel/content');
+  const posts = [
+    { id: 'b', title: 'Beta', date: '2026-01-02', category: 'x' },
+    { id: 'a', title: 'Alpha', date: '2026-01-02', category: 'y' },
+    { id: 'c', title: 'Gamma', date: '2026-01-01', category: 'x' },
+  ];
+  const ids = (list) => list.map((p) => p.id);
+
+  // 默认（未配置）：日期降序 + id 升序
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator(null)))) === JSON.stringify(['a', 'b', 'c']), 'default: date desc then id asc');
+
+  // 单字段：标题升序 / 降序
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'asc' }])))) === JSON.stringify(['a', 'b', 'c']), 'sort by title asc');
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'desc' }])))) === JSON.stringify(['c', 'b', 'a']), 'sort by title desc');
+
+  // 多级：分类升序 → 组内日期降序
+  assert(
+    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'category', order: 'asc' }, { by: 'date', order: 'desc' }])))) === JSON.stringify(['b', 'c', 'a']),
+    'multi-level: category asc then date desc'
+  );
+
+  // 非法配置：全部非法回退默认 → [a,b,c]
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'nope' }])))) === JSON.stringify(['a', 'b', 'c']), 'invalid rules fall back to default');
+
+  // 部分合法：仅保留合法项（date desc），同日期保持稳定输入序 → [b,a,c]
+  assert(
+    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'nope' }, { by: 'date', order: 'invalid' }])))) === JSON.stringify(['b', 'a', 'c']),
+    'partially invalid: only valid field kept'
+  );
+}
+
 // ── Test: Content index ──────────────────────────────────
 function testContentIndex() {
   console.log('\n[Content Index]');
@@ -419,6 +518,8 @@ async function main() {
 
     testLocales();
     testConfig();
+    testConfigValidation();
+    testSortComparator();
     testContentIndex();
     testPathmap();
     testSearchIndex();

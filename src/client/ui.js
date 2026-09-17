@@ -187,6 +187,43 @@ window.BlogUI = {
     this.setupThemeToggle();
     this.setupLanguageSwitch();
     this.setupAuthClearButton();
+    this.setupSearchShortcut();
+  },
+
+  /**
+   * 搜索快捷键：Ctrl/Cmd+K 或 "/" 聚焦搜索框（display.searchShortcut: false 可关闭）。
+   *
+   * - 列表页（存在 #search-input）：直接聚焦并全选
+   * - 其他页面：跳转首页并携带 ?focus=search（由列表页初始化时聚焦）
+   * - 输入态（INPUT/TEXTAREA/contentEditable）不拦截，避免影响正常输入
+   */
+  setupSearchShortcut() {
+    if (Blog.config?.display?.searchShortcut === false) return;
+    document.addEventListener('keydown', (event) => {
+      const target = event.target;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+      const isCtrlK = (event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 'k';
+      const isSlash = event.key === '/';
+      if (!isCtrlK && !isSlash) return;
+
+      const input = document.getElementById('search-input');
+      if (input) {
+        event.preventDefault();
+        // 延迟到下一帧聚焦：避免按键的默认字符插入落在刚获得焦点的输入框中
+        // （即使 preventDefault 环境差异导致失效，字符也会因焦点未转移而丢失）
+        requestAnimationFrame(() => {
+          input.focus();
+          if (typeof input.select === 'function') input.select();
+        });
+        return;
+      }
+
+      // 非列表页：跳转首页聚焦（相对路径已含 basePath）
+      event.preventDefault();
+      window.location.href = this.resolvePageUrl('index.html', { focus: 'search' });
+    });
   },
 
   setupCodeCopyButtons() {

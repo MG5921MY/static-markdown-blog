@@ -64,9 +64,13 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   全局背景：壁纸 + 深色渐变遮罩
-   壁纸 hero-piano.jpg 位于本主题目录（dist/themes/glass/），
-   url 同目录引用；文件被 .gitignore 排除（本地私有）。
+   全局背景：壁纸 + 深色渐变遮罩 + 无壁纸氛围兜底
+
+   层序（上层 → 下层）：
+     1. linear-gradient   顶部遮罩（保证浅色文字可读性）
+     2. url(hero-piano)   壁纸（本地私有；文件缺失时该层不绘制）
+     3-4. radial-gradient 氛围光晕（被壁纸完全遮住；
+                          无壁纸时呈现"深色氛围"而非纯色，功能不受影响）
    ═══════════════════════════════════════════════════════ */
 body {
   background-image:
@@ -74,11 +78,14 @@ body {
       rgba(8, 10, 18, 0.58) 0%,
       rgba(8, 10, 18, 0.34) 45%,
       rgba(8, 10, 18, 0.62) 100%),
-    url("hero-piano.jpg");
-  background-size: cover;
-  background-position: center;
+    url("hero-piano.jpg"),
+    radial-gradient(1200px 800px at 18% 82%, rgba(96, 140, 210, 0.22), transparent 72%),
+    radial-gradient(1000px 700px at 82% 18%, rgba(150, 115, 205, 0.18), transparent 72%);
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
+  background-repeat: no-repeat;
   background-attachment: fixed;
-  background-color: #10141e;
+  background-color: #0d1119;
 }
 
 /* ═══════════════════════════════════════════════════════

@@ -46,7 +46,11 @@
     "notFound": "文章未找到",
     "notFoundDetail": "你访问的文章不存在，或者已经被移动。",
     "backHome": "返回首页",
-    "missingParam": "缺少文章参数。"
+    "missingParam": "缺少文章参数。",
+    "related": "相关文章",
+    "readingTime": "{count} 分钟阅读",
+    "copyLink": "复制链接",
+    "linkCopied": "已复制"
   },
   "page": {
     "kicker": "页面",
@@ -78,6 +82,10 @@
     "nextPost": "下一篇",
     "prevPage": "上一页",
     "nextPage": "下一页",
+    "jumpToPage": "页码",
+    "jumpGo": "跳转",
+    "tagFilter": "标签",
+    "clearFilter": "清除",
     "readMore": "阅读全文",
     "empty": "空",
     "copy": "复制",
@@ -150,6 +158,22 @@
     "item6Title": "持续更新",
     "item6Desc": "本站会随着重构进度继续更新。旧文档、旧截图或旧路径说明如果与当前实现不一致，以仓库中的最新版本为准。"
   },
+  "archive": {
+    "kicker": "归档",
+    "title": "归档",
+    "subtitle": "按时间浏览全部文章。",
+      "monthLabel": "{month} 月",
+      "postsCount": "{count} 篇",
+      "noDate": "未标注日期"
+    },
+    "category": {
+      "kicker": "分类",
+      "title": "分类",
+      "subtitle": "该分类下的全部文章。",
+      "notFound": "分类不存在",
+      "notFoundHint": "没有找到对应的分类，可能链接已失效。",
+      "postsCount": "共 {count} 篇"
+    },
   "error404": {
     "title": "页面未找到",
     "description": "这个地址没有对应内容，但你的博客还在。你可以直接搜索，也可以从最近文章继续浏览。",

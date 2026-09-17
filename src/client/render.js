@@ -212,13 +212,17 @@ window.BlogRender = {
 
   renderPostCard(post) {
     if (!post || !this.isValidId(post.id)) return '';
-    const tagsHtml = (post.tags || []).map((tag) => `<span class="post-tag">${this.escapeHtml(tag)}</span>`).join('');
+    // 标签渲染为链接：点击跳转首页并携带 ?tag= 过滤（可分享、支持中键打开）
+    const tagsHtml = (post.tags || []).map((tag) => {
+      const tagUrl = this.resolvePageUrl('index.html', { tag });
+      return `<a class="post-tag" href="${this.escapeHtml(tagUrl)}">${this.escapeHtml(tag)}</a>`;
+    }).join('');
     const postUrl = this.resolvePageUrl('post.html', { id: post.id });
 
     return `
       <article class="post-card" data-category="${this.escapeHtml(post.category || '')}">
         <div class="post-card-header">
-          <span class="post-category">${this.escapeHtml(post.categoryIcon || '')} ${this.escapeHtml(post.categoryName || '')}</span>
+          <a class="post-category" href="${this.escapeHtml(this.resolvePageUrl('category.html', { id: post.category || '' }))}">${this.escapeHtml(post.categoryIcon || '')} ${this.escapeHtml(post.categoryName || '')}</a>
           <span class="post-date">${this.formatDate(post.date)}</span>
         </div>
         <h3 class="post-card-title">${this.escapeHtml(post.title)}</h3>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>分类 | 加载中...</title>
+  <meta name="description" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="blog-base" content="auto" />
+  <link rel="preconnect" href="./" />
+  <link rel="preload" as="fetch" href="./site-config.json" crossorigin />
+  <link rel="preload" as="fetch" href="./content-index.json" crossorigin />
+  <link id="blog-theme" rel="stylesheet" href="./themes/graphite/theme.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="./index.html" class="nav-brand">
+      <div class="nav-logo"></div>
+      <span id="nav-site-name">加载中...</span>
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="./index.html" class="nav-link" data-i18n="nav.home">首页</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <section class="hero hero-compact">
+        <div class="hero-kicker" data-i18n="category.kicker">Category</div>
+        <h1 class="hero-title" id="category-title" data-i18n="category.title">分类</h1>
+        <p class="hero-subtitle" id="category-subtitle" data-i18n="category.subtitle">该分类下的全部文章。</p>
+      </section>
+
+      <section class="section" style="padding-top: 0;">
+        <div id="category-list" class="posts-grid"></div>
+      </section>
+    </div>
+
+    <footer class="footer" data-template="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-links" id="footer-links">
+            <a href="./index.html" class="footer-link" data-i18n="nav.home">首页</a>
+          </div>
+          <div class="footer-info" id="beian-footer"></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./client/i18n.js"></script>
+  <script src="./client/core.js"></script>
+  <script src="./client/nav.js"></script>
+  <script src="./client/render.js"></script>
+  <script src="./client/ui.js"></script>
+  <script src="./client/blog.js"></script>
+  <script src="./client/auth.js"></script>
+  <script src="./category.page.js"></script>
+</body>
+</html>

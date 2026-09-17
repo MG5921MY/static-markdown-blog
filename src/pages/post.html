@@ -40,15 +40,29 @@
 
       <article id="post-content" class="post-article" style="display: none;">
         <header class="post-header">
-          <a href="./index.html" class="back-link" data-i18n="post.backHome">返回首页</a>
+          <nav class="breadcrumbs" aria-label="breadcrumb">
+            <a href="./index.html" class="breadcrumb-link" data-i18n="nav.home">首页</a>
+            <span class="breadcrumb-sep">/</span>
+            <a class="breadcrumb-link" id="post-breadcrumb-category" href="#"></a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="post-breadcrumb-title"></span>
+          </nav>
           <div class="post-meta">
             <span class="post-category" id="post-category"></span>
             <span class="post-date" id="post-date"></span>
+            <span class="post-reading-time" id="post-reading-time"></span>
           </div>
           <h1 class="post-title" id="post-title"></h1>
-          <div class="post-tags" id="post-tags"></div>
+          <div class="post-actions">
+            <div class="post-tags" id="post-tags"></div>
+            <button type="button" class="page-btn post-share-btn" id="post-share-btn" data-i18n="post.copyLink">复制链接</button>
+          </div>
         </header>
         <div class="post-body markdown-body" id="post-body"></div>
+        <section class="related-posts" id="related-posts" style="display: none;">
+          <h2 class="related-title" data-i18n="post.related">相关文章</h2>
+          <ul class="related-list" id="related-list"></ul>
+        </section>
         <nav class="post-nav" id="post-nav" style="display: none;">
           <a class="post-nav-link post-nav-prev" id="post-nav-prev" href="#">
             <span class="post-nav-label" data-i18n="ui.prevPost">上一篇</span>
@@ -136,11 +150,22 @@
 
           document.title = `${post.title} | ${Blog.config?.site?.name || Blog.t('site.defaultName')}`;
           document.getElementById('nav-site-name').textContent = Blog.config?.site?.name || Blog.t('site.defaultName');
+
+          // 面包屑：首页 / 分类（链接到分类页）/ 标题
+          const breadcrumbCategory = document.getElementById('post-breadcrumb-category');
+          if (breadcrumbCategory) {
+            breadcrumbCategory.textContent = `${post.categoryIcon || ''} ${post.categoryName || ''}`.trim();
+            breadcrumbCategory.href = Blog.resolvePageUrl('category.html', { id: post.category || '' });
+          }
+          const breadcrumbTitle = document.getElementById('post-breadcrumb-title');
+          if (breadcrumbTitle) breadcrumbTitle.textContent = post.title;
+
           document.getElementById('post-category').textContent = `${post.categoryIcon || ''} ${post.categoryName}`;
           document.getElementById('post-date').textContent = Blog.formatDate(post.date);
           document.getElementById('post-title').textContent = post.title;
+          // 标签链接化：与首页卡片一致，点击跳转首页 ?tag= 筛选
           document.getElementById('post-tags').innerHTML = (post.tags || []).map((tag) =>
-            `<span class="post-tag">${Blog.escapeHtml(tag)}</span>`
+            `<a class="post-tag" href="${Blog.escapeHtml(Blog.resolvePageUrl('index.html', { tag }))}">${Blog.escapeHtml(tag)}</a>`
           ).join('');
 
           if (post.rendered) {
@@ -180,6 +205,53 @@
 
           Blog.addLineNumbers(document.getElementById('post-body'));
           Blog.generateTOC();
+
+          // 阅读时长（可通过 features.readingTime 关闭或调整速度）
+          const readingCfg = Blog.config?.features?.readingTime || {};
+          const readingEl = document.getElementById('post-reading-time');
+          if (readingEl && readingCfg.enabled !== false) {
+            const speed = Number(readingCfg.speed) > 0 ? Number(readingCfg.speed) : 400;
+            const minutes = Blog.estimateReadingMinutes(document.getElementById('post-body'), speed);
+            readingEl.textContent = Blog.t('post.readingTime').replace('{count}', String(minutes));
+          }
+
+          // 分享：优先系统分享（移动端），失败/不可用回退复制链接；
+          // 用户在系统分享面板主动取消（AbortError）时不做任何事。
+          const shareBtn = document.getElementById('post-share-btn');
+          if (shareBtn) {
+            shareBtn.addEventListener('click', async () => {
+              const shareUrl = window.location.href;
+              const flashCopied = () => {
+                const original = shareBtn.textContent;
+                shareBtn.textContent = Blog.t('post.linkCopied');
+                setTimeout(() => { shareBtn.textContent = original; }, 2000);
+              };
+              if (navigator.share) {
+                try {
+                  await navigator.share({ title: post.title, url: shareUrl });
+                  return;
+                } catch (err) {
+                  if (err && err.name === 'AbortError') return; // 用户取消
+                  // 其他错误（环境不支持/权限）：继续走复制回退
+                }
+              }
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                flashCopied();
+              } catch (_) { /* 复制不可用：静默（用户仍可手动复制地址栏） */ }
+            });
+          }
+
+          // 相关文章（构建期预计算：pathMap[id].related）
+          const relatedEl = document.getElementById('related-posts');
+          const relatedList = document.getElementById('related-list');
+          const related = (Blog.pathMap && Blog.pathMap[postId] && Blog.pathMap[postId].related) || [];
+          if (relatedEl && relatedList && related.length > 0) {
+            relatedList.innerHTML = related.map((item) => `<li class="related-item">
+              <a class="related-link" href="${Blog.escapeHtml(Blog.resolvePageUrl('post.html', { id: item.id }))}">${Blog.escapeHtml(item.title)}</a>
+            </li>`).join('');
+            relatedEl.style.display = 'block';
+          }
 
           // Prev/Next navigation
           const navEl = document.getElementById('post-nav');

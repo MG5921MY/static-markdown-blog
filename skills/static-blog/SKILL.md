@@ -206,7 +206,7 @@ content:
 **修改 config.yml：**
 ```yaml
 theme:
-  active: graphite  # 可选: graphite / aurora / paper / mono / terminal / glass
+  active: graphite  # 内置: graphite / aurora / paper / mono / terminal / glass / sakura
 ```
 
 > `glass`（液态玻璃）为工作区自定义主题示例：壁纸全局背景 + 半透明玻璃卡片（backdrop-filter）。
@@ -243,7 +243,29 @@ features:
   gallery:
     enabled: true
     source: content/data/gallery.yml
+  relatedPosts:
+    enabled: true        # 文章页相关文章（构建期预计算）
+    max: 4               # 最大显示数量（1-8）
+  readingTime:
+    enabled: true        # 文章页阅读时长
+    speed: 400           # 阅读速度（字/分钟；英文内容建议 200-260）
 ```
+
+### 文章排序（content.sort）
+
+列表顺序与「上一篇 / 下一篇」时间线共用同一规则；数组有序（首项主排序，后续项依次打平局）：
+
+```yaml
+content:
+  sort:
+    - by: date           # 可选取值：date | title | category | id
+      order: desc        # 可选取值：desc（降序）| asc（升序）
+    - by: id
+      order: asc
+```
+
+不配置时默认「日期降序 + id 升序」——跨平台确定、构建可复现。
+非法条目（未知 by / order）会被过滤并回退默认；配置校验层会给出错误提示。
 
 ### 构建
 
@@ -325,7 +347,7 @@ seo:
 
 # ── 主题 ──
 theme:
-  active: graphite        # 主题名（graphite / aurora / paper / mono / terminal / glass）
+  active: graphite        # 主题名（内置: graphite/aurora/paper/mono/terminal/glass/sakura）
 
 # ── 内容分类 ──
 content:
@@ -376,6 +398,8 @@ comments:
 # ── 显示设置 ──
 display:
   postsPerPage: 6
+  paginationWindow: 5      # 分页页码按钮窗口大小（3-9）
+  searchShortcut: true     # 搜索快捷键：Ctrl/Cmd+K 或 / 聚焦搜索框
   heroSubtitle: "Hero 副标题"
   heroBadges: ["标签1", "标签2", "标签3"]
   heroActions:
@@ -989,7 +1013,7 @@ AI 创建主题时，以此模板为基础修改。这是覆盖所有组件的�
 
 ---
 
-### 内置主题的设计分析（6 个）
+### 内置主题的设计分析（5 个核心 + glass / sakura 自定义主题）
 
 每个主题都是设计决策的完整示例。分析它们可以帮助 AI 理解"什么样的设计决策组合会产生什么样的视觉效果"。
 

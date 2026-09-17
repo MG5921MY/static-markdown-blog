@@ -18,6 +18,7 @@
   let posts = [];
   let currentCategory = 'all';
   let currentPath = '';
+  let currentTag = '';
   let currentSearch = '';
   let currentPosts = [];
   let currentPage = 1;
@@ -92,6 +93,7 @@
     if (currentSearch) params.set('search', currentSearch);
     if (currentCategory && currentCategory !== 'all') params.set('category', currentCategory);
     if (currentPath) params.set('path', currentPath);
+    if (currentTag) params.set('tag', currentTag);
     if (page > 1) params.set('page', String(page));
     const query = params.toString();
     const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
@@ -193,7 +195,9 @@
     const buttons = [];
     buttons.push(`<button class="page-btn" data-page="${safePage - 1}" ${safePage === 1 ? 'disabled' : ''}>${Blog.t ? Blog.t('ui.prevPage') : '上一页'}</button>`);
 
-    const windowSize = 5;
+    // 页码窗口大小（display.paginationWindow，钳制 3-9）
+    const windowRaw = Number(Blog.config?.display?.paginationWindow);
+    const windowSize = Number.isFinite(windowRaw) ? Math.max(3, Math.min(9, Math.round(windowRaw))) : 5;
     const start = Math.max(1, safePage - Math.floor(windowSize / 2));
     const end = Math.min(totalPages, start + windowSize - 1);
     const normalizedStart = Math.max(1, end - windowSize + 1);
@@ -202,13 +206,68 @@
     }
     buttons.push(`<button class="page-btn" data-page="${safePage + 1}" ${safePage === totalPages ? 'disabled' : ''}>${Blog.t ? Blog.t('ui.nextPage') : '下一页'}</button>`);
 
-    paginationEl.innerHTML = `<span class="page-info">${Blog.t ? Blog.t('index.pagination', { current: safePage, total: totalPages, count: totalItems }) : `第 ${safePage} / ${totalPages} 页，共 ${totalItems} 篇`}</span>${buttons.join('')}`;
+    // 页码跳转：输入框 + 跳转按钮（回车同样触发），多页时始终展示
+    const jumpLabel = Blog.t ? Blog.t('ui.jumpToPage') : '页码';
+    const jumpGo = Blog.t ? Blog.t('ui.jumpGo') : '跳转';
+    const jumpHtml = `<span class="page-jump"><input type="number" class="page-jump-input" min="1" max="${totalPages}" inputmode="numeric" placeholder="${jumpLabel}" aria-label="${jumpLabel}" /><button type="button" class="page-btn page-jump-btn">${jumpGo}</button></span>`;
+
+    paginationEl.innerHTML = `<span class="page-info">${Blog.t ? Blog.t('index.pagination', { current: safePage, total: totalPages, count: totalItems }) : `第 ${safePage} / ${totalPages} 页，共 ${totalItems} 篇`}</span>${buttons.join('')}${jumpHtml}`;
     paginationEl.style.display = 'flex';
+  }
+
+  /**
+   * 分页跳转统一入口：按钮 / 页码 / 输入框跳转都经由此处，
+   * 边界钳制由 renderPosts 内部完成（非数字输入忽略）。
+   *
+   * @param {number} page - 目标页码（1 起）
+   */
+  function goToPage(page) {
+    if (!Number.isFinite(page)) return;
+    renderPosts(currentPosts, page);
+    if (gridEl) window.scrollTo({ top: gridEl.offsetTop - 100, behavior: 'smooth' });
+  }
+
+  /**
+   * 标签精确过滤（AND 于分类/路径/搜索之上）。
+   * 标签比较忽略大小写，与索引中的 tags 字段一致。
+   *
+   * @param {object[]} postList
+   * @returns {object[]}
+   */
+  function filterByTag(postList) {
+    if (!currentTag) return postList;
+    const needle = currentTag.toLowerCase();
+    return postList.filter((post) =>
+      (post.tags || []).some((tag) => String(tag).toLowerCase() === needle)
+    );
+  }
+
+  /**
+   * 标签筛选状态指示器（列表上方；无标签时不渲染）。
+   * 提供一键清除（清空 tag 并回到第 1 页）。
+   */
+  function renderTagIndicator() {
+    let bar = document.getElementById('tag-filter-indicator');
+    if (!currentTag) {
+      if (bar) bar.remove();
+      return;
+    }
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'tag-filter-indicator';
+      bar.className = 'tag-filter-indicator';
+      if (gridEl && gridEl.parentNode) gridEl.parentNode.insertBefore(bar, gridEl);
+    }
+    const label = Blog.t ? Blog.t('ui.tagFilter') : '标签';
+    const clearText = Blog.t ? Blog.t('ui.clearFilter') : '清除';
+    bar.innerHTML = `<span class="tag-filter-label">${label}: <strong>#${Blog.escapeHtml(currentTag)}</strong></span><button type="button" class="page-btn tag-filter-clear">${clearText}</button>`;
   }
 
   function renderPosts(postList, page = 1) {
     const totalPages = Math.max(1, Math.ceil(Math.max(0, postList.length) / pageSize));
     currentPage = Math.min(Math.max(1, page), totalPages);
+
+    renderTagIndicator();
 
     if (gridEl) {
       gridEl.className = 'posts-grid';
@@ -253,7 +312,7 @@
       if (treeContainer) treeContainer.innerHTML = result.dirTreePanel || '';
     }
 
-    currentPosts = filterPosts(collectCategoryPosts(category, dirPath), currentSearch);
+    currentPosts = filterPosts(filterByTag(collectCategoryPosts(category, dirPath)), currentSearch);
     renderPosts(currentPosts, page);
   }
 
@@ -418,14 +477,38 @@
 
     if (paginationEl) {
       paginationEl.addEventListener('click', (event) => {
+        // 跳转按钮：读取相邻输入框的页码
+        const jumpBtn = event.target.closest('.page-jump-btn');
+        if (jumpBtn) {
+          const input = paginationEl.querySelector('.page-jump-input');
+          goToPage(Number(input ? input.value : ''));
+          return;
+        }
         const btn = event.target.closest('.page-btn');
         if (!btn || btn.disabled) return;
         const page = Number(btn.dataset.page || '1');
         if (!Number.isFinite(page) || page < 1) return;
-        renderPosts(currentPosts, page);
-        if (gridEl) window.scrollTo({ top: gridEl.offsetTop - 100, behavior: 'smooth' });
+        goToPage(page);
+      });
+
+      // 输入框回车跳转（与点击跳转按钮同一入口）
+      paginationEl.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        const input = event.target.closest('.page-jump-input');
+        if (!input) return;
+        event.preventDefault();
+        goToPage(Number(input.value));
       });
     }
+
+    // 标签筛选清除（指示器为动态创建，使用文档级委托）
+    document.addEventListener('click', (event) => {
+      const clearBtn = event.target.closest('.tag-filter-clear');
+      if (!clearBtn) return;
+      currentTag = '';
+      syncUrlState(1);
+      updateDisplay(currentCategory, currentPath, 1);
+    });
   }
 
   function readInitialState() {
@@ -434,6 +517,8 @@
       search: (params.get('search') || '').trim(),
       category: (params.get('category') || 'all').trim() || 'all',
       path: (params.get('path') || '').trim(),
+      tag: (params.get('tag') || '').trim(),
+      focus: (params.get('focus') || '').trim(),
       page: Math.max(1, Number(params.get('page') || '1') || 1)
     };
   }
@@ -469,7 +554,10 @@
 
       const initial = readInitialState();
       currentSearch = initial.search;
+      currentTag = initial.tag;
       if (searchInput) searchInput.value = currentSearch;
+      // 跨页搜索快捷键跳转（?focus=search）：聚焦搜索框
+      if (initial.focus === 'search' && searchInput) searchInput.focus();
 
       const validCategory = initial.category === 'all' || Boolean(Blog.index?.categories?.[initial.category]);
       const startCategory = validCategory ? initial.category : 'all';

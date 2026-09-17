@@ -287,6 +287,24 @@ window.BlogCore = {
     return date.toLocaleDateString(localeMap[locale] || 'zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
   },
 
+  /**
+   * 估算阅读时长（分钟）。
+   *
+   * 统计口径：CJK 字符按字计、西文按词计（词权重 1.5），
+   * 阅读速度默认 400 字/分钟（可通过 features.readingTime.speed 调整），最少 1 分钟。
+   *
+   * @param {HTMLElement|null} rootEl - 正文容器（.markdown-body）
+   * @param {number} [speed=400] - 阅读速度（字/分钟）
+   * @returns {number} 分钟数（≥1）
+   */
+  estimateReadingMinutes(rootEl, speed = 400) {
+    const text = rootEl ? (rootEl.textContent || '') : '';
+    const rate = Number(speed) > 0 ? Number(speed) : 400;
+    const cjkCount = (text.match(/[\u3400-\u4dbf\u4e00-\u9fff]/g) || []).length;
+    const wordCount = (text.replace(/[\u3400-\u4dbf\u4e00-\u9fff]/g, ' ').match(/[A-Za-z0-9]+/g) || []).length;
+    return Math.max(1, Math.round((cjkCount + wordCount * 1.5) / rate));
+  },
+
   getUrlParam(name) {
     const params = new URLSearchParams(window.location.search);
     const value = params.get(name);

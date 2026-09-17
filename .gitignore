@@ -12,7 +12,6 @@ node_modules/
 .vscode/
 .playwright-cli/
 .playwright-mcp/
-.playwright-mcp/
 AGENTS.md
 
 # Temporary
@@ -39,5 +38,5 @@ static-markdown-blog-1.0.0.tgz
 # Auth key (auto-generated, never commit)
 .auth-key
 
-# 主题私有壁纸（本地使用，不上传）
-site/themes/glass/*.jpg
+# 壁纸候选（临时素材，选定后删除）
+site/assets/_wallpaper-candidates/

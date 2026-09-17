@@ -9,7 +9,7 @@ WORKDIR /app
 # 完整使用说明见镜像内 /app/README.md 与项目仓库。
 LABEL org.opencontainers.image.title="Static Markdown Blog"
 LABEL org.opencontainers.image.description="零依赖静态博客平台（Markdown + Token 主题 + Docker）"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="1.1.0"
 LABEL org.opencontainers.image.source="https://github.com/MG5921MY/static-markdown-blog"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.readme="Static Markdown Blog — 零依赖静态博客平台（Markdown 写作 + Token 驱动主题 + Docker 部署）。运行：docker run -d -p 8080:8080 -v /path/to/your/site:/app/site -e INIT_MODE=seed <your-registry>/<owner>/static-markdown-blog:latest。环境变量：PORT（默认 8080）、INIT_MODE（seed/empty/force）。完整使用说明见镜像内 /app/README.md 与项目 README（https://github.com/MG5921MY/static-markdown-blog）。"

@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 
 // ── 参数解析 ──────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -121,9 +121,27 @@ const RELOAD_CLIENT_JS = `(function(){
 })();`;
 
 // ── Live Reload: 文件监听 + Debounce ──────────────────────────────────────
+const BUILD_SCRIPT = path.join(__dirname, 'build.js'); // 构建脚本路径（唯一来源）
+
 let debounceTimer = null;
 let building = false;
 let pendingRebuild = false;
+
+/**
+ * 异步执行一次构建（spawn 子进程，不阻塞事件循环）。
+ *
+ * 用于运行时热更新：构建期间服务器继续服务旧 dist，
+ * 预览请求不会被构建阻塞（大站点 / 慢磁盘场景尤为重要）。
+ *
+ * @returns {Promise<boolean>} 构建是否成功（exit code === 0）
+ */
+function runBuildAsync() {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [BUILD_SCRIPT], { stdio: 'inherit', cwd: ROOT });
+    child.once('error', () => resolve(false));
+    child.once('close', (code) => resolve(code === 0));
+  });
+}
 
 function scheduleRebuild() {
   if (building) {
@@ -134,17 +152,16 @@ function scheduleRebuild() {
   debounceTimer = setTimeout(runRebuild, DEBOUNCE_MS);
 }
 
-function runRebuild() {
+async function runRebuild() {
   building = true;
   const t0 = Date.now();
-  try {
-    const buildScript = path.join(__dirname, 'build.js');
-    execSync(`node "${buildScript}"`, { stdio: 'inherit', cwd: ROOT });
+  const ok = await runBuildAsync();
+  if (ok) {
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log(`  Rebuilt in ${elapsed}s`);
     const count = broadcast();
     if (count > 0) console.log(`  Reloaded ${count} client(s)`);
-  } catch (err) {
+  } else {
     console.error('  Build failed, not reloading');
   }
   building = false;
@@ -244,10 +261,11 @@ function startWatching() {
 }
 
 // ── 初始构建 ──────────────────────────────────────────────────────────────
+// 启动引导阶段：服务尚未监听，此处同步构建简单可靠（无预览请求可被阻塞）。
+// 运行期热更新走 runBuildAsync（异步，不阻塞请求）。
 console.log('Building dist...\n');
 try {
-  const buildScript = path.join(__dirname, 'build.js');
-  execSync(`node "${buildScript}"`, { stdio: 'inherit', cwd: ROOT });
+  execSync(`node "${BUILD_SCRIPT}"`, { stdio: 'inherit', cwd: ROOT });
   console.log('');
 } catch (error) {
   console.error('Build failed');

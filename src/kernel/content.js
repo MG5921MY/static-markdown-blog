@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { parseFrontMatter } = require('./config');
+const { parseFrontMatter, SORT_FIELDS, SORT_ORDERS } = require('./config');
 const { renderMarkdown } = require('./markdown');
 
 function readText(filePath) {
@@ -33,6 +33,65 @@ function makeSummary(body, maxLength) {
 }
 
 /**
+ * 排序字段取值器：文章对象 → 参与排序的字符串值。
+ * 取值字段与 config.js 的 SORT_FIELDS 保持一致（单一来源校验）。
+ */
+const SORT_FIELD_GETTERS = {
+  date: (post) => String(post.date || ''),
+  title: (post) => String(post.title || ''),
+  category: (post) => String(post.category || ''),
+  id: (post) => String(post.id || ''),
+};
+
+/**
+ * 默认排序：日期降序（新的在前）+ id 升序打平局。
+ *
+ * id 由「分类:相对路径」哈希生成——内容与路径不变则 id 不变，
+ * 因此同日期文章的前后关系跨平台、跨次构建保持确定（可复现）。
+ */
+const DEFAULT_SORT = [
+  { by: 'date', order: 'desc' },
+  { by: 'id', order: 'asc' },
+];
+
+/**
+ * 归一化排序配置（content.sort）：
+ * 过滤非法字段/方向的条目；全部非法或未配置时回退默认排序。
+ *
+ * @param {Array<{ by?: string, order?: string }>|null|undefined} rawSort
+ * @returns {Array<{ by: string, order: string }>} 至少一项的合法规则列表
+ */
+function normalizeSortConfig(rawSort) {
+  if (!Array.isArray(rawSort)) return DEFAULT_SORT;
+  const rules = rawSort
+    .filter((item) => item && typeof item === 'object' && SORT_FIELDS.includes(item.by))
+    .map((item) => ({
+      by: item.by,
+      order: SORT_ORDERS.includes(item.order) ? item.order : 'desc',
+    }));
+  return rules.length > 0 ? rules : DEFAULT_SORT;
+}
+
+/**
+ * 构建多级文章比较器：按规则顺序依次比较，首个非零结果即返回；
+ * 全部字段相等时返回 0（保留稳定排序的原始顺序）。
+ *
+ * @param {Array<{ by: string, order: string }>|null|undefined} sortConfig - 来自 config.content.sort
+ * @returns {(a: object, b: object) => number} Array.prototype.sort 兼容比较器
+ */
+function buildPostComparator(sortConfig) {
+  const rules = normalizeSortConfig(sortConfig);
+  return (a, b) => {
+    for (const rule of rules) {
+      const getter = SORT_FIELD_GETTERS[rule.by];
+      const cmp = getter(a).localeCompare(getter(b));
+      if (cmp !== 0) return rule.order === 'asc' ? cmp : -cmp;
+    }
+    return 0;
+  };
+}
+
+/**
  * 扫描单个分类下的所有文章，支持增量缓存。
  * 通过对比源文件 MD5 与 manifest 中的缓存哈希，跳过未变更文件的重新渲染。
  *
@@ -42,9 +101,10 @@ function makeSummary(body, maxLength) {
  * @param {string} distDir - 输出目录
  * @param {boolean} includeDrafts - 是否包含草稿
  * @param {object|null} manifest - 构建清单，用于增量判断
+ * @param {Function} comparator - 文章排序比较器（由 scanContent 依 config.content.sort 构建）
  * @returns {{ posts: object[], groups: object }} 文章列表和分组映射
  */
-function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDrafts, manifest, security) {
+function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDrafts, manifest, security, comparator) {
   const sourceDir = path.join(siteRoot, category.path);
   const result = { posts: [], groups: {} };
   if (!fs.existsSync(sourceDir)) return result;
@@ -52,7 +112,11 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
   const allowHtml = security?.markdownHtmlFilter === false;
 
   function walk(currentDir) {
-    for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+    // 显式按名称排序：readdir 顺序依赖文件系统（跨平台不一致），
+    // 排序后同日期文章的处理顺序确定，构建结果可复现
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true })
+      .sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
       const fullPath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) { walk(fullPath); continue; }
       if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== '.md') continue;
@@ -99,7 +163,7 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
   }
 
   walk(sourceDir);
-  result.posts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  result.posts.sort(comparator);
   return result;
 }
 
@@ -107,13 +171,15 @@ function scanContent(config, options) {
   const { includeDrafts = false, manifest = null, distDir } = options;
   const categories = {};
   const pathMap = {};
+  // 排序比较器：列表顺序与「上一篇 / 下一篇」时间线共用同一规则（content.sort）
+  const comparator = buildPostComparator(config.sort);
 
   const siteRoot = config.siteRoot || config._siteRoot;
   for (const category of config.categories) {
     if (!category.id || !category.path) continue;
     const scanned = scanCategoryPosts(
       category, config.display?.summaryLength || 140,
-      siteRoot, distDir, includeDrafts, manifest, config.security
+      siteRoot, distDir, includeDrafts, manifest, config.security, comparator
     );
     categories[category.id] = {
       name: category.name || category.id,
@@ -137,10 +203,10 @@ function scanContent(config, options) {
   const allPosts = [];
   for (const [catId, catData] of Object.entries(categories)) {
     for (const post of (catData.posts || [])) {
-      allPosts.push({ id: post.id, title: post.title, date: post.date, category: catId });
+      allPosts.push({ id: post.id, title: post.title, date: post.date, category: catId, tags: post.tags || [] });
     }
   }
-  allPosts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  allPosts.sort(comparator);
   for (let i = 0; i < allPosts.length; i++) {
     const entry = pathMap[allPosts[i].id];
     if (!entry) continue;
@@ -148,13 +214,65 @@ function scanContent(config, options) {
     entry.next = i > 0 ? { id: allPosts[i - 1].id, title: allPosts[i - 1].title } : null;
   }
 
+  // 相关文章：构建期预计算（打分规则见 scoreRelatedPosts），写入 pathMap.related，
+  // 供文章页直接渲染（前端零计算、无额外请求）。
+  // 可通过 features.relatedPosts 关闭（enabled: false）或调整数量（max: 1-8）。
+  const relatedCfg = config.features?.relatedPosts || {};
+  const relatedEnabled = relatedCfg.enabled !== false;
+  const relatedMaxRaw = Number(relatedCfg.max);
+  const relatedMax = Number.isFinite(relatedMaxRaw) ? Math.max(1, Math.min(8, Math.round(relatedMaxRaw))) : 4;
+  for (const post of allPosts) {
+    const entry = pathMap[post.id];
+    if (!entry) continue;
+    entry.related = relatedEnabled ? scoreRelatedPosts(post, allPosts, relatedMax) : [];
+  }
+
   const posts = [];
   for (const catData of Object.values(categories)) {
     posts.push(...(catData.posts || []));
   }
-  posts.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  posts.sort(comparator);
 
   return { posts, categories, pathMap };
 }
 
-module.exports = { scanContent, generateId, fileHash, makeSummary };
+/**
+ * 相关文章打分：共同标签 ×3 + 同分类 ×2 + 发布时间相近（≤30 天）×1。
+ *
+ * - 仅返回分数 > 0 的候选，最多取 max 篇（由 features.relatedPosts.max 控制）
+ * - 同分按 id 升序（与全站排序口径一致，结果确定可复现）
+ *
+ * @param {{ id: string, category: string, tags?: string[], date?: string }} post - 当前文章
+ * @param {Array<object>} allPosts - 全站文章（已排序）
+ * @param {number} [max=4] - 最多返回条数
+ * @returns {Array<{ id: string, title: string }>} 相关文章引用（id + 标题）
+ */
+function scoreRelatedPosts(post, allPosts, max = 4) {
+  const SAME_WINDOW_DAYS = 30;
+  const toTime = (date) => {
+    const t = Date.parse(`${date || ''}T00:00:00Z`);
+    return Number.isFinite(t) ? t : null;
+  };
+  const needleTags = new Set((post.tags || []).map((tag) => String(tag).toLowerCase()));
+  const postTime = toTime(post.date);
+  const scored = [];
+
+  for (const other of allPosts) {
+    if (other.id === post.id) continue;
+    const sharedTags = (other.tags || []).filter((tag) => needleTags.has(String(tag).toLowerCase())).length;
+    const sameCategory = other.category === post.category ? 1 : 0;
+    let proximity = 0;
+    const otherTime = toTime(other.date);
+    if (postTime !== null && otherTime !== null) {
+      const days = Math.abs(postTime - otherTime) / 86400000;
+      if (days <= SAME_WINDOW_DAYS) proximity = 1;
+    }
+    const score = sharedTags * 3 + sameCategory * 2 + proximity;
+    if (score > 0) scored.push({ id: other.id, title: other.title, score });
+  }
+
+  scored.sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
+  return scored.slice(0, max).map(({ id, title }) => ({ id, title }));
+}
+
+module.exports = { scanContent, generateId, fileHash, makeSummary, buildPostComparator };

@@ -11,6 +11,8 @@ const STATIC_FILES = [
   { src: 'src/pages/404.html', dest: '404.html' },
   { src: 'src/pages/disclaimer.html', dest: 'disclaimer.html' },
   { src: 'src/pages/about.html', dest: 'about.html' },
+  { src: 'src/pages/archive.html', dest: 'archive.html' },
+  { src: 'src/pages/category.html', dest: 'category.html' },
   { src: 'src/client/core.js', dest: 'client/core.js' },
   { src: 'src/client/nav.js', dest: 'client/nav.js' },
   { src: 'src/client/render.js', dest: 'client/render.js' },
@@ -24,6 +26,8 @@ const STATIC_FILES = [
   { src: 'src/pages/links.page.js', dest: 'links.page.js' },
   { src: 'src/pages/gallery.page.js', dest: 'gallery.page.js' },
   { src: 'src/pages/disclaimer.page.js', dest: 'disclaimer.page.js' },
+  { src: 'src/pages/archive.page.js', dest: 'archive.page.js' },
+  { src: 'src/pages/category.page.js', dest: 'category.page.js' },
   { src: 'src/pages/favicon.ico', dest: 'favicon.ico' }
 ];
 

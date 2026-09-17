@@ -1,4 +1,4 @@
-﻿# ═══════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════
 # Static Markdown Blog — 站点配置
 # 文档: docs/architecture/theme-engine-reference.md
 # ═══════════════════════════════════════════════════════
@@ -66,6 +66,17 @@ theme:
 
 # ── 内容 ────────────────────────────────────────────────
 content:
+  # 文章排序：列表顺序与「上一篇 / 下一篇」时间线共用此规则。
+  # 数组有序：首项为主排序，后续项依次打平局（如日期相同按 id）。
+  # by 可选取值：date | title | category | id
+  # order 可选取值：desc（降序，新的/大的在前）| asc（升序，旧的/小的在前）
+  # 不配置时默认：日期降序 + id 升序（跨平台确定，构建可复现）
+  sort:
+    - by: date
+      order: desc
+    - by: id
+      order: asc
+
   # 分类：每篇文章属于一个分类
   categories:
     - id: guide
@@ -175,6 +186,12 @@ features:
     source: content/data/gallery.yml     # 图库数据文件
     description: "浏览图片资源。"         # 页面描述
     sectionCopy: "图片资源按分组展示。"    # 图库区块描述
+  relatedPosts:
+    enabled: true                        # 文章页显示相关文章（构建期预计算）
+    max: 4                               # 最大显示数量（1-8，同分按 id 升序确定）
+  readingTime:
+    enabled: true                        # 文章页显示阅读时长
+    speed: 400                           # 阅读速度（字/分钟；英文内容建议 200-260）
 
 # ── 备案信息 ────────────────────────────────────────────
 # 默认关闭，中国大陆网站需要配置
@@ -226,6 +243,8 @@ error404:
 # ── 显示设置 ────────────────────────────────────────────
 display:
   postsPerPage: 6                        # 首页每页文章数
+  paginationWindow: 5                    # 分页页码按钮窗口大小（3-9）
+  searchShortcut: true                   # 搜索快捷键：Ctrl/Cmd+K 或 / 聚焦搜索框
   summaryLength: 140                     # 文章摘要截取长度（字符）
   heroBadge: "Markdown First"            # Hero 区顶部徽章文字
   heroSubtitle: "少配置、强主题、可部署到任意子路径。"  # Hero 区副标题

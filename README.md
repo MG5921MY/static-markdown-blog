@@ -15,7 +15,7 @@
 
 ## 谁适合用
 
-- **想要简洁博客的人** — 零依赖，Markdown 写作，部署自由，6 个主题任选
+- **想要简洁博客的人** — 零依赖，Markdown 写作，部署自由，7 个内置主题任选
 - **用 AI 写代码的开发者** — 让 AI 维护技术笔记和调试经验
 - **用 AI 学习的人** — 让 AI 整理学习笔记和参考资料
 - **AI agent 本身** — 给自己一个持久的、可搜索的网络存在
@@ -45,10 +45,10 @@ https://mg5921my.github.io/static-markdown-blog/
 | 类别 | 功能 |
 |------|------|
 | **构建** | Markdown → HTML 构建时渲染、RSS、Sitemap、搜索索引（CJK 分词）、SSG、增量构建、草稿系统 |
-| **主题** | 6 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、Google Fonts、theme.js、模板覆盖、主题自动发现 |
+| **主题** | 7 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、Google Fonts、theme.js、模板覆盖、主题自动发现 |
 | **内容** | 博客文章、自定义页面（HTML/CSS/JS standalone/嵌入）、瞬间、友链、图库、数学公式（KaTeX）、流程图（Mermaid） |
 | **代码** | 语法高亮（highlight.js）、行号显示、代码复制按钮 |
-| **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、增量构建、自动化测试（221 项） |
+| **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、增量构建、自动化测试（253 项） |
 | **部署** | GitHub Pages、Docker、通用静态托管、子路径自动适应 |
 | **扩展** | 插件架构、自定义主题、自定义页面（standalone/嵌入）、评论集成（Giscus）、语言切换（自动发现） |
 
@@ -62,6 +62,7 @@ https://mg5921my.github.io/static-markdown-blog/
 | mono | 黑白极简 | 纯黑白色，Consolas 等宽，极简 hero | 极简主义者 |
 | terminal | CRT 赛博 | Orbitron 科技感标题，扫描线叠加，绿色调 | 开发者、赛博朋克爱好者 |
 | glass | 液态玻璃 | 壁纸全局背景 + 半透明玻璃卡片（backdrop-filter + 高光描边） | 视觉展示、个人站点 |
+| sakura | 日式手帐 | 暖纸底色 + 樱粉强调，衬线 display 标题，大圆角卡片 | 私人文库、随笔 |
 
 | graphite | aurora | paper |
 |----------|--------|-------|
@@ -70,6 +71,9 @@ https://mg5921my.github.io/static-markdown-blog/
 | mono | terminal |
 |------|----------|
 | ![mono](docs/screenshots/theme-mono.png) | ![terminal](docs/screenshots/theme-terminal.png) |
+
+> **glass 主题壁纸**：背景图 `site/themes/glass/hero-piano.jpg` 为本地素材（不入库），
+> 可在 `site/themes/glass/` 放置任意图片（保持文件名）替换；缺失时页面回退为深色氛围背景，功能不受影响。
 
 主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。AI 也可以自己设计主题。
 
@@ -247,7 +251,7 @@ site/                   用户工作区（用户唯一需要碰的目录）
   themes/               自定义主题
 
 res/                    平台资源（构建时复制到 dist/）
-  themes/               6 个内置主题（自动发现）
+  themes/               7 个内置主题（自动发现）
   locales/              中英双语（自动发现）
   vendor/               第三方库
 
@@ -306,7 +310,7 @@ node build.js --include-drafts   # 包含草稿
 ## 测试
 
 ```bash
-node test.js                     # 运行 221 项自动化测试
+node test.js                     # 运行 253 项自动化测试
 ```
 
 ## 文档
