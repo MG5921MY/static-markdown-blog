@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { jsonForHtmlScript } = require('../kernel/html-json');
 
 function escapeHtml(value) {
   return String(value || '')
@@ -60,12 +61,13 @@ module.exports = function ssgPlugin(buildResult) {
     const canonicalHref = `${prefix}/${mapping.outputPath.replace(/\.html$/, '')}/`;
     page = page.replace('</head>', `  <link rel="canonical" href="${escapeHtml(canonicalHref)}" />\n</head>`);
 
-    const postData = JSON.stringify({
+    // 路径单一：对象一次构建，经 jsonForHtmlScript 嵌入（防 </script> 截断）
+    const postData = {
       id, title: postInfo.title, date: postDate, tags: postInfo.tags || [],
       category: mapping.category, categoryName: category?.name || mapping.category,
       categoryIcon: category?.icon || '', summary: postSummary,
       content: contentHtml, rendered: true
-    });
+    };
 
     const ssgBlock = [
       '<noscript>',
@@ -74,7 +76,7 @@ module.exports = function ssgPlugin(buildResult) {
       `<div class="post-meta"><span>${postDate}</span></div>`,
       `</header><div class="post-body markdown-body">${contentHtml}</div></article>`,
       '</noscript>',
-      `<script type="application/json" id="ssg-post-data">${postData}</script>`
+      `<script type="application/json" id="ssg-post-data">${jsonForHtmlScript(postData)}</script>`
     ].join('\n');
 
     page = page.replace('</body>', `${ssgBlock}\n</body>`);

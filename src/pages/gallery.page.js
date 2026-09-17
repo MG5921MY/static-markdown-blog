@@ -31,13 +31,15 @@
   let audioIsSeeking = false; // 拖动进度条期间暂停自动同步
   const perPage = 20;
 
+  /**
+   * 媒体路径安全判定。
+   * 路径单一：只委托 Blog.isSafeMediaPath（core.js，脚本顺序保证先加载）。
+   * 不写降级分支——降级语义若弱于完整实现，会与「语义一致」冲突；
+   * Blog 缺失时 fail-closed 返回 false。
+   */
   function isMediaPathSafe(filePath) {
-    if (!filePath || typeof filePath !== 'string') return false;
-    // http:（明文）拒绝；https: 刻意放行——当前构建层只产出站点相对路径，
-    // 此处是为将来"远程媒体"（外链 URL）预留的白名单口子（正则 ^http: 不匹配 https:）。
-    if (/^(javascript|data|vbscript|http:)/i.test(filePath)) return false;
-    if (filePath.includes('..')) return false;
-    return true;
+    if (typeof Blog === 'undefined' || typeof Blog.isSafeMediaPath !== 'function') return false;
+    return Blog.isSafeMediaPath(filePath);
   }
 
   // ── 媒体树统计 ─────────────────────────────────────────

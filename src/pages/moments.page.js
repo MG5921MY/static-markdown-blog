@@ -10,9 +10,9 @@
     if (moment.images && moment.images.length > 0) {
       const safeImages = moment.images.filter((img) => {
         if (!img || typeof img !== 'string') return false;
-        if (img.startsWith('http://')) return false;
-        if (/^(javascript|data|vbscript):/i.test(img)) return false;
-        return true;
+        // 路径单一：只委托 Blog.isSafeMediaPath；无降级（fail-closed）
+        if (typeof Blog === 'undefined' || typeof Blog.isSafeMediaPath !== 'function') return false;
+        return Blog.isSafeMediaPath(img);
       });
 
       if (safeImages.length > 0) {

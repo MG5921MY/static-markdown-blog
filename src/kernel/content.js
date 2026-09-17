@@ -87,6 +87,40 @@ function normalizeSortConfig(rawSort) {
 }
 
 /**
+ * 阅读序邻居表：prev/next 与展示排序（content.sort 的 asc/desc）解耦。
+ *
+ * 契约：上一篇 = 时序上更早（键值更小），下一篇 = 更晚（键值更大）。
+ * 实现：把同一套排序字段全部强制为 asc 得到阅读序，再取数组邻居。
+ * 这样主键平局、次级键主导或混排 order 时，导航仍稳定，
+ * 不再依赖「整条排序链方向一致」的隐含假设。
+ *
+ * readingIndex：阅读序位次（0 起），全站口径，供归档/404 同日平局；
+ * 不是「分类内序号」，分类归档勿直接复用。
+ *
+ * @param {Array<object>} allPosts - 含排序字段的文章对象
+ * @param {Array|null|undefined} sortConfig - content.sort（仅取字段列表，order 忽略）
+ * @param {boolean} [caseSensitive=true]
+ * @returns {Map<string, { prev: {id,title}|null, next: {id,title}|null, readingIndex: number }>}
+ */
+function buildReadingNeighborMap(allPosts, sortConfig, caseSensitive = true) {
+  const { rules } = normalizeSortConfig(sortConfig);
+  const readingRules = rules.map((rule) => ({ by: rule.by, order: 'asc' }));
+  const readingPosts = [...allPosts].sort(buildPostComparator(readingRules, null, caseSensitive));
+  const neighbors = new Map();
+  for (let i = 0; i < readingPosts.length; i += 1) {
+    const prevPost = readingPosts[i - 1] || null;
+    const nextPost = readingPosts[i + 1] || null;
+    neighbors.set(readingPosts[i].id, {
+      prev: prevPost ? { id: prevPost.id, title: prevPost.title } : null,
+      next: nextPost ? { id: nextPost.id, title: nextPost.title } : null,
+      // 阅读序位次（0 起）：公开排序令牌，不含源路径；供归档/404 同日打平局
+      readingIndex: i,
+    });
+  }
+  return neighbors;
+}
+
+/**
  * 构建多级文章比较器：按规则顺序依次比较，首个非零结果即返回；
  * 全部字段相等时返回 0（保留稳定排序的原始顺序）。
  *
@@ -188,7 +222,13 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
   }
 
   walk(sourceDir);
+  // 展示列表与 tree 分组共用同一 comparator：
+  // groups[].posts 供目录树导航渲染，若只排平铺 posts，
+  // 树内会停留在 readdir 文件名序，与 content.sort 不一致。
   result.posts.sort(comparator);
+  for (const group of Object.values(result.groups)) {
+    group.posts.sort(comparator);
+  }
   return result;
 }
 
@@ -197,7 +237,8 @@ function scanContent(config, options) {
   const categories = {};
   const pathMap = {};
   const warnings = [];
-  // 排序比较器：列表顺序与「上一篇 / 下一篇」时间线共用同一规则（content.sort）
+  // 展示列表排序：content.sort（首页/分类/分页/tree 组内）。
+  // prev/next 另走阅读序 buildReadingNeighborMap（键值更小=上一篇，与展示 asc/desc 解耦）。
   const comparator = buildPostComparator(config.sort, warnings, config.sortCaseSensitive !== false);
 
   const siteRoot = config.siteRoot || config._siteRoot;
@@ -249,20 +290,29 @@ function scanContent(config, options) {
     }
   }
   allPosts.sort(comparator);
-  // prev/next 方向自适应：上一篇始终 = 「主排序键值更小」的一侧。
-  // 主排序 asc（值小在前）→ 上一篇 = 数组前一个（i-1）；
-  // 主排序 desc（值大在前）→ 上一篇 = 数组后一个（i+1）。
-  // （此前实现硬编码 i+1/i-1，隐含假设"数组是时间倒序"，
-  //   自定义排序下会把上一篇/下一篇指向错误的文章）
-  const primaryOrder = normalizeSortConfig(config.sort).rules[0].order;
-  const backIndex = primaryOrder === 'asc' ? -1 : 1;
-  for (let i = 0; i < allPosts.length; i++) {
-    const entry = pathMap[allPosts[i].id];
+  // prev/next：阅读序（键值更小 = 上一篇），与展示排序的 asc/desc 解耦。
+  // 详见 buildReadingNeighborMap——不再按主键 order 猜数组方向。
+  const neighbors = buildReadingNeighborMap(
+    allPosts,
+    config.sort,
+    config.sortCaseSensitive !== false
+  );
+  for (const post of allPosts) {
+    const entry = pathMap[post.id];
     if (!entry) continue;
-    const prevPost = allPosts[i + backIndex] || null;
-    const nextPost = allPosts[i - backIndex] || null;
-    entry.prev = prevPost ? { id: prevPost.id, title: prevPost.title } : null;
-    entry.next = nextPost ? { id: nextPost.id, title: nextPost.title } : null;
+    // 同集合必有邻居表项；缺失则不写 prev/next（禁止用 0 冒充 readingIndex「第一」）
+    const pair = neighbors.get(post.id);
+    if (!pair) continue;
+    entry.prev = pair.prev;
+    entry.next = pair.next;
+  }
+  // 写入公开索引用的阅读序位次（归档/404 同日平局与 prev/next 同口径）。
+  // 口径：全站位次（跨分类），服务归档时间线；未来「分类内归档」勿直接复用本字段。
+  for (const catData of Object.values(categories)) {
+    for (const post of catData.posts || []) {
+      const pair = neighbors.get(post.id);
+      if (pair) post.readingIndex = pair.readingIndex;
+    }
   }
 
   // 相关文章：构建期预计算（打分规则见 scoreRelatedPosts），写入 pathMap.related，
@@ -297,7 +347,7 @@ function scanContent(config, options) {
  * 相关文章打分：共同标签 ×3 + 同分类 ×2 + 发布时间相近（≤30 天）×1。
  *
  * - 仅返回分数 > 0 的候选，最多取 max 篇（由 features.relatedPosts.max 控制）
- * - 同分按 id 升序（与全站排序口径一致，结果确定可复现）
+ * - 同分按 file 升序打平局（与默认展示排序的次级键一致，可读、跨平台确定）
  *
  * @param {{ id: string, category: string, tags?: string[], date?: string }} post - 当前文章
  * @param {Array<object>} allPosts - 全站文章（已排序）
@@ -334,4 +384,11 @@ function scoreRelatedPosts(post, allPosts, max = 4) {
   return scored.slice(0, max).map(({ id, title }) => ({ id, title }));
 }
 
-module.exports = { scanContent, generateId, fileHash, makeSummary, buildPostComparator };
+module.exports = {
+  scanContent,
+  generateId,
+  fileHash,
+  makeSummary,
+  buildPostComparator,
+  buildReadingNeighborMap,
+};

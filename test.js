@@ -89,6 +89,34 @@ function runBuildTest(name, fn) {
   return failed === failedBefore;
 }
 
+// ── Test: 审计加固（HTML JSON / dist 路径 / 密码 / 邻居表）──
+function testAuditHardening() {
+  console.log('\n[Audit Hardening]');
+  const { jsonForHtmlScript } = require('./src/kernel/html-json');
+  const { generatePassword } = require('./src/plugins/encryption');
+  const { buildReadingNeighborMap } = require('./src/kernel/content');
+
+  const breakout = jsonForHtmlScript({ html: '</script><script>alert(1)</script>' });
+  assert(!/<\/script>/i.test(breakout), 'jsonForHtmlScript: no literal </script>');
+  assert(JSON.parse(breakout).html.includes('</script>'), 'jsonForHtmlScript: JSON.parse preserves value');
+
+  // 与 serve.js 共用 kernel/paths.isPathInsideRoot（路径单一，禁止在此复制实现）
+  const { isPathInsideRoot } = require('./src/kernel/paths');
+  const dist = path.resolve(os.tmpdir(), 'blog-dist-audit');
+  assert(isPathInsideRoot(dist, path.join(dist, 'index.html')) === true, 'isInsideDist: accepts file under dist');
+  assert(isPathInsideRoot(dist, `${dist}.bak/secret`) === false, 'isInsideDist: rejects dist.bak sibling');
+  assert(isPathInsideRoot(dist, path.resolve(dist, '..', 'blog-dist-audit.bak', 'x')) === false, 'isInsideDist: rejects normalized escape');
+
+  const pw = generatePassword(32);
+  assert(pw.length === 32, 'generatePassword length 32');
+  assert(/^[A-Za-z0-9!@#$%^&*]+$/.test(pw), 'generatePassword charset');
+
+  const map = buildReadingNeighborMap([{ id: 'a', date: '2026-01-01', file: 'a.md' }], null);
+  assert(map.get('a')?.prev === null && map.get('a')?.next === null && map.get('a')?.readingIndex === 0,
+    'neighbor map: sole post readingIndex=0 by position');
+  assert(map.get('missing') === undefined, 'neighbor map: missing id is undefined (callers continue)');
+}
+
 // ── Test: Build ──────────────────────────────────────────
 // 失败（构建异常或 dist 结构缺失）由 runBuildTest 统一诊断并触发熔断。
 function testBuild() {
@@ -286,6 +314,155 @@ function testSortComparator() {
   const cmpSensitive = buildPostComparator(rule, [], true);
   assert(cmpBase({ file: 'Apple.md' }, { file: 'apple.md' }) === 0, 'case insensitive: Apple equals apple');
   assert(cmpSensitive({ file: 'Apple.md' }, { file: 'apple.md' }) !== 0, 'case sensitive: Apple differs from apple');
+}
+
+// ── Test: prev/next 阅读序（与展示 sort 的 asc/desc 解耦）────
+// 契约：上一篇 = 键值更小侧（更早日期 / 更小章节号）。
+// 回归场景：主键 date 全相同 → 顺序由 file 决定；不得再按主键 order 猜方向。
+function testPrevNextReadingOrder() {
+  console.log('\n[Prev/Next Reading Order]');
+  const { buildReadingNeighborMap } = require('./src/kernel/content');
+
+  const chapters = [
+    { id: 'idx', title: '索引', date: '2026-01-01', file: '000-index.md' },
+    { id: 'ch1', title: '第一章', date: '2026-01-01', file: '001-ch1.md' },
+    { id: 'ch2', title: '第二章', date: '2026-01-01', file: '002-ch2.md' },
+    { id: 'ch3', title: '第三章', date: '2026-01-01', file: '003-ch3.md' },
+  ];
+
+  // 展示排序多种组合下，阅读序必须一致：idx → ch1 → ch2 → ch3
+  const sortCombos = [
+    { label: 'date desc + file asc', rules: [{ by: 'date', order: 'desc' }, { by: 'file', order: 'asc' }] },
+    { label: 'date desc + file desc', rules: [{ by: 'date', order: 'desc' }, { by: 'file', order: 'desc' }] },
+    { label: 'date asc + file asc', rules: [{ by: 'date', order: 'asc' }, { by: 'file', order: 'asc' }] },
+    { label: 'date asc + file desc', rules: [{ by: 'date', order: 'asc' }, { by: 'file', order: 'desc' }] },
+    { label: 'default null', rules: null },
+  ];
+  for (const { label, rules } of sortCombos) {
+    const map = buildReadingNeighborMap(chapters, rules);
+    assert(map.get('ch1')?.prev?.id === 'idx', `${label}: ch1 prev = idx`);
+    assert(map.get('ch1')?.next?.id === 'ch2', `${label}: ch1 next = ch2`);
+    assert(map.get('ch2')?.prev?.id === 'ch1', `${label}: ch2 prev = ch1`);
+    assert(map.get('ch2')?.next?.id === 'ch3', `${label}: ch2 next = ch3`);
+    assert(map.get('idx')?.prev === null, `${label}: idx prev = null`);
+    assert(map.get('ch3')?.next === null, `${label}: ch3 next = null`);
+  }
+
+  // 回归：date 可区分时，上一篇 = 更早、下一篇 = 更晚（默认博客语义）
+  const dated = [
+    { id: 'old', title: 'Old', date: '2020-01-01', file: 'z.md' },
+    { id: 'mid', title: 'Mid', date: '2022-01-01', file: 'y.md' },
+    { id: 'new', title: 'New', date: '2024-01-01', file: 'x.md' },
+  ];
+  const datedMap = buildReadingNeighborMap(dated, [{ by: 'date', order: 'desc' }, { by: 'file', order: 'asc' }]);
+  assert(datedMap.get('new')?.prev?.id === 'mid', 'dated: newest prev is older mid');
+  assert(datedMap.get('new')?.next === null, 'dated: newest next is null');
+  assert(datedMap.get('old')?.prev === null, 'dated: oldest prev is null');
+  assert(datedMap.get('old')?.next?.id === 'mid', 'dated: oldest next is mid');
+}
+
+// ── Test: tree 分组 posts 与 content.sort 一致 ────────────
+// 回归：groups[].posts 曾只按 readdir 文件名序 push、未跑 comparator，
+// 导致 type:tree 目录内列表与全站展示排序不一致。
+function testTreeGroupSort() {
+  console.log('\n[Tree Group Sort]');
+  const { scanContent } = require('./src/kernel/content');
+  const tmpSite = fs.mkdtempSync(path.join(os.tmpdir(), 'blog-tree-sort-'));
+  const catRel = 'content/posts/series';
+  const vol1 = path.join(tmpSite, catRel, 'vol1');
+  fs.mkdirSync(vol1, { recursive: true });
+  const body = '---\ntitle: T\ndate: 2026-01-01\ncategory: series\n---\nbody\n';
+  // 文件名序：010 会在 002 前（无 numeric）；comparator file asc 应 002 在前
+  fs.writeFileSync(path.join(vol1, '010-ch.md'), body.replace('title: T', 'title: Ch10'), 'utf8');
+  fs.writeFileSync(path.join(vol1, '002-ch.md'), body.replace('title: T', 'title: Ch02'), 'utf8');
+  fs.writeFileSync(path.join(tmpSite, catRel, '001-root.md'), body.replace('title: T', 'title: Root'), 'utf8');
+
+  try {
+    const config = {
+      sort: [{ by: 'date', order: 'desc' }, { by: 'file', order: 'asc' }],
+      sortCaseSensitive: true,
+      siteRoot: tmpSite,
+      _siteRoot: tmpSite,
+      categories: [{ id: 'series', path: catRel, type: 'tree', name: 'Series' }],
+      display: { summaryLength: 140 },
+      security: { markdownHtmlFilter: true },
+    };
+    const { categories } = scanContent(config, {
+      includeDrafts: false,
+      manifest: null,
+      distDir: path.join(tmpSite, 'dist'),
+    });
+    const groupPosts = categories.series.groups.vol1.posts.map((p) => p.file);
+    assert(
+      JSON.stringify(groupPosts) === JSON.stringify(['vol1/002-ch.md', 'vol1/010-ch.md']),
+      `tree group posts follow content.sort file asc (got ${JSON.stringify(groupPosts)})`
+    );
+    const flat = categories.series.posts.map((p) => p.file);
+    assert(flat[0] === '001-root.md', 'flat posts still sorted with comparator');
+  } catch (e) {
+    assert(false, `tree group sort: ${e.message}`);
+  } finally {
+    try { fs.rmSync(tmpSite, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
+// ── Test: 归档/404 同日平局键 = 阅读序 readingIndex ────────
+function testArchiveReadingIndexTieBreak() {
+  console.log('\n[Archive ReadingIndex Tie-break]');
+  const { scanContent, buildReadingNeighborMap } = require('./src/kernel/content');
+
+  const chapters = [
+    { id: 'ch10', title: 'ZZZ晚章', date: '2026-01-01', file: 'vol/010.md' },
+    { id: 'ch02', title: 'AAA早章', date: '2026-01-01', file: 'vol/002.md' },
+  ];
+  const neighbors = buildReadingNeighborMap(chapters, [{ by: 'date', order: 'desc' }, { by: 'file', order: 'asc' }]);
+  assert(neighbors.get('ch02').readingIndex < neighbors.get('ch10').readingIndex,
+    'readingIndex: 002 before 010');
+
+  // 模拟归档比较器：同日 → readingIndex 升序（标题序应让位于阅读序）
+  const withIdx = [
+    { id: 'ch10', title: 'ZZZ晚章', date: '2026-01-01', readingIndex: neighbors.get('ch10').readingIndex },
+    { id: 'ch02', title: 'AAA早章', date: '2026-01-01', readingIndex: neighbors.get('ch02').readingIndex },
+  ];
+  withIdx.sort((a, b) => {
+    const byDate = String(b.date || '').localeCompare(String(a.date || ''), undefined, { numeric: true });
+    if (byDate !== 0) return byDate;
+    const ai = Number.isFinite(a.readingIndex) ? a.readingIndex : Number.MAX_SAFE_INTEGER;
+    const bi = Number.isFinite(b.readingIndex) ? b.readingIndex : Number.MAX_SAFE_INTEGER;
+    if (ai !== bi) return ai - bi;
+    return String(a.title || '').localeCompare(String(b.title || ''), undefined, { numeric: true });
+  });
+  assert(withIdx[0].id === 'ch02' && withIdx[1].id === 'ch10',
+    'archive tie-break: same date ordered by readingIndex not title');
+
+  // scanContent 把 readingIndex 写到 posts 上（供 content-index）
+  const tmpSite = fs.mkdtempSync(path.join(os.tmpdir(), 'blog-ridx-'));
+  const catRel = 'content/posts/chap';
+  fs.mkdirSync(path.join(tmpSite, catRel, 'vol'), { recursive: true });
+  const body = '---\ntitle: T\ndate: 2026-01-01\ncategory: chap\n---\nx\n';
+  fs.writeFileSync(path.join(tmpSite, catRel, 'vol', '010.md'), body.replace('title: T', 'title: Late'), 'utf8');
+  fs.writeFileSync(path.join(tmpSite, catRel, 'vol', '002.md'), body.replace('title: T', 'title: Early'), 'utf8');
+  try {
+    const { categories } = scanContent({
+      sort: [{ by: 'date', order: 'desc' }, { by: 'file', order: 'asc' }],
+      sortCaseSensitive: true,
+      siteRoot: tmpSite,
+      _siteRoot: tmpSite,
+      categories: [{ id: 'chap', path: catRel, type: 'tree', name: 'Chap' }],
+      display: { summaryLength: 140 },
+      security: {},
+    }, { includeDrafts: false, manifest: null, distDir: path.join(tmpSite, 'dist') });
+    const byFile = Object.fromEntries(categories.chap.posts.map((p) => [p.file, p.readingIndex]));
+    assert(
+      Number.isFinite(byFile['vol/002.md']) && Number.isFinite(byFile['vol/010.md'])
+        && byFile['vol/002.md'] < byFile['vol/010.md'],
+      `scanContent stamps readingIndex (002 < 010), got ${JSON.stringify(byFile)}`
+    );
+  } catch (e) {
+    assert(false, `readingIndex stamp: ${e.message}`);
+  } finally {
+    try { fs.rmSync(tmpSite, { recursive: true, force: true }); } catch (_) {}
+  }
 }
 
 // ── Test: Auth gating (public outputs must not leak when auth enabled) ──
@@ -674,10 +851,14 @@ async function main() {
     // 构建基线：dist 不可用时后续断言必然误报 → 失败即终止
     if (!runBuildTest('Build', testBuild)) { printSummary(); return; }
 
+    testAuditHardening();
     testLocales();
     testConfig();
     testConfigValidation();
     testSortComparator();
+    testPrevNextReadingOrder();
+    testTreeGroupSort();
+    testArchiveReadingIndexTieBreak();
     testContentIndex();
     testPathmap();
     testSearchIndex();

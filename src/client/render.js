@@ -107,9 +107,12 @@ window.BlogRender = {
       if (html.includes('mermaid-placeholder')) {
         this._scheduleMermaidRender();
       }
+      return html;
     }
 
-    return html;
+    // fail-closed：无 DOMPurify 时不返回未过滤的 marked HTML
+    console.warn('DOMPurify unavailable; markdown rendered as escaped text.');
+    return this.escapeHtml(content).replace(/\n/g, '<br>');
   },
 
   _scheduleMathRender() {

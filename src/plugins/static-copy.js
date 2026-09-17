@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { jsonForHtmlScript } = require('../kernel/html-json');
 
 const STATIC_FILES = [
   { src: 'src/pages/index.html', dest: 'index.html' },
@@ -93,7 +94,7 @@ module.exports = function staticCopyPlugin(buildResult) {
     if (beian?.enabled && auth.showBeian !== false) {
       authConfig.beian = beian;
     }
-    authScript = `\n<script type="application/json" id="auth-config">${JSON.stringify(authConfig)}</script>`;
+    authScript = `\n<script type="application/json" id="auth-config">${jsonForHtmlScript(authConfig)}</script>`;
   }
 
   for (const f of STATIC_FILES) {

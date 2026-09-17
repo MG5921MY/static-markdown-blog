@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { marked } = require('../../res/vendor/marked.min.js');
+const { jsonForHtmlScript } = require('./html-json');
 
 function ensureDir(dirPath) { fs.mkdirSync(dirPath, { recursive: true }); }
 
@@ -167,7 +168,7 @@ function buildPagesContent(pagesMap, siteRoot) {
           if (data !== null) dataEntries[key] = data;
         }
         const dataScript = Object.entries(dataEntries).map(([key, val]) =>
-          `<script type="application/json" id="data-${key}">${JSON.stringify(val)}</script>`
+          `<script type="application/json" id="data-${key}">${jsonForHtmlScript(val)}</script>`
         ).join('\n');
         if (dataScript) {
           if (html.includes('</body>')) {

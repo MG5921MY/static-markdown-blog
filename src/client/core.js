@@ -167,10 +167,10 @@ window.BlogCore = {
    * 获取全站文章列表（跨分类）。
    *
    * 顺序契约：**严格使用构建期 content-index 的 allPosts 顺序**——
-   * 该顺序在构建时由 content.sort 配置生成（与归档页、上一篇/下一篇、
-   * 相关文章共用同一比较器），前端不得再次排序，
-   * 否则用户的自定义排序配置会被静默覆盖（历史 bug：曾硬编码日期降序重排，
-   * 导致首页/分类页在 file 等自定义排序下顺序错误）。
+   * 该顺序在构建时由 content.sort 配置生成（与首页/分类列表共用），
+   * 前端不得再次排序，否则自定义排序会被静默覆盖。
+   * （归档页会再按日期时间线重排；上一篇/下一篇走构建期阅读序 pathMap.prev/next，
+   *   均不依赖本函数返回值的展示顺序。）
    *
    * 兼容：极旧构建产物若无 allPosts 字段，回退到按分类收集（保持构建顺序，
    * 仍不排序）。
@@ -202,6 +202,22 @@ window.BlogCore = {
   },
 
   isValidId(id) { return Boolean(id) && typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id); },
+
+  /**
+   * 媒体/资源路径安全判定（gallery、moments 等共用，路径单一）。
+   *
+   * 语义：站内相对路径 + 刻意放行 https:（为将来远程媒体预留）；
+   * 拒绝明文 http:、伪协议与路径穿越。
+   *
+   * @param {string} filePath
+   * @returns {boolean}
+   */
+  isSafeMediaPath(filePath) {
+    if (!filePath || typeof filePath !== 'string') return false;
+    if (/^(javascript|data|vbscript|http:)/i.test(filePath)) return false;
+    if (filePath.includes('..')) return false;
+    return true;
+  },
 
   getPostPath(postId) {
     if (!this.isValidId(postId) || !this.pathMap) return null;

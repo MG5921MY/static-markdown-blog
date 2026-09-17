@@ -2,8 +2,9 @@
   /**
    * 归档页：按「年 → 月」分组展示全部文章（时间倒序）。
    *
-   * 数据来源：Blog.getAllPosts()（构建时已按日期降序、同日期按 id 升序，
-   * 与首页/前后篇的排序口径一致）。
+   * 数据来源：Blog.getAllPosts()（构建期 allPosts，顺序 = content.sort 展示序）。
+   * 本页语义是时间线：日期降序；同日按 readingIndex（阅读序位次，与 prev/next
+   * 同口径，即章节号更小在前）；缺字段时回退标题升序。
    * 无日期文章归入“未标注日期”分组，保证任何内容都不会从归档中丢失。
    */
   Blog.runPage({
@@ -16,11 +17,14 @@
       const listEl = document.getElementById('archive-list');
       if (!listEl) return;
 
-      // 归档页始终按日期降序（本页语义 = 时间线；不依赖 content.sort 的全局排序，
-      // 避免用户改排序后年月分组出现乱序）；同日期按标题升序打平局
+      // 归档页始终按日期降序（时间线语义，不沿用 content.sort 展示序）；
+      // 同日平局用 readingIndex，与上一篇/下一篇阅读序一致
       const posts = [...Blog.getAllPosts()].sort((a, b) => {
         const byDate = String(b.date || '').localeCompare(String(a.date || ''), undefined, { numeric: true });
         if (byDate !== 0) return byDate;
+        const ai = Number.isFinite(a.readingIndex) ? a.readingIndex : Number.MAX_SAFE_INTEGER;
+        const bi = Number.isFinite(b.readingIndex) ? b.readingIndex : Number.MAX_SAFE_INTEGER;
+        if (ai !== bi) return ai - bi;
         return String(a.title || '').localeCompare(String(b.title || ''), undefined, { numeric: true });
       });
       if (posts.length === 0) {

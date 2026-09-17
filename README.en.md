@@ -49,7 +49,7 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | **Content** | Blog posts, custom pages (HTML/CSS/JS standalone/embedded), moments, links, resources, math (KaTeX), diagrams (Mermaid) |
 | **Media** | Media library (image/video/audio/file): lightbox, bottom playbar (continuous play), file downloads, Range streaming |
 | **Code** | Syntax highlighting (highlight.js), line numbers, copy button |
-| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 296 automated tests |
+| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 344 automated tests |
 | **Deploy** | GitHub Pages, Docker, any static hosting, sub-path auto-detection |
 | **Extend** | Plugin architecture, custom themes, custom pages (standalone/embedded), comments (Giscus), language switching (auto-discovery) |
 
@@ -270,7 +270,7 @@ node build.js --include-drafts   # Include drafts
 ## Tests
 
 ```bash
-node test.js                     # Run 296 automated tests
+node test.js                     # Run 344 automated tests
 ```
 
 ## Documentation

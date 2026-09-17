@@ -11,14 +11,15 @@
       Blog.setNavSiteName();
 
       // 「最近的文章」：语义为时间最近，与全局排序配置解耦——
-      // getAllPosts 返回的是 content.sort 配置顺序（可能是文件序/标题序），
-      // 这里显式按日期降序取前 4 篇，保证区块语义始终是"最近更新"。
-      // 同日期按标题升序打平局（前端产物不含源文件名——加密边界要求；
-      // 与归档页同口径，结果可复现）
+      // getAllPosts 返回 content.sort 展示序，这里显式按日期降序取前 4 篇。
+      // 同日平局用 readingIndex（与 prev/next 阅读序同口径），缺字段回退标题。
       const posts = [...Blog.getAllPosts()]
         .sort((a, b) => {
           const byDate = String(b.date || '').localeCompare(String(a.date || ''), undefined, { numeric: true });
           if (byDate !== 0) return byDate;
+          const ai = Number.isFinite(a.readingIndex) ? a.readingIndex : Number.MAX_SAFE_INTEGER;
+          const bi = Number.isFinite(b.readingIndex) ? b.readingIndex : Number.MAX_SAFE_INTEGER;
+          if (ai !== bi) return ai - bi;
           return String(a.title || '').localeCompare(String(b.title || ''), undefined, { numeric: true });
         })
         .slice(0, 4);

@@ -61,7 +61,8 @@
     "missingParam": "Missing page parameter.",
     "pageNotFound": "Page not found.",
     "categoryNotFound": "Category not found.",
-    "unsupportedType": "Unsupported page type."
+    "unsupportedType": "Unsupported page type.",
+    "sanitizeUnavailable": "Sanitizer unavailable; content not rendered."
   },
   "ui": {
     "backToTop": "Back to Top",

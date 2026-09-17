@@ -7,8 +7,12 @@ const { writeBuildOutputs, cleanDir, writeJson, removeTree, buildFeatures, build
 function loadPlugins(names) {
   const plugins = [];
   for (const name of names) {
-    try { plugins.push(require(`../plugins/${name}`)); }
-    catch (_) {}
+    try {
+      plugins.push(require(`../plugins/${name}`));
+    } catch (err) {
+      // 缺失不阻断构建，但必须可见：静默吞掉会导致「功能莫名未生效」
+      console.warn(`  plugin "${name}" failed to load: ${err.message}`);
+    }
   }
   return plugins;
 }
@@ -31,6 +35,8 @@ function saveManifest(distDir, files) {
  * 从索引数据中剥离内部字段。
  * 索引（content-index.json）只应包含前端展示所需数据，
  * 不得携带渲染后的 HTML 全文、源文件路径等内部信息。
+ * readingIndex 保留：构建期写入的阅读序位次（数字，无路径），
+ * 供归档/404 在同日平局时与上一篇/下一篇同口径。
  */
 function stripInternalFields(post) {
     const {
@@ -170,6 +176,7 @@ async function build(userOptions) {
     const { encryptContent } = require('../plugins/encryption');
     fs.mkdirSync(encryptedDir, { recursive: true });
 
+    let encryptedCount = 0;
     for (const post of posts) {
       if (!post.html || !post._outputPath) continue;
       const encrypted = encryptContent(post.html, authData.password);
@@ -177,9 +184,8 @@ async function build(userOptions) {
       fs.writeFileSync(path.join(encryptedDir, encFile), JSON.stringify(encrypted));
       post._encrypted = true;
       post._encryptedFile = `encrypted/${encFile}`;
-      // 写入 encrypted 标记：客户端据此走"解密分支"而非 fetch 明文
-      // （明文 HTML 未落盘，缺此标记会导致 404 → Failed to load post content）
       if (pathMap[post.id]) pathMap[post.id].encrypted = true;
+      encryptedCount += 1;
     }
     // 加密文章的文件名/路径不对公开产物暴露：
     // 前端加密分支不依赖 file/outputPath（内容走 encrypted/<id>.json），
@@ -190,7 +196,7 @@ async function build(userOptions) {
         delete pathMap[post.id].outputPath;
       }
     }
-    console.log(`[AUTH] 加密了 ${posts.length} 篇文章 → dist/encrypted/`);
+    console.log(`[AUTH] 加密了 ${encryptedCount} 篇文章 → dist/encrypted/`);
   }
 
   // 索引只保留前端展示所需字段（剥离 html 全文、源路径等内部信息）

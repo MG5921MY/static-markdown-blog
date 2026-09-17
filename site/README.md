@@ -318,11 +318,41 @@ theme:
   active: graphite               # 主题 ID
 ```
 
-可选值：`graphite` / `aurora` / `paper` / `mono` / `terminal`
+可选值：`graphite` / `aurora` / `paper` / `mono` / `terminal` / `glass` / `sakura`
 
 自定义主题：直接使用主题 ID，详见下方"自定义主题"章节。
 
-### 3.6 content.categories — 内容分类
+### 3.6 content.sort — 文章排序（展示序 / 阅读序）
+
+```yaml
+content:
+  sort:
+    - by: date
+      order: desc
+    - by: file
+      order: asc
+  sortCaseSensitive: true
+```
+
+| 字段 | 说明 |
+|------|------|
+| `sort[].by` | `date` / `title` / `category` / `file` / `id`（`id` 不推荐） |
+| `sort[].order` | `desc` / `asc`，**只影响展示列表** |
+| `sortCaseSensitive` | 默认 `true`；`false` 时 a 与 A 视为相同 |
+
+**语义（务必分清）：**
+
+| 场景 | 规则 |
+|------|------|
+| 首页 / 分类 / tree 组内 / 分页 | 严格按 `content.sort`（展示序） |
+| 上一篇 / 下一篇 | **阅读序**：同一组 `by` 全部按 asc；上一篇 = 键值更小（更早 / 章节更小） |
+| 归档页、404「最近文章」 | 日期降序；同日按构建产物 `readingIndex`（阅读序位次，与上下篇一致） |
+
+因此：章节站同日文章按文件名自然序导航，**不需要**为了上一篇把 `order` 配成 `file desc`。
+
+构建产物 `content-index.json` 中每篇的 `readingIndex` 为全站阅读序位次（数字），不含源文件路径。
+
+### 3.7 content.categories — 内容分类
 
 ```yaml
 content:
@@ -341,10 +371,10 @@ content:
 | `name` | 分类显示名称 |
 | `icon` | 图标文本（如 `->`、`*`、`+`） |
 | `path` | 文章目录路径（相对于 `site/`） |
-| `type` | `flat` = 平铺列表；`tree` = 按目录结构生成树形导航 |
+| `type` | `flat` = 平铺列表；`tree` = 按目录结构生成树形导航（组内顺序同样遵循 `content.sort`） |
 | `description` | 分类描述文字 |
 
-### 3.7 content.pages — 自定义页面
+### 3.8 content.pages — 自定义页面
 
 ```yaml
 content:
@@ -361,6 +391,7 @@ content:
       type: custom               # 自定义 HTML 页面
       source: content/pages/skills.html
       scripts: true              # 启用 JS 执行
+      # sanitize: false          # 仅当你信任该 HTML 时开启（默认消毒）
 
     - id: portfolio
       name: 作品集
@@ -387,11 +418,16 @@ content:
 | `icon` | 图标文本 |
 | `type` | `markdown` = Markdown 渲染；`custom` = 自定义 HTML；`category` = 分类文章列表 |
 | `source` | 源文件路径（相对于 `site/`） |
+| `scripts` | custom 页是否执行内联 JS |
+| `sanitize` | 默认 `true`（DOMPurify）；消毒器不可用时 fail-closed 不注入。`false` = 作者显式信任 |
+| `standalone` | iframe 沙盒独立页 |
+
+`scripts` / `sanitize` / `standalone` 详见上表；`data` 见下方示例。
 | `scripts` | `true` = 允许页面中的 JS 执行（仅 `custom` 类型） |
 | `standalone` | `true` = 独立模式，隐藏平台导航栏和页脚 |
 | `data` | 数据文件映射（key-value），构建时嵌入为页面内 JSON |
 
-### 3.8 content.data — 功能数据文件
+### 3.9 content.data — 功能数据文件
 
 ```yaml
 content:
@@ -401,7 +437,7 @@ content:
     gallery: content/data/gallery.yml    # 资源数据
 ```
 
-### 3.9 nav — 导航栏
+### 3.10 nav — 导航栏
 
 ```yaml
 nav:
@@ -420,7 +456,7 @@ nav:
 | `page: <page-id>` | 引用 `content.pages` 中定义的页面 | `page: about` |
 | `url: <path>` | 直接指定 URL 路径 | `url: ./moments.html` |
 
-### 3.10 navActions — 导航栏图标按钮
+### 3.11 navActions — 导航栏图标按钮
 
 ```yaml
 navActions:
@@ -440,7 +476,7 @@ navActions:
 | `url` | 链接地址（仅 `type: link`） |
 | `title` | 鼠标悬停提示文字 |
 
-### 3.11 features — 功能模块开关
+### 3.12 features — 功能模块开关
 
 ```yaml
 features:
@@ -457,9 +493,15 @@ features:
     source: content/data/gallery.yml
     description: "浏览图片、视频与音频资源。"
     sectionCopy: "图片、视频与音频资源按分组展示。"  # 资源区块描述
+  relatedPosts:
+    enabled: true                # 文章页相关文章（构建期预计算）
+    max: 4                       # 数量 1-8；同分按 file 升序
+  readingTime:
+    enabled: true                # 文章页阅读时长
+    speed: 400                   # 字/分钟
 ```
 
-### 3.12 beian — 备案信息
+### 3.13 beian — 备案信息
 
 中国大陆网站需要配置，默认关闭。
 
@@ -478,7 +520,7 @@ beian:
     statusText: ""               # 无链接时的纯文本替代
 ```
 
-### 3.13 comments — 评论系统
+### 3.14 comments — 评论系统
 
 默认关闭，基于 GitHub Discussions 的 Giscus 评论系统。
 
@@ -498,7 +540,7 @@ comments:
 
 配置指南：访问 https://giscus.app/zh-CN 获取 `repoId` 和 `categoryId`。
 
-### 3.14 display — 显示设置
+### 3.15 display — 显示设置
 
 ```yaml
 display:
@@ -541,7 +583,7 @@ display:
       blur: 0                    # 模糊程度（px）
 ```
 
-### 3.15 disclaimer — 免责声明
+### 3.16 disclaimer — 免责声明
 
 ```yaml
 disclaimer:
@@ -549,7 +591,7 @@ disclaimer:
   items: []                      # 条款列表（留空使用默认示例）
 ```
 
-### 3.16 error404 — 404 页面
+### 3.17 error404 — 404 页面
 
 ```yaml
 error404:
@@ -1139,6 +1181,7 @@ node test.js
 | 写新文章 | 在 `content/posts/<分类>/` 下创建 `.md` 文件 |
 | 改站点名 | 编辑 `config.yml` 的 `site.name` |
 | 换主题 | 编辑 `config.yml` 的 `theme.active` |
+| 改列表排序 | 编辑 `config.yml` 的 `content.sort`（展示序） |
 | 加导航项 | 编辑 `config.yml` 的 `nav` 数组 |
 | 开关功能 | 编辑 `config.yml` 的 `features.*.enabled` |
 | 添加友链 | 编辑 `content/data/links.yml` |

@@ -142,10 +142,20 @@
             document.getElementById('page-title').textContent = page.title || page.name;
             document.getElementById('page-desc').textContent = page.description || '';
             if (page.renderedToHtml) {
-              const safe = (page.sanitize !== false && typeof DOMPurify !== 'undefined')
-                ? DOMPurify.sanitize(page.content || '')
-                : (page.content || '');
-              document.getElementById('page-content').innerHTML = safe;
+              // 生产语义：默认必须消毒。sanitize:false 表示作者显式信任该页 HTML。
+              // 消毒器未加载成功时 fail-closed，禁止把未过滤 HTML 注入 DOM。
+              const contentEl = document.getElementById('page-content');
+              if (page.sanitize === false) {
+                contentEl.innerHTML = page.content || '';
+              } else if (typeof DOMPurify !== 'undefined') {
+                contentEl.innerHTML = DOMPurify.sanitize(page.content || '');
+              } else {
+                Blog.showPageError(
+                  loadingEl, errorEl, errorDetailEl,
+                  Blog.t('page.sanitizeUnavailable') || 'Sanitizer unavailable; content not rendered.'
+                );
+                return;
+              }
             } else {
               document.getElementById('page-content').innerHTML = Blog.renderMarkdown(page.content || '');
             }

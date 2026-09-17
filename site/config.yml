@@ -59,15 +59,27 @@ security:
   # autoLock: 0              # 关闭后：用户需手动点击退出按钮清除会话
 
 # ── 主题 ────────────────────────────────────────────────
-# 可选: graphite / aurora / paper / mono / terminal
+# 可选: graphite / aurora / paper / mono / terminal + glass / sakura
+# （glass、sakura 随仓库置于 site/themes/，便于对照开发自定义主题）
 # 自定义主题: 将主题放在 site/themes/<theme-id>/
 theme:
   active: graphite
 
 # ── 内容 ────────────────────────────────────────────────
 content:
-  # 文章排序：列表顺序与「上一篇 / 下一篇」时间线共用此规则。
+  # 文章排序 content.sort
+  #
+  # 【展示序】首页 / 分类 / tree 组内 / 分页列表顺序。
   # 数组有序：首项为主排序，后续项依次打平局（如日期相同按文件名）。
+  #
+  # 【阅读序】上一篇 / 下一篇 与展示序解耦：
+  #   - 契约：上一篇 = 键值更小（更早日期 / 更小章节号），下一篇 = 更大
+  #   - 实现：同一套 by 字段全部按 asc 计算阅读序，再取邻居
+  #   - 因此不必为了 prev/next 而把 order 配成 file desc 等「全键同向」
+  #
+  # 【归档 / 404】时间线语义：日期降序；同日按构建期 readingIndex
+  #   （阅读序位次，与上下篇同口径；公开数字字段，不含源路径）。
+  #
   # by 可选取值：
   #   date     日期（frontmatter 的 date，YYYY-MM-DD）
   #   title    标题（frontmatter，缺省为文件名）
@@ -110,8 +122,10 @@ content:
   # type: category  — 分类文章列表页面
   #
   # 页面级安全选项：
-  #   sanitize: true   — DOMPurify 消毒（默认，移除 <video>、<style>、data-* 等）
-  #   sanitize: false  — 跳过消毒（信任自己的 HTML，保留所有标签和属性）
+  #   sanitize: true   — DOMPurify 消毒（默认）。消毒器未加载成功时 **fail-closed**
+  #                      （不注入未过滤 HTML，页面报错提示），避免静默降级成裸 HTML。
+  #   sanitize: false  — 作者显式信任：跳过消毒（保留 <video>、<style> 等）。
+  #                      仅用于你自己编写/审核过的 HTML，不要对不可信来源开启。
   #   scripts: true    — 启用 JS 执行（自定义页面专用）
   #   standalone: true — 独立模式（iframe 沙盒隔离，隐藏平台导航栏/页脚）
   pages:
@@ -200,7 +214,7 @@ features:
     sectionCopy: "图片、视频与音频资源按分组展示。"  # 资源区块描述
   relatedPosts:
     enabled: true                        # 文章页显示相关文章（构建期预计算）
-    max: 4                               # 最大显示数量（1-8，同分按 id 升序确定）
+    max: 4                               # 最大显示数量（1-8；同分按 file 升序，可复现）
   readingTime:
     enabled: true                        # 文章页显示阅读时长
     speed: 400                           # 阅读速度（字/分钟；英文内容建议 200-260）

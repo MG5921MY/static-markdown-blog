@@ -97,4 +97,22 @@ function createPaths(cwd, pkgRoot) {
   };
 }
 
-module.exports = { createPaths };
+/**
+ * 路径是否位于根目录内（含根本身）。
+ *
+ * serve 静态文件放行与自动化测试共用（路径单一）。
+ * 必须 resolve + path.sep：对 root 做 startsWith 会把
+ * `.../dist.bak` 误判为在 `.../dist` 内。
+ *
+ * @param {string} rootDir - 允许的根目录
+ * @param {string} filePath - 待判定路径
+ * @returns {boolean}
+ */
+function isPathInsideRoot(rootDir, filePath) {
+  if (!rootDir || !filePath) return false;
+  const root = path.resolve(rootDir);
+  const target = path.resolve(filePath);
+  return target === root || target.startsWith(root + path.sep);
+}
+
+module.exports = { createPaths, isPathInsideRoot };

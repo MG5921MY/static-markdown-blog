@@ -47,14 +47,22 @@ function encryptContent(content, password) {
 }
 
 /**
- * 生成随机密码
+ * 生成随机密码（rejection sampling，消除模偏差）。
+ *
+ * 密码表长度 70 不能整除 256：若用 `byte % 70`，前 46 个字符概率略高。
+ * 拒绝采样只接受 [0, 256 - (256 % 70)) 内的字节，保证均匀。
  */
 function generatePassword(length = 32) {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  const bytes = crypto.randomBytes(length);
+  const table = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  const limit = 256 - (256 % table.length);
   let result = '';
-  for (let i = 0; i < length; i++) {
-    result += charset[bytes[i] % charset.length];
+  while (result.length < length) {
+    const bytes = crypto.randomBytes(length - result.length);
+    for (const byte of bytes) {
+      if (byte >= limit) continue;
+      result += table[byte % table.length];
+      if (result.length >= length) break;
+    }
   }
   return result;
 }
