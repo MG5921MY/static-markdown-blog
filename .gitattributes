@@ -1,0 +1,5 @@
+# Shell 脚本强制 LF 检出
+# 原因：Windows 工作区（core.autocrlf=true）默认检出 CRLF，
+# 而 Docker 构建与 npm 打包使用工作区文件——CRLF 的 shebang
+# 会导致容器 entrypoint 失败（env: can't execute 'sh'，退出码 127）。
+*.sh text eol=lf
