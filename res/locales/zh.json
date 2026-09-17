@@ -121,7 +121,13 @@
     "zoomActual": "查看原始尺寸",
     "zoomFit": "适应窗口",
     "playbackFailed": "此文件无法在当前浏览器中直接播放。",
-    "download": "下载文件"
+    "download": "下载文件",
+    "audioPlay": "播放",
+    "audioPause": "暂停",
+    "audioPrev": "上一首",
+    "audioNext": "下一首",
+    "audioProgress": "播放进度",
+    "audioClose": "关闭播放条"
   },
   "moments": {
     "kicker": "瞬间",

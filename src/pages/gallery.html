@@ -77,6 +77,22 @@
     </div>
   </div>
 
+  <!-- 音频播放条（全局单例，底部固定；播放状态独立于浏览操作） -->
+  <div class="audio-bar" id="audio-bar" hidden>
+    <div class="audio-bar-inner">
+      <button class="audio-bar-btn" id="audio-prev-btn" type="button" aria-label="上一首" data-i18n-aria-label="gallery.audioPrev">⏮</button>
+      <button class="audio-bar-btn audio-bar-play" id="audio-play-btn" type="button" aria-label="播放" data-i18n-aria-label="gallery.audioPlay">▶</button>
+      <button class="audio-bar-btn" id="audio-next-btn" type="button" aria-label="下一首" data-i18n-aria-label="gallery.audioNext">⏭</button>
+      <div class="audio-bar-info">
+        <div class="audio-bar-name" id="audio-bar-name"></div>
+        <div class="audio-bar-time" id="audio-bar-time">0:00 / 0:00</div>
+      </div>
+      <input type="range" class="audio-bar-progress" id="audio-progress" min="0" max="1000" value="0" step="1" aria-label="播放进度" data-i18n-aria-label="gallery.audioProgress" />
+      <button class="audio-bar-btn audio-bar-close" id="audio-close-btn" type="button" aria-label="关闭播放条" data-i18n-aria-label="gallery.audioClose">×</button>
+    </div>
+    <audio id="audio-element" preload="metadata"></audio>
+  </div>
+
   <script src="./client/i18n.js"></script>
   <script src="./client/core.js"></script>
   <script src="./client/nav.js"></script>

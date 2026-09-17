@@ -1,0 +1,6 @@
+名称,类型,说明
+sample-motion.mp4,video,H.264 + AAC 视频样本（可播放）
+sample-web.webm,video,VP9 视频样本（可播放）
+sample-tone.mp3,audio,正弦音音频样本（播放条）
+sample-legacy.avi,video,MPEG-4 旧容器样本（仅下载）
+notes-sample.md,file,演示文档（仅下载）

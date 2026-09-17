@@ -4,6 +4,7 @@ settings:
     image: [jpg, jpeg, png, gif, webp, svg]
     video: [mp4, webm, m4v, mkv, mov, ogv, avi, wmv, flv]
     audio: [mp3, wav, ogg, m4a, aac, flac, opus, wma]
+    file: [pdf, zip, 7z, rar, md, txt, csv, json]
 
 groups:
   - id: identity
@@ -20,5 +21,5 @@ groups:
     name: 媒体演示
     icon: "MD"
     path: assets/gallery/demos
-    types: [video, audio, image]
+    types: [video, audio, image, file]
     maxDepth: 1

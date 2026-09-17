@@ -121,7 +121,13 @@
     "zoomActual": "View original size",
     "zoomFit": "Fit to window",
     "playbackFailed": "This file cannot be played directly in the current browser.",
-    "download": "Download file"
+    "download": "Download file",
+    "audioPlay": "Play",
+    "audioPause": "Pause",
+    "audioPrev": "Previous track",
+    "audioNext": "Next track",
+    "audioProgress": "Playback progress",
+    "audioClose": "Close player"
   },
   "moments": {
     "kicker": "Moments",
