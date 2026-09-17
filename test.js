@@ -39,13 +39,62 @@ function assert(condition, name) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// ── 测试环境辅助（职责分离：进程生命周期 / 失败诊断 / 构建类执行器）──
+//
+// 两个构建进程并发操作 dist 会互相破坏（典型：watch 模式的 serve 响应
+// 测试的源文件修改而自动重建）：表现为 EPERM/EBUSY/ENOTEMPTY（文件锁）
+// 或 ENOENT（产物缺失），并级联出难排查的次级错误（auth/orphan 用例先挂）。
+// 并发无法被可靠预检——干扰可在任意时刻开始——因此策略是「失败即诊断 +
+// 熔断」：第一次构建失败就给出一步可操作的指引，并终止后续构建类测试。
+
+// 等待子进程退出（2s 兜底），确保 serve 完全退出后再由后续构建类
+// 测试重建 dist（消除测试自身进程与构建的任何交集）。
+// 调用后调用方应将引用置空。
+function stopServer(proc) {
+  if (!proc || proc.exitCode !== null || proc.signalCode !== null) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, 2000);
+    proc.once('exit', () => { clearTimeout(timer); resolve(); });
+    proc.kill();
+  });
+}
+
+// 构建失败诊断：识别两类特征并给出可操作指引
+//   1. 文件锁（EPERM/EBUSY/ENOTEMPTY）——构建进程并发竞争 dist
+//   2. 产物缺失（ENOENT 且路径含 dist）——dist 处于部分构建状态
+// 供所有执行 build 的测试路径复用（runBuildTest / HTTP 类 catch）。
+function diagnoseBuildFailure(error) {
+  const msg = String((error && (error.stderr || error.message)) || '');
+  const lockLike = /EPERM|EBUSY|ENOTEMPTY/i.test(msg);
+  const missing = /ENOENT/i.test(msg) && /[\\/]dist[\\/]/i.test(msg);
+  if (!lockLike && !missing) return;
+  const line = msg.split('\n').find((l) => /EPERM|EBUSY|ENOTEMPTY|ENOENT/i.test(l)) || msg.slice(0, 200);
+  console.log(`\n  ⚠ 构建失败呈现${lockLike ? '文件锁' : '产物缺失'}特征：`);
+  console.log(`    ${line.trim()}`);
+  console.log('    最常见原因：另一个 serve 正以 watch 模式运行，测试修改源文件会触发它自动重建，');
+  console.log('    与测试自身的构建并发操作 dist（表现为文件锁或产物缺失）。');
+  console.log('    处理方式：停止该 serve（或用 --no-live 启动），再重跑 node test.js\n');
+}
+
+// 构建类测试的统一执行器：捕获异常并诊断，返回是否通过（无新增失败）。
+// 测试函数自身只保留「断言 + finally 清理」；调用方据返回值决定是否熔断。
+function runBuildTest(name, fn) {
+  const failedBefore = failed;
+  try {
+    fn();
+  } catch (e) {
+    assert(false, `${name}: ${e.message}`);
+    diagnoseBuildFailure(e);
+  }
+  return failed === failedBefore;
+}
+
 // ── Test: Build ──────────────────────────────────────────
+// 失败（构建异常或 dist 结构缺失）由 runBuildTest 统一诊断并触发熔断。
 function testBuild() {
   console.log('\n[Build]');
-  try {
-    execSync('node build.js', { cwd: ROOT, stdio: 'pipe' });
-    assert(true, 'node build.js succeeds');
-  } catch (e) { assert(false, 'node build.js succeeds'); return false; }
+  execSync('node build.js', { cwd: ROOT, stdio: 'pipe' });
+  assert(true, 'node build.js succeeds');
 
   const required = [
     'index.html', 'post.html', 'page.html', '404.html', 'moments.html',
@@ -61,7 +110,6 @@ function testBuild() {
     'themes/base.css', 'assets/favicon.svg',
   ];
   for (const f of required) assert(fs.existsSync(path.join(DIST, f)), `dist/${f}`);
-  return true;
 }
 
 // ── Test: Locales ────────────────────────────────────────
@@ -515,8 +563,6 @@ function testAuthEncryption() {
     } catch (e) {
       assert(false, `decrypt roundtrip: ${e.message}`);
     }
-  } catch (e) {
-    assert(false, `auth encryption test: ${e.message}`);
   } finally {
     fs.writeFileSync(configPath, backup, 'utf8');
     execSync('node build.js', { cwd: ROOT, stdio: 'pipe' }); // 还原非加密 dist
@@ -560,8 +606,6 @@ function testAuthRssGating() {
     const cfg2 = JSON.parse(fs.readFileSync(path.join(DIST, 'site-config.json'), 'utf8'));
     const rssActions2 = (cfg2.navActions || []).filter((a) => /feed\.xml$/.test(a.url || ''));
     assert(rssActions2.length === 1, 'navActions RSS button kept (auth.keepRss: true)');
-  } catch (e) {
-    assert(false, `auth rss gating test: ${e.message}`);
   } finally {
     fs.writeFileSync(configPath, backup, 'utf8');
     execSync('node build.js', { cwd: ROOT, stdio: 'pipe' }); // 还原非加密 dist
@@ -585,8 +629,6 @@ function testIncrementalOrphanCleanup() {
     execSync('node build.js --incremental', { cwd: ROOT, stdio: 'pipe' });
     assert(!fs.existsSync(tmpHtml), 'orphan .html removed');
     assert(!fs.existsSync(tmpDir), 'orphan ssg dir removed');
-  } catch (e) {
-    assert(false, `orphan cleanup test: ${e.message}`);
   } finally {
     if (fs.existsSync(tmpPost)) fs.unlinkSync(tmpPost);
     execSync('node build.js', { cwd: ROOT, stdio: 'pipe' }); // 还原干净 dist
@@ -626,10 +668,11 @@ async function main() {
     }
   } catch (_) { /* 无法读取配置时按非认证基线处理 */ }
 
+  let serverProc = null;
   try {
-    // File-based tests (no server needed)
-    const buildOk = testBuild();
-    if (!buildOk) { process.exitCode = 1; printSummary(); return; }
+    // ── 文件类测试（无服务）────────────────────────────────
+    // 构建基线：dist 不可用时后续断言必然误报 → 失败即终止
+    if (!runBuildTest('Build', testBuild)) { printSummary(); return; }
 
     testLocales();
     testConfig();
@@ -643,28 +686,41 @@ async function main() {
     testNoOldFiles();
     testHtmlTemplates();
 
-    // HTTP tests (need server)
+    // ── HTTP 类测试（需要 serve）───────────────────────────
+    // 失败不阻断后续构建类测试：两类测试环境依赖不同（前者需要端口与
+    // 进程，后者需要能干净重建的 dist），独立失败更利于定位根因。
     console.log('\n[Starting server for HTTP tests...]');
-    let serverProc = null;
+    serverProc = spawn('node', ['serve.js', String(PORT), '--no-live'], { cwd: ROOT, stdio: 'pipe' });
     try {
-      serverProc = spawn('node', ['serve.js', String(PORT), '--no-live'], { cwd: ROOT, stdio: 'pipe' });
       await sleep(3000);
 
-  await testHttp();
-  await testRangeRequests();
-  await testNavCompleteness();
-
-      testAuthEncryption();
-      testAuthRssGating();
-      testIncrementalOrphanCleanup();
+      await testHttp();
+      await testRangeRequests();
+      await testNavCompleteness();
     } catch (e) {
       assert(false, `HTTP tests error: ${e.message}`);
+      diagnoseBuildFailure(e);
     } finally {
-      if (serverProc) serverProc.kill();
+      // HTTP 类结束立即停服务：收窄 serve 生命周期，确保后续构建类
+      // 测试在无测试自身进程干扰的环境下重建 dist。
+      await stopServer(serverProc);
+      serverProc = null;
+    }
+
+    // ── 构建类测试（各自全量重建 dist；测试自身 serve 已停止）──
+    // 任一失败即熔断：在不可信 dist 上继续断言只会产生级联误报。
+    const buildTests = [
+      ['Auth Encryption', testAuthEncryption],
+      ['Auth RSS/Sitemap Gating', testAuthRssGating],
+      ['Incremental Orphan Cleanup', testIncrementalOrphanCleanup],
+    ];
+    for (const [name, fn] of buildTests) {
+      if (!runBuildTest(name, fn)) { printSummary(); return; }
     }
 
     printSummary();
   } finally {
+    if (serverProc) serverProc.kill();
     if (configRestore !== null) {
       fs.writeFileSync(configPath, configRestore, 'utf8');
       console.log('  [Auth] site config restored');
@@ -680,8 +736,13 @@ function printSummary() {
     console.log('\nFailures:');
     failures.forEach((f) => console.log(`  ❌ ${f}`));
   }
-  if (failed > 0) process.exitCode = 1;
-  verifyReadmeTestCount(passed + failed);
+  if (failed > 0) {
+    process.exitCode = 1;
+    // 存在失败用例时总数不具可比性，跳过文档数字校验（避免次生误报）
+    console.log('  （存在失败用例，README 测试数字校验已跳过）');
+  } else {
+    verifyReadmeTestCount(passed + failed);
+  }
 }
 
 /**

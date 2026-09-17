@@ -251,6 +251,32 @@ features:
     speed: 400           # 阅读速度（字/分钟；英文内容建议 200-260）
 ```
 
+### 资源配置（gallery.yml）
+
+`site/content/data/gallery.yml` 定义资源分组，支持四种媒体类型（图片 / 视频 / 音频 / 文件）：
+
+```yaml
+settings:
+  maxDepth: 2                   # 最大扫描深度
+  formats:                      # 各类型的扩展名（video/audio/file 默认为空——需要时显式配置）
+    image: [jpg, jpeg, png, gif, webp, svg]
+    video: [mp4, webm, m4v, mkv, mov, ogv, avi, wmv, flv]
+    audio: [mp3, wav, ogg, m4a, aac, flac, opus, wma]
+    file: [pdf, zip, 7z, rar, md, txt, csv, json]
+
+groups:
+  - id: demos
+    name: 媒体演示
+    path: assets/gallery/demos  # 资源目录（相对于 site/）
+    types: [video, audio, image, file]  # 该分组扫描的类型；省略时仅 image
+    maxDepth: 1
+```
+
+**要点：**
+- `types` 省略时**仅扫描 image**（兼容旧站点）——展示视频 / 音频 / 文件必须显式声明
+- `formats` 平铺数组写法视为图片列表（兼容旧配置）
+- 展示行为：图片 / 视频进灯箱；音频用底部播放条连续播放；文件点击直接下载；`avi` / `wmv` / `flv` / `wma` 等不可播格式仅提供下载
+
 ### 文章排序（content.sort）
 
 列表顺序与「上一篇 / 下一篇」时间线共用同一规则；数组有序（首项主排序，后续项依次打平局）：
@@ -293,6 +319,7 @@ node build.js --include-drafts   # 包含草稿
 ```bash
 node serve.js         # 启动开发服务器 http://localhost:8080
 node serve.js 3000    # 指定端口
+node serve.js 3000 --no-live   # 关闭热重载（跑测试前建议使用）
 ```
 
 #### 热更新范围
@@ -335,6 +362,9 @@ dev:
 ```bash
 node test.js
 ```
+
+> **运行测试前先停止 serve**：watch 模式会在测试修改配置时自动重建，与测试构建冲突。
+> 测试会自行启动/停止它需要的服务；希望预览与测试并行时，用 `--no-live` 启动 serve。
 
 ## config.yml 完整参考
 

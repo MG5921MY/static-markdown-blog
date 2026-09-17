@@ -47,6 +47,7 @@ https://mg5921my.github.io/static-markdown-blog/
 | **构建** | Markdown → HTML 构建时渲染、RSS、Sitemap、搜索索引（CJK 分词）、SSG、增量构建、草稿系统 |
 | **主题** | 7 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、本地化网页字体（OFL）、theme.js、模板覆盖、主题自动发现 |
 | **内容** | 博客文章、自定义页面（HTML/CSS/JS standalone/嵌入）、瞬间、友链、资源、数学公式（KaTeX）、流程图（Mermaid） |
+| **媒体** | 媒体资源库（图片/视频/音频/文件）：灯箱、底部播放条（连续播放）、文件下载、Range 流式播放 |
 | **代码** | 语法高亮（highlight.js）、行号显示、代码复制按钮 |
 | **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、增量构建、自动化测试（296 项） |
 | **部署** | GitHub Pages、Docker、通用静态托管、子路径自动适应 |

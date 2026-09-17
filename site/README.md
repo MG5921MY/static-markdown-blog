@@ -150,23 +150,28 @@ links:                          # 链接列表
 
 ### 2.3 gallery.yml — 资源
 
-图片资源管理，支持目录扫描和分组。
+媒体资源管理（图片 / 视频 / 音频 / 文件），支持目录扫描和分组。
 
 ```yaml
 settings:                       # 全局设置
   maxDepth: 2                   # 最大扫描深度
-  formats: [jpg, jpeg, png, gif, webp, svg]  # 支持的图片格式
+  formats:                      # 支持的扩展名（按媒体类型分组）
+    image: [jpg, jpeg, png, gif, webp, svg]
+    video: [mp4, webm, m4v, mkv, mov, ogv, avi, wmv, flv]
+    audio: [mp3, wav, ogg, m4a, aac, flac, opus, wma]
+    file: [pdf, zip, 7z, rar, md, txt, csv, json]
 
-groups:                         # 图片分组
+groups:                         # 资源分组
   - id: identity                # 分组 ID
     name: 品牌资产               # 分组名称
     icon: "ID"                  # 图标
-    path: assets/gallery/identity  # 图片目录路径（相对于 site/）
+    path: assets/gallery/identity  # 资源目录路径（相对于 site/）
     maxDepth: 1                 # 该分组的扫描深度（覆盖全局）
-  - id: posters
-    name: 视觉基线
-    icon: "DS"
-    path: assets/gallery/posters
+  - id: demos
+    name: 媒体演示
+    icon: "MD"
+    path: assets/gallery/demos
+    types: [video, audio, image, file]  # 该分组扫描的媒体类型
     maxDepth: 1
 ```
 
@@ -175,12 +180,24 @@ groups:                         # 图片分组
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|:----:|------|
 | `settings.maxDepth` | number | ❌ | 全局最大目录扫描深度 |
-| `settings.formats` | string[] | ❌ | 支持的图片文件扩展名 |
+| `settings.formats` | object | ❌ | 各媒体类型的扩展名。`video` / `audio` / `file` 默认为空——需要时显式配置；平铺数组写法视为图片列表（兼容旧配置） |
 | `groups[].id` | string | ✅ | 分组 ID |
 | `groups[].name` | string | ✅ | 分组显示名称 |
 | `groups[].icon` | string | ❌ | 图标 |
-| `groups[].path` | string | ✅ | 图片目录路径（相对于 `site/`） |
+| `groups[].path` | string | ✅ | 资源目录路径（相对于 `site/`） |
+| `groups[].types` | string[] | ❌ | 该分组扫描的媒体类型：`image` / `video` / `audio` / `file`。省略时仅 `image`（兼容旧站点） |
 | `groups[].maxDepth` | number | ❌ | 该分组的扫描深度（覆盖全局设置） |
+
+**展示行为：**
+
+| 类型 | 交互 |
+|------|------|
+| `image` / `video` | 点击打开灯箱查看 / 播放 |
+| `audio` | 底部播放条连续播放（不进灯箱），支持上一首 / 下一首 / 进度 |
+| `file` | 卡片点击直接下载 |
+| 不可播格式（`avi` / `wmv` / `flv` / `wma` 等） | 卡片带下载角标，点击下载 |
+
+> 浏览器可播的视频为 `mp4` / `webm` / `m4v` / `mkv` / `mov` / `ogv`，音频为 `mp3` / `wav` / `ogg` / `m4a` / `aac` / `flac` / `opus`；其余格式仅提供下载。单文件只归入首个匹配的类型，各类型扩展名应互斥。
 
 ### 2.4 projects.yml — 项目
 
@@ -438,7 +455,7 @@ features:
   gallery:
     enabled: true
     source: content/data/gallery.yml
-    description: "浏览图片资源。"
+    description: "浏览图片、视频与音频资源。"
     sectionCopy: "图片、视频与音频资源按分组展示。"  # 资源区块描述
 ```
 
@@ -1052,10 +1069,10 @@ features:
     source: content/data/links.yml
     description: "收藏的参考资源与工具。"
   gallery:
-    enabled: true
+    enabled: true                # 启用/禁用
     source: content/data/gallery.yml
-    description: "浏览图片资源。"
-    sectionCopy: "图片资源按分组展示。"
+    description: "浏览图片、视频与音频资源。"
+    sectionCopy: "图片、视频与音频资源按分组展示。"
 ```
 
 **禁用某个功能：** 将 `enabled` 设为 `false`，该功能页面将不会生成。
@@ -1085,6 +1102,7 @@ node build.js --include-drafts   # 包含草稿文章
 ```bash
 node serve.js                    # 启动开发服务器 http://localhost:8080
 node serve.js 3000               # 指定端口
+node serve.js 3000 --no-live     # 关闭 watch（源文件改动不自动重建）
 ```
 
 ### 运行测试
@@ -1092,6 +1110,10 @@ node serve.js 3000               # 指定端口
 ```bash
 node test.js
 ```
+
+> **提示：** 运行前请停止正在运行的 serve。watch 模式会在测试修改配置时自动重建，
+> 与测试自身的构建冲突（表现为测试失败并给出诊断提示）。测试会自行启动并停止
+> 它需要的服务；希望预览与测试并行时，用 `--no-live` 启动 serve。
 
 ### 部署方式
 
@@ -1121,7 +1143,7 @@ node test.js
 | 开关功能 | 编辑 `config.yml` 的 `features.*.enabled` |
 | 添加友链 | 编辑 `content/data/links.yml` |
 | 添加瞬间 | 编辑 `content/data/moments.yml` |
-| 添加图片 | 将图片放入对应目录，编辑 `content/data/gallery.yml` |
+| 添加资源 | 将图片/视频/音频/文件放入对应目录，编辑 `content/data/gallery.yml` |
 | 构建 | `node build.js` |
 | 预览 | `node serve.js` |
 | 测试 | `node test.js` |

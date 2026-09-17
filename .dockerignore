@@ -20,5 +20,11 @@ dist/
 # 认证密钥（运行时生成，不入镜像）
 site/.auth-key
 
+# 私有维护文档（含内部信息，永不进镜像/公开侧）
+docs/maintenance/
+
+# 本地 agent 规范（.gitignore 排除的本地文件）
+AGENTS.md
+
 # 测试媒体（媒体库演示用，不入镜像）
 site/assets/gallery/demos/

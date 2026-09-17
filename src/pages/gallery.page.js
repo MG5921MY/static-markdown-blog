@@ -33,6 +33,8 @@
 
   function isMediaPathSafe(filePath) {
     if (!filePath || typeof filePath !== 'string') return false;
+    // http:（明文）拒绝；https: 刻意放行——当前构建层只产出站点相对路径，
+    // 此处是为将来"远程媒体"（外链 URL）预留的白名单口子（正则 ^http: 不匹配 https:）。
     if (/^(javascript|data|vbscript|http:)/i.test(filePath)) return false;
     if (filePath.includes('..')) return false;
     return true;
@@ -327,10 +329,10 @@
     updateLightbox();
     lightboxEl.classList.add('active');
     document.body.style.overflow = 'hidden';
-    pauseAudioForVideo(item0Type()); // 灯箱内若为视频则让位音频（单一音源）
+    pauseAudioForVideo(currentLightboxItemType()); // 灯箱内若为视频则让位音频（单一音源）
   }
 
-  function item0Type() {
+  function currentLightboxItemType() {
     const item = currentMedia[lightboxIndex];
     return item ? item.type : '';
   }
@@ -349,7 +351,7 @@
     if (next < 0 || next >= currentMedia.length) return;
     lightboxIndex = next;
     updateLightbox();
-    pauseAudioForVideo(item0Type());
+    pauseAudioForVideo(currentLightboxItemType());
   }
 
   // ── 音频播放条（全局单例）──────────────────────────────

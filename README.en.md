@@ -47,6 +47,7 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | **Build** | Markdown → HTML at build time, RSS, Sitemap, search index (CJK tokenization), SSG, incremental build, draft system |
 | **Themes** | 7 built-in themes, 45+ CSS tokens, layout tokens, 3-state dark mode, bundled web fonts (OFL), theme.js, template overrides, auto-discovery |
 | **Content** | Blog posts, custom pages (HTML/CSS/JS standalone/embedded), moments, links, resources, math (KaTeX), diagrams (Mermaid) |
+| **Media** | Media library (image/video/audio/file): lightbox, bottom playbar (continuous play), file downloads, Range streaming |
 | **Code** | Syntax highlighting (highlight.js), line numbers, copy button |
 | **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 296 automated tests |
 | **Deploy** | GitHub Pages, Docker, any static hosting, sub-path auto-detection |
