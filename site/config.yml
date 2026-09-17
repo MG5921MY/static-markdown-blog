@@ -67,15 +67,27 @@ theme:
 # ── 内容 ────────────────────────────────────────────────
 content:
   # 文章排序：列表顺序与「上一篇 / 下一篇」时间线共用此规则。
-  # 数组有序：首项为主排序，后续项依次打平局（如日期相同按 id）。
-  # by 可选取值：date | title | category | id
+  # 数组有序：首项为主排序，后续项依次打平局（如日期相同按文件名）。
+  # by 可选取值：
+  #   date     日期（frontmatter 的 date，YYYY-MM-DD）
+  #   title    标题（frontmatter，缺省为文件名）
+  #   category 分类（按下方 categories 的定义顺序）
+  #   file     文件名/相对路径（适合 01-xxx.md 序号文件）
+  #   id       内容哈希序（不推荐：顺序无业务含义，仅用于强制确定性打平局）
   # order 可选取值：desc（降序，新的/大的在前）| asc（升序，旧的/小的在前）
-  # 不配置时默认：日期降序 + id 升序（跨平台确定，构建可复现）
+  # 不配置时默认：日期降序 + 文件名升序（跨平台确定，构建可复现）
   sort:
     - by: date
       order: desc
-    - by: id
+    - by: file
       order: asc
+
+  # 排序大小写敏感度（可选，默认 true）
+  #   true ：大小写敏感（apple 与 Apple 分开排序）
+  #   false：大小写不敏感（apple 与 Apple 视为相同，接近文件管理器直觉）
+  # 说明：file/title 排序受运行环境 locale 影响（中文拼音序需完整 ICU）；
+  #       若要求跨环境绝对一致，建议使用 date 排序或文件名数字前缀（01-xxx）。
+  sortCaseSensitive: true
 
   # 分类：每篇文章属于一个分类
   categories:

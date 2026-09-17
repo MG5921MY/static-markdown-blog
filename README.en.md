@@ -45,10 +45,10 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | Category | Capabilities |
 |----------|-------------|
 | **Build** | Markdown → HTML at build time, RSS, Sitemap, search index (CJK tokenization), SSG, incremental build, draft system |
-| **Themes** | 7 built-in themes, 45+ CSS tokens, layout tokens, 3-state dark mode, Google Fonts, theme.js, template overrides, auto-discovery |
+| **Themes** | 7 built-in themes, 45+ CSS tokens, layout tokens, 3-state dark mode, bundled web fonts (OFL), theme.js, template overrides, auto-discovery |
 | **Content** | Blog posts, custom pages (HTML/CSS/JS standalone/embedded), moments, links, gallery, math (KaTeX), diagrams (Mermaid) |
 | **Code** | Syntax highlighting (highlight.js), line numbers, copy button |
-| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 253 automated tests |
+| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 287 automated tests |
 | **Deploy** | GitHub Pages, Docker, any static hosting, sub-path auto-detection |
 | **Extend** | Plugin architecture, custom themes, custom pages (standalone/embedded), comments (Giscus), language switching (auto-discovery) |
 
@@ -64,8 +64,8 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 | glass | Liquid glass | Wallpaper global background + translucent glass cards (backdrop-filter + highlight borders) | Visual showcases, personal sites |
 | sakura | Japanese journal | Warm paper base + sakura accent, serif display headings, large rounded cards | Personal notes |
 
-> **glass wallpaper**: the background image `site/themes/glass/hero-piano.jpg` is a local asset (not tracked).
-> Place any image in `site/themes/glass/` (keep the file name) to replace it; without it the page falls back to a dark ambient background.
+> **glass wallpaper**: the default wallpaper `site/themes/glass/hero-piano.jpg` is bundled (~5MB, shipped with the repo).
+> To replace it, drop any image into `site/themes/glass/` keeping the file name; removing the file makes the page fall back to a dark ambient gradient background.
 
 Themes are auto-discovered at build time from `res/themes/` (system) and `site/themes/` (user). Adding a custom theme requires no configuration changes.
 
@@ -269,7 +269,7 @@ node build.js --include-drafts   # Include drafts
 ## Tests
 
 ```bash
-node test.js                     # Run 253 automated tests
+node test.js                     # Run 287 automated tests
 ```
 
 ## Documentation

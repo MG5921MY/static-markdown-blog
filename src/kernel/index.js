@@ -33,13 +33,16 @@ function saveManifest(distDir, files) {
  * 不得携带渲染后的 HTML 全文、源文件路径等内部信息。
  */
 function stripInternalFields(post) {
-  const {
-    html, sourcePath, sourceRelative,
-    _outputPath, _needsWrite, _cached, _encrypted, _encryptedFile,
-    ...rest
-  } = post || {};
-  return rest;
-}
+    const {
+      html, sourcePath, sourceRelative,
+      // 构建期内部字段：file（文件名/路径）、categoryOrder（分类定义序）
+      // 仅供构建期排序使用，不进入公开产物（避免文件名等元数据泄露）
+      file, categoryOrder,
+      _outputPath, _needsWrite, _cached, _encrypted, _encryptedFile,
+      ...rest
+    } = post || {};
+    return rest;
+  }
 
 /**
  * 构建干净的 categories 索引（posts 与 groups 中的文章对象均剥离内部字段）。
@@ -178,6 +181,15 @@ async function build(userOptions) {
       // （明文 HTML 未落盘，缺此标记会导致 404 → Failed to load post content）
       if (pathMap[post.id]) pathMap[post.id].encrypted = true;
     }
+    // 加密文章的文件名/路径不对公开产物暴露：
+    // 前端加密分支不依赖 file/outputPath（内容走 encrypted/<id>.json），
+    // 清空后即使 pathmap.json 被下载也无法获知加密文章的源文件名
+    for (const post of posts) {
+      if (post._encrypted && pathMap[post.id]) {
+        delete pathMap[post.id].file;
+        delete pathMap[post.id].outputPath;
+      }
+    }
     console.log(`[AUTH] 加密了 ${posts.length} 篇文章 → dist/encrypted/`);
   }
 
@@ -198,7 +210,10 @@ async function build(userOptions) {
 
   const manifestFiles = {};
   for (const [id, entry] of Object.entries(pathMap)) {
-    const src = path.join(config._siteRoot, config.categories.find(c => c.id === entry.category)?.path || '', entry.file);
+    // 加密文章的 pathMap.file 已清除（文件名保护）——回退到 post 对象取源相对路径
+    const sourceRelative = entry.file || posts.find((p) => p.id === id)?.sourceRelative;
+    if (!sourceRelative) continue;
+    const src = path.join(config._siteRoot, config.categories.find(c => c.id === entry.category)?.path || '', sourceRelative);
     manifestFiles[id] = fileHash(src);
   }
   saveManifest(distDir, manifestFiles);

@@ -184,6 +184,9 @@ window.BlogCore = {
     if (!this.isValidId(postId) || !this.pathMap) return null;
     const mapping = this.pathMap[postId];
     if (!mapping || !this.isValidId(mapping.category)) return null;
+    // 加密文章：内容走 encrypted/<id>.json，公开产物中不含其文件名/路径，
+    // 因此跳过 file 校验（认证模式下 pathmap 的 file/outputPath 已被清空）
+    if (mapping.encrypted === true) return mapping;
     if (!mapping.file || this.isPathDangerous(mapping.file)) return null;
     return mapping;
   },

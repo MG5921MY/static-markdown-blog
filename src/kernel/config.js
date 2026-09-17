@@ -235,8 +235,14 @@ const KNOWN_TOP_LEVEL_KEYS = [
 /**
  * 文章排序支持的字段与方向（校验与内容扫描共用，单一来源）。
  * 对应配置：content.sort[].by / content.sort[].order
+ *
+ * - date     文章 frontmatter 的日期（YYYY-MM-DD）
+ * - title    标题（frontmatter，缺省为文件名）
+ * - category 分类（按 config.yml 中 categories 的定义顺序）
+ * - file     文件相对路径（适合 01-xxx.md 这类序号文件名）
+ * - id       内容哈希序（仅适合强制确定性打平局，不推荐业务排序）
  */
-const SORT_FIELDS = ['date', 'title', 'category', 'id'];
+const SORT_FIELDS = ['date', 'title', 'category', 'file', 'id'];
 const SORT_ORDERS = ['asc', 'desc'];
 
 /**
@@ -268,6 +274,7 @@ const CONFIG_TYPE_RULES = [
   ['content.categories', 'array'],
   ['content.pages', ['array', 'object']], // 兼容对象写法（normalizePageRecords 支持）
   ['content.sort', 'array'],
+  ['content.sortCaseSensitive', 'boolean'],
   ['features.relatedPosts', 'object'],
   ['features.readingTime', 'object'],
   ['features.relatedPosts.enabled', 'boolean'],
@@ -389,6 +396,10 @@ function validateConfig(raw) {
       if (item.order !== undefined && !SORT_ORDERS.includes(item.order)) {
         errors.push(`"content.sort[${index}].order" 应为 ${SORT_ORDERS.join(' / ')}，实际为 ${JSON.stringify(item.order)}`);
       }
+      // id 为内容哈希序，仅适合强制确定性打平局——业务排序请改用 file
+      if (item.by === 'id') {
+        warnings.push(`"content.sort[${index}].by = id" 是内容哈希序（顺序无业务含义），建议改用 "file"（文件名序）`);
+      }
     });
   }
 
@@ -479,6 +490,8 @@ function loadConfig(cwd, pkgRoot) {
       categories: raw.content?.categories || [],
       pages: normalizePageRecords(raw.content?.pages || []),
       sort: Array.isArray(raw.content?.sort) ? raw.content.sort : null,
+      // 排序大小写敏感度：默认 true（与历史行为一致）；false = a 与 A 视为相同
+      sortCaseSensitive: raw.content?.sortCaseSensitive !== false,
     nav: raw.nav || [],
     navActions: raw.navActions || [],
     features: raw.features || {},

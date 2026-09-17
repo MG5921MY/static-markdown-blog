@@ -35,56 +35,80 @@ function makeSummary(body, maxLength) {
 /**
  * 排序字段取值器：文章对象 → 参与排序的字符串值。
  * 取值字段与 config.js 的 SORT_FIELDS 保持一致（单一来源校验）。
+ *
+ * - category 使用「分类定义序」（config.yml 中 categories 的排列顺序，
+ *   零填充后字符串比较）——符合"配置顺序即预期顺序"的直觉，而非 id 字母序
+ * - file 使用文件相对路径（含子目录）——01-xxx.md 这类序号文件名自然有序
  */
 const SORT_FIELD_GETTERS = {
   date: (post) => String(post.date || ''),
   title: (post) => String(post.title || ''),
-  category: (post) => String(post.category || ''),
+  category: (post) => String(post.categoryOrder ?? 999).padStart(3, '0'),
+  file: (post) => String(post.file || ''),
   id: (post) => String(post.id || ''),
 };
 
 /**
- * 默认排序：日期降序（新的在前）+ id 升序打平局。
+ * 默认排序：日期降序（新的在前）+ 文件名升序打平局。
  *
- * id 由「分类:相对路径」哈希生成——内容与路径不变则 id 不变，
- * 因此同日期文章的前后关系跨平台、跨次构建保持确定（可复现）。
+ * 文件名（file）作为打平局键：同日期文章按文件路径稳定排序，
+ * 人类可读、跨平台确定（先前的 id 哈希序虽确定但不可读）。
  */
 const DEFAULT_SORT = [
   { by: 'date', order: 'desc' },
-  { by: 'id', order: 'asc' },
+  { by: 'file', order: 'asc' },
 ];
 
 /**
  * 归一化排序配置（content.sort）：
- * 过滤非法字段/方向的条目；全部非法或未配置时回退默认排序。
+ * 过滤非法字段/方向的条目并输出警告；全部非法或未配置时回退默认排序。
  *
  * @param {Array<{ by?: string, order?: string }>|null|undefined} rawSort
- * @returns {Array<{ by: string, order: string }>} 至少一项的合法规则列表
+ * @returns {{ rules: Array<{ by: string, order: string }>, warnings: string[] }}
  */
 function normalizeSortConfig(rawSort) {
-  if (!Array.isArray(rawSort)) return DEFAULT_SORT;
-  const rules = rawSort
-    .filter((item) => item && typeof item === 'object' && SORT_FIELDS.includes(item.by))
-    .map((item) => ({
+  if (!Array.isArray(rawSort)) return { rules: DEFAULT_SORT, warnings: [] };
+  const warnings = [];
+  const rules = [];
+  rawSort.forEach((item, index) => {
+    if (!item || typeof item !== 'object' || !SORT_FIELDS.includes(item.by)) {
+      warnings.push(`content.sort[${index}] 的 by=${JSON.stringify(item && item.by)} 无法识别，已忽略`);
+      return;
+    }
+    if (item.order !== undefined && !SORT_ORDERS.includes(item.order)) {
+      warnings.push(`content.sort[${index}] 的 order=${JSON.stringify(item.order)} 无法识别，已按 desc 处理`);
+    }
+    rules.push({
       by: item.by,
       order: SORT_ORDERS.includes(item.order) ? item.order : 'desc',
-    }));
-  return rules.length > 0 ? rules : DEFAULT_SORT;
+    });
+  });
+  return { rules: rules.length > 0 ? rules : DEFAULT_SORT, warnings };
 }
 
 /**
  * 构建多级文章比较器：按规则顺序依次比较，首个非零结果即返回；
  * 全部字段相等时返回 0（保留稳定排序的原始顺序）。
  *
+ * 比较使用 numeric 自然序（"2" < "10"）：日期非零填充与序号文件名均可正确排序。
+ * 大小写敏感度由 caseSensitive 控制（content.sortCaseSensitive）：
+ *   true  → 'variant'（大小写敏感，a 与 A 分开排序——默认，与历史行为一致）
+ *   false → 'base'（大小写不敏感，a 与 A 视为相同——接近文件管理器直觉）
+ *
  * @param {Array<{ by: string, order: string }>|null|undefined} sortConfig - 来自 config.content.sort
+ * @param {string[]} [warnings] - 可选，接收配置归一化警告（供构建输出）
+ * @param {boolean} [caseSensitive=true] - 大小写敏感度（content.sortCaseSensitive）
  * @returns {(a: object, b: object) => number} Array.prototype.sort 兼容比较器
  */
-function buildPostComparator(sortConfig) {
-  const rules = normalizeSortConfig(sortConfig);
+function buildPostComparator(sortConfig, warnings, caseSensitive = true) {
+  const normalized = normalizeSortConfig(sortConfig);
+  if (Array.isArray(warnings)) warnings.push(...normalized.warnings);
+  const rules = normalized.rules;
+  const sensitivity = caseSensitive === false ? 'base' : 'variant';
   return (a, b) => {
     for (const rule of rules) {
       const getter = SORT_FIELD_GETTERS[rule.by];
-      const cmp = getter(a).localeCompare(getter(b));
+      const cmp = getter(a).localeCompare(getter(b), undefined, { numeric: true, sensitivity });
       if (cmp !== 0) return rule.order === 'asc' ? cmp : -cmp;
     }
     return 0;
@@ -143,6 +167,7 @@ function scanCategoryPosts(category, summaryLength, siteRoot, distDir, includeDr
         tags: Array.isArray(parsed.meta.tags) ? parsed.meta.tags : [],
         summary: parsed.meta.summary || makeSummary(parsed.body, summaryLength),
         groupPath,
+        file: relative,
         category: category.id,
         categoryName: category.name || category.id,
         categoryIcon: category.icon || '',
@@ -171,12 +196,13 @@ function scanContent(config, options) {
   const { includeDrafts = false, manifest = null, distDir } = options;
   const categories = {};
   const pathMap = {};
+  const warnings = [];
   // 排序比较器：列表顺序与「上一篇 / 下一篇」时间线共用同一规则（content.sort）
-  const comparator = buildPostComparator(config.sort);
+  const comparator = buildPostComparator(config.sort, warnings, config.sortCaseSensitive !== false);
 
   const siteRoot = config.siteRoot || config._siteRoot;
-  for (const category of config.categories) {
-    if (!category.id || !category.path) continue;
+  config.categories.forEach((category, categoryIndex) => {
+    if (!category.id || !category.path) return;
     const scanned = scanCategoryPosts(
       category, config.display?.summaryLength || 140,
       siteRoot, distDir, includeDrafts, manifest, config.security, comparator
@@ -191,19 +217,35 @@ function scanContent(config, options) {
       groups: scanned.groups
     };
     for (const post of scanned.posts) {
+      // 分类定义序（config.categories 的排列顺序）——供 by: category 按用户直觉排序
+      post.categoryOrder = categoryIndex;
       pathMap[post.id] = {
         category: category.id,
         file: post.sourceRelative,
         outputPath: post._outputPath,
         rendered: true
       };
+      // 日期体检：缺失/格式异常给出构建提示（不影响构建，仅提醒补齐）
+      if (!post.date) {
+        warnings.push(`文章「${post.title}」缺少 date 字段（将排在时间线末尾，建议补充 date: YYYY-MM-DD）`);
+      } else if (!/^\d{4}-\d{2}-\d{2}$/.test(String(post.date))) {
+        warnings.push(`文章「${post.title}」的 date="${post.date}" 非标准 YYYY-MM-DD 格式（排序可能不准确）`);
+      }
     }
-  }
+  });
 
   const allPosts = [];
   for (const [catId, catData] of Object.entries(categories)) {
     for (const post of (catData.posts || [])) {
-      allPosts.push({ id: post.id, title: post.title, date: post.date, category: catId, tags: post.tags || [] });
+      allPosts.push({
+        id: post.id,
+        title: post.title,
+        date: post.date,
+        category: catId,
+        categoryOrder: post.categoryOrder,
+        file: post.file,
+        tags: post.tags || []
+      });
     }
   }
   allPosts.sort(comparator);
@@ -232,6 +274,12 @@ function scanContent(config, options) {
     posts.push(...(catData.posts || []));
   }
   posts.sort(comparator);
+
+  // 内容体检提示（排序配置问题 / 日期缺失或格式异常）——仅提示，不阻断构建
+  if (warnings.length > 0) {
+    console.warn(`\n内容提示（${warnings.length} 条）：`);
+    for (const warning of warnings) console.warn(`  ⚠ ${warning}`);
+  }
 
   return { posts, categories, pathMap };
 }

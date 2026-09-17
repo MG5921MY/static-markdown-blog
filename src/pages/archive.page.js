@@ -16,7 +16,13 @@
       const listEl = document.getElementById('archive-list');
       if (!listEl) return;
 
-      const posts = Blog.getAllPosts();
+      // 归档页始终按日期降序（本页语义 = 时间线；不依赖 content.sort 的全局排序，
+      // 避免用户改排序后年月分组出现乱序）；同日期按标题升序打平局
+      const posts = [...Blog.getAllPosts()].sort((a, b) => {
+        const byDate = String(b.date || '').localeCompare(String(a.date || ''), undefined, { numeric: true });
+        if (byDate !== 0) return byDate;
+        return String(a.title || '').localeCompare(String(b.title || ''), undefined, { numeric: true });
+      });
       if (posts.length === 0) {
         listEl.innerHTML = `<div class="empty-state"><p>${Blog.t('index.noPostsInDir')}</p></div>`;
         return;

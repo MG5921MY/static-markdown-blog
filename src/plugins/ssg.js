@@ -28,6 +28,9 @@ module.exports = function ssgPlugin(buildResult) {
   let count = 0;
 
   for (const [id, mapping] of Object.entries(pathMap || {})) {
+    // 加密文章：公开产物中已清除 outputPath（文件名保护），且明文 HTML 不落盘
+    // ——不生成 SSG 静态页（内容加密，静态页会破坏加密边界）
+    if (!mapping.outputPath) continue;
     const htmlPath = path.join(distDir, mapping.outputPath);
     if (!fs.existsSync(htmlPath)) continue;
 

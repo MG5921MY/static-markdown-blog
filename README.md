@@ -45,10 +45,10 @@ https://mg5921my.github.io/static-markdown-blog/
 | 类别 | 功能 |
 |------|------|
 | **构建** | Markdown → HTML 构建时渲染、RSS、Sitemap、搜索索引（CJK 分词）、SSG、增量构建、草稿系统 |
-| **主题** | 7 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、Google Fonts、theme.js、模板覆盖、主题自动发现 |
+| **主题** | 7 个内置主题、45+ CSS Token、布局 Token、三态亮暗切换、本地化网页字体（OFL）、theme.js、模板覆盖、主题自动发现 |
 | **内容** | 博客文章、自定义页面（HTML/CSS/JS standalone/嵌入）、瞬间、友链、图库、数学公式（KaTeX）、流程图（Mermaid） |
 | **代码** | 语法高亮（highlight.js）、行号显示、代码复制按钮 |
-| **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、增量构建、自动化测试（253 项） |
+| **开发** | 零依赖、热重载（SSE）、CLI（i18n 支持）、增量构建、自动化测试（287 项） |
 | **部署** | GitHub Pages、Docker、通用静态托管、子路径自动适应 |
 | **扩展** | 插件架构、自定义主题、自定义页面（standalone/嵌入）、评论集成（Giscus）、语言切换（自动发现） |
 
@@ -72,8 +72,8 @@ https://mg5921my.github.io/static-markdown-blog/
 |------|----------|
 | ![mono](docs/screenshots/theme-mono.png) | ![terminal](docs/screenshots/theme-terminal.png) |
 
-> **glass 主题壁纸**：背景图 `site/themes/glass/hero-piano.jpg` 为本地素材（不入库），
-> 可在 `site/themes/glass/` 放置任意图片（保持文件名）替换；缺失时页面回退为深色氛围背景，功能不受影响。
+> **glass 主题壁纸**：默认壁纸 `site/themes/glass/hero-piano.jpg` 已内置（约 5MB，随仓库分发）。
+> 替换方式：放置任意图片于 `site/themes/glass/` 并保持文件名；若删除该文件，页面自动回退为深色氛围背景（渐变兜底）。
 
 主题自动发现：构建时扫描 `res/themes/`（系统）和 `site/themes/`（用户），写入 `site-config.json` 的 `theme.available`。用户添加自定义主题后无需额外配置。AI 也可以自己设计主题。
 
@@ -284,7 +284,7 @@ dist/
 └── search-index.json   搜索索引
 ```
 
-**核心资源全部本地化。** 所有 JS 库（highlight.js、DOMPurify、marked、mermaid、KaTeX、lunr）均以 vendor 方式本地加载，零 CDN 依赖。外部依赖仅剩 Google Fonts（字体）和 Giscus（可选评论系统）。
+**核心资源全部本地化。** 所有 JS 库（highlight.js、DOMPurify、marked、mermaid、KaTeX、lunr）与网页字体（Inter/JetBrains Mono/Playfair Display/Caveat/Orbitron，OFL-1.1）均以 vendor 方式本地加载，**零 CDN 依赖、零运行时外部请求**。外部依赖仅剩 Google Fonts（字体）和 Giscus（可选评论系统）。
 
 ## CLI
 
@@ -310,7 +310,7 @@ node build.js --include-drafts   # 包含草稿
 ## 测试
 
 ```bash
-node test.js                     # 运行 253 项自动化测试
+node test.js                     # 运行 287 项自动化测试
 ```
 
 ## 文档

@@ -255,17 +255,30 @@ features:
 
 列表顺序与「上一篇 / 下一篇」时间线共用同一规则；数组有序（首项主排序，后续项依次打平局）：
 
+| by | 取值来源 | 说明 |
+|---|---|---|
+| `date` | frontmatter `date`（YYYY-MM-DD） | 缺失时排最后（构建输出提示，建议补齐） |
+| `title` | frontmatter `title`（缺省文件名） | |
+| `category` | config 中 `categories` 的**定义顺序** | 不是 id 字母序——按你在配置里的排列 |
+| `file` | 文件相对路径（含子目录） | 适合 `01-xxx.md` 序号文件名 |
+| `id` | 内容哈希 | **不推荐**（顺序无业务含义；仅用于强制确定性打平局，配置时构建会提示） |
+
 ```yaml
 content:
   sort:
-    - by: date           # 可选取值：date | title | category | id
+    - by: date           # 可选取值：date | title | category | file | id
       order: desc        # 可选取值：desc（降序）| asc（升序）
-    - by: id
+    - by: file
       order: asc
 ```
 
-不配置时默认「日期降序 + id 升序」——跨平台确定、构建可复现。
-非法条目（未知 by / order）会被过滤并回退默认；配置校验层会给出错误提示。
+- 不配置时默认「日期降序 + 文件名升序」——跨平台确定、构建可复现
+- **大小写敏感度**（`content.sortCaseSensitive`，默认 `true`）：`false` 时 a 与 A 视为相同（接近文件管理器直觉）
+- 排序采用**数字自然序**（`2` < `10`）：序号文件名与日期非零填充（`2026-7-3`）均可正确排序
+- 归档页**始终按日期降序**分组（不受此配置影响，避免年月乱序）
+- 非法条目（未知 by / order）会被过滤并在构建时输出警告；配置校验层同时给出错误提示
+- **locale 说明**：`file` / `title` 排序受运行环境 locale 影响（中文拼音序需完整 ICU 数据）；
+  若要求跨环境绝对一致，建议使用 `date` 排序或为文件名加数字前缀（`01-xxx`）
 
 ### 构建
 
@@ -538,7 +551,7 @@ theme:
 
 **第 2 步：选字体**
 
-字体决定 80% 的气质。Google Fonts 免费可用：
+字体决定 80% 的气质。平台内置主题使用**本地化网页字体**（`res/vendor/fonts/webfonts.css`，由 `scripts/localize-fonts.js` 从 Google Fonts 下载 latin 子集并内嵌，OFL-1.1 许可，运行时零外部请求）。自定义主题推荐同样本地化；如接受外部请求，也可直接 `@import` Google Fonts。
 
 | 类型 | 气质 | 推荐字体 |
 |------|------|----------|
@@ -1297,6 +1310,10 @@ auth:
 
 - ✅ 防止路过者直接看到内容
 - ✅ 防止搜索引擎收录
+- ✅ **正文加密**：AES-256-GCM 加密（`dist/encrypted/<id>.json`），明文 HTML 不落盘
+- ✅ **文件名保护**：加密文章的路径信息（file/outputPath）从公开产物清除——`pathmap.json` 无法获知源文件名
+- ✅ **公开出口联动关闭**：RSS / Sitemap / robots / **搜索索引（search-index.json）** 在认证模式下自动关闭并清理旧产物
+  （搜索索引含标题/摘要/标签/文件路径，保留等同泄露；标题与摘要仍以明文存于 content-index.json——首页展示需要，敏感信息请勿写入标题/摘要）
 - ❌ 不能防御查看网页源码
 - ❌ 不能替代服务器端认证
 

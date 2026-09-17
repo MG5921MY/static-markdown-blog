@@ -1004,6 +1004,17 @@ img.nav-logo {
   color: var(--accent);
 }
 
+/* 首屏加载态：脉冲动画（避免「加载中」文字显得卡死；内容就绪后由 JS 替换） */
+p[data-i18n*="loading" i] {
+  animation: loadingPulse 1.6s ease-in-out infinite;
+  color: var(--text-muted);
+}
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
 /* 归档页：年 → 月分组时间线 */
 .archive-list {
   display: flex;

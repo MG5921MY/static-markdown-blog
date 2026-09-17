@@ -8,6 +8,8 @@ This project uses the following third-party libraries and resources. Each is use
 
 ## Vendor Libraries (Bundled)
 
+All runtime libraries are bundled locally under `res/vendor/` — the site has **zero CDN dependencies** at runtime.
+
 ### marked
 
 - **Version**: 12.0.2
@@ -31,10 +33,6 @@ This project uses the following third-party libraries and resources. Each is use
 - **Copyright**: Copyright (c) 2013-2020 Khan Academy
 - **Source**: https://github.com/KaTeX/KaTeX
 - **Usage**: Mathematical formula rendering
-
----
-
-## CDN Dependencies (Optional Enhancements)
 
 ### DOMPurify
 
@@ -60,21 +58,25 @@ This project uses the following third-party libraries and resources. Each is use
 - **Source**: https://github.com/mermaid-js/mermaid
 - **Usage**: Diagram rendering (flowcharts, sequence diagrams, etc.)
 
+---
+
+## External Services (Optional, Not Bundled)
+
 ### Giscus
 
 - **Version**: Latest
 - **License**: MIT
 - **Copyright**: Copyright (c) 2021 giscus
 - **Source**: https://github.com/giscus/giscus
-- **Usage**: Comments system
+- **Usage**: Comments system (optional; loaded from `giscus.app` when enabled — an external service that cannot be bundled because it requires backend storage)
 
 ---
 
 ## Fonts
 
-### Google Fonts (SIL Open Font License 1.1)
+### Web Fonts (Bundled, SIL Open Font License 1.1)
 
-All Google Fonts are served from `fonts.googleapis.com` under the [SIL Open Font License 1.1](https://scripts.sil.org/OFL).
+All web fonts are downloaded from Google Fonts (latin subset) and **bundled locally** under `res/vendor/fonts/` (see `scripts/localize-fonts.js` for the reproducible download script). Licensed under the [SIL Open Font License 1.1](https://scripts.sil.org/OFL) — embedding and redistribution permitted.
 
 | Font | Usage |
 |------|-------|
@@ -94,7 +96,7 @@ All Google Fonts are served from `fonts.googleapis.com` under the [SIL Open Font
 
 ## Theme Designs
 
-All themes (graphite, terminal, paper, aurora, mono) and base.css are original designs created for this project. No existing theme packages were referenced or copied.
+All themes (graphite, terminal, paper, aurora, mono, glass, sakura) and base.css are original designs created for this project. No existing theme packages were referenced or copied.
 
 ---
 
@@ -107,4 +109,4 @@ All themes (graphite, terminal, paper, aurora, mono) and base.css are original d
 
 ---
 
-*Last updated: 2026-06-30*
+*Last updated: 2026-09-17*

@@ -8,6 +8,7 @@
 
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 
@@ -170,33 +171,115 @@ function testSortComparator() {
   console.log('\n[Sort Config]');
   const { buildPostComparator } = require('./src/kernel/content');
   const posts = [
-    { id: 'b', title: 'Beta', date: '2026-01-02', category: 'x' },
-    { id: 'a', title: 'Alpha', date: '2026-01-02', category: 'y' },
-    { id: 'c', title: 'Gamma', date: '2026-01-01', category: 'x' },
+    { id: 'b', title: 'Beta', date: '2026-01-02', category: 'x', categoryOrder: 0, file: 'x/02-beta.md' },
+    { id: 'a', title: 'Alpha', date: '2026-01-02', category: 'y', categoryOrder: 1, file: 'y/01-alpha.md' },
+    { id: 'c', title: 'Gamma', date: '2026-01-01', category: 'x', categoryOrder: 0, file: 'x/10-gamma.md' },
+    { id: 'd', title: 'Delta', date: '2026-01-01', category: 'x', categoryOrder: 0, file: 'x/2-delta.md' },
   ];
   const ids = (list) => list.map((p) => p.id);
 
-  // 默认（未配置）：日期降序 + id 升序
-  assert(JSON.stringify(ids([...posts].sort(buildPostComparator(null)))) === JSON.stringify(['a', 'b', 'c']), 'default: date desc then id asc');
-
-  // 单字段：标题升序 / 降序
-  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'asc' }])))) === JSON.stringify(['a', 'b', 'c']), 'sort by title asc');
-  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'desc' }])))) === JSON.stringify(['c', 'b', 'a']), 'sort by title desc');
-
-  // 多级：分类升序 → 组内日期降序
+  // 默认（未配置）：日期降序 + 文件名升序（数字自然序：2 < 10）
   assert(
-    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'category', order: 'asc' }, { by: 'date', order: 'desc' }])))) === JSON.stringify(['b', 'c', 'a']),
+    JSON.stringify(ids([...posts].sort(buildPostComparator(null)))) === JSON.stringify(['b', 'a', 'd', 'c']),
+    'default: date desc then file asc (numeric)'
+  );
+
+  // file 排序（数字自然序：x/2 < x/10）
+  assert(
+    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'file', order: 'asc' }])))) === JSON.stringify(['b', 'd', 'c', 'a']),
+    'sort by file asc uses numeric order (2 before 10)'
+  );
+
+  // category 排序 = 分类定义序（categoryOrder），非 id 字母序
+  const defPosts = [
+    { id: 'e', category: 'yy', categoryOrder: 0, file: 'a.md' },
+    { id: 'f', category: 'aa', categoryOrder: 1, file: 'b.md' },
+  ];
+  assert(
+    JSON.stringify(ids([...defPosts].sort(buildPostComparator([{ by: 'category', order: 'asc' }])))) === JSON.stringify(['e', 'f']),
+    'category sorts by definition order (not id alphabet)'
+  );
+
+  // 单字段：标题升序 / 降序（字母序：Alpha < Beta < Delta < Gamma）
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'asc' }])))) === JSON.stringify(['a', 'b', 'd', 'c']), 'sort by title asc');
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'title', order: 'desc' }])))) === JSON.stringify(['c', 'd', 'b', 'a']), 'sort by title desc');
+
+  // 多级：分类定义序升序 → 组内日期降序
+  assert(
+    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'category', order: 'asc' }, { by: 'date', order: 'desc' }])))) === JSON.stringify(['b', 'c', 'd', 'a']),
     'multi-level: category asc then date desc'
   );
 
-  // 非法配置：全部非法回退默认 → [a,b,c]
-  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'nope' }])))) === JSON.stringify(['a', 'b', 'c']), 'invalid rules fall back to default');
+  // 非法配置：全部非法回退默认 → date desc + file asc
+  assert(JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'nope' }])))) === JSON.stringify(['b', 'a', 'd', 'c']), 'invalid rules fall back to default');
 
-  // 部分合法：仅保留合法项（date desc），同日期保持稳定输入序 → [b,a,c]
+  // 部分合法 + 非法规格记录警告
+  const warnings = [];
+  const partial = [...posts].sort(buildPostComparator([{ by: 'nope' }, { by: 'date', order: 'invalid' }], warnings));
+  assert(JSON.stringify(ids(partial)) === JSON.stringify(['b', 'a', 'c', 'd']), 'partially invalid: only valid field kept (stable for ties)');
+  assert(warnings.length === 2, 'normalize warns on invalid by and order');
+
+  // 日期非零填充也能正确排序（numeric 容错）
+  const looseDates = [
+    { id: 'p', date: '2026-7-3', file: 'p.md' },
+    { id: 'q', date: '2026-12-01', file: 'q.md' },
+  ];
   assert(
-    JSON.stringify(ids([...posts].sort(buildPostComparator([{ by: 'nope' }, { by: 'date', order: 'invalid' }])))) === JSON.stringify(['b', 'a', 'c']),
-    'partially invalid: only valid field kept'
+    JSON.stringify(ids([...looseDates].sort(buildPostComparator([{ by: 'date', order: 'asc' }])))) === JSON.stringify(['p', 'q']),
+    'numeric compare tolerates non-padded dates (7-3 before 12-01)'
   );
+
+  // 大小写敏感度（content.sortCaseSensitive → sensitivity variant/base）
+  // 断言比较器语义（与运行环境 locale 无关）：
+  //   base 下 Apple 与 apple 视为相等（返回 0，排序时稳定保持输入序）
+  //   variant 下两者不相等（具体先后由 locale 决定）
+  const rule = [{ by: 'file', order: 'asc' }];
+  const cmpBase = buildPostComparator(rule, [], false);
+  const cmpSensitive = buildPostComparator(rule, [], true);
+  assert(cmpBase({ file: 'Apple.md' }, { file: 'apple.md' }) === 0, 'case insensitive: Apple equals apple');
+  assert(cmpSensitive({ file: 'Apple.md' }, { file: 'apple.md' }) !== 0, 'case sensitive: Apple differs from apple');
+}
+
+// ── Test: Auth gating (public outputs must not leak when auth enabled) ──
+function testAuthGating() {
+  console.log('\n[Auth Gating]');
+  const tmpDist = fs.mkdtempSync(path.join(os.tmpdir(), 'blog-auth-gating-'));
+  const authBuild = {
+    config: { auth: { enabled: true }, site: {}, deployment: {}, seo: {} },
+    categories: {},
+    pathMap: {},
+    distDir: tmpDist,
+    pkgRoot: __dirname,
+  };
+
+  try {
+    // search-index：跳过 + 清理旧产物（含标题/摘要/路径的索引不得残留）
+    const indexPath = path.join(tmpDist, 'search-index.json');
+    fs.writeFileSync(indexPath, JSON.stringify([{ id: 'x', title: 'secret', url: 'posts/a/secret.html' }]));
+    const searchResult = require('./src/plugins/search-index')(authBuild);
+    assert(searchResult.skipped === true, 'search-index: skipped flag when auth enabled');
+    assert(searchResult.count === 0, 'search-index: no documents generated');
+    assert(!fs.existsSync(indexPath), 'search-index: old artifact removed');
+
+    // rss：跳过 + 清理旧产物
+    const feedPath = path.join(tmpDist, 'feed.xml');
+    fs.writeFileSync(feedPath, '<rss>leak</rss>');
+    require('./src/plugins/rss')(authBuild);
+    assert(!fs.existsSync(feedPath), 'rss: old feed removed when auth enabled');
+
+    // sitemap：跳过 + 清理旧产物
+    const sitemapPath = path.join(tmpDist, 'sitemap.xml');
+    fs.writeFileSync(sitemapPath, '<urlset/>');
+    require('./src/plugins/sitemap')(authBuild);
+    assert(!fs.existsSync(sitemapPath), 'sitemap: old artifact removed when auth enabled');
+
+    // robots：一律 Disallow
+    require('./src/plugins/robots')(authBuild);
+    const robots = fs.readFileSync(path.join(tmpDist, 'robots.txt'), 'utf8');
+    assert(robots.includes('Disallow: /'), 'robots: Disallow all when auth enabled');
+  } finally {
+    fs.rmSync(tmpDist, { recursive: true, force: true });
+  }
 }
 
 // ── Test: Content index ──────────────────────────────────
@@ -524,6 +607,7 @@ async function main() {
     testPathmap();
     testSearchIndex();
     testFeeds();
+    testAuthGating();
     testNoOldFiles();
     testHtmlTemplates();
 
@@ -564,6 +648,47 @@ function printSummary() {
     failures.forEach((f) => console.log(`  ❌ ${f}`));
   }
   if (failed > 0) process.exitCode = 1;
+  verifyReadmeTestCount(passed + failed);
+}
+
+/**
+ * 文档一致性校验：README 中的自动化测试数量必须与实测总数一致。
+ *
+ * 防止「功能一加、文档数字掉队」的历史漂移模式（曾出现 221/253 两次）。
+ * 不一致时输出修正提示并以非零退出码结束（测试失败），强制同步文档。
+ *
+ * @param {number} total - 本次实测的断言总数（passed + failed）
+ */
+function verifyReadmeTestCount(total) {
+  const targets = ['README.md', 'README.en.md'];
+  // 覆盖两种中文语序与英文表述：
+  //   自动化测试（287 项） / 运行 287 项自动化测试 / 287 automated tests
+  const patterns = [
+    /自动化测试[（(]\s*(\d+)\s*项/,
+    /(\d+)\s*项自动化测试/,
+    /(\d+)\s*automated tests/,
+  ];
+  const drifts = [];
+  for (const file of targets) {
+    const filePath = path.join(__dirname, file);
+    if (!fs.existsSync(filePath)) continue;
+    const text = fs.readFileSync(filePath, 'utf8');
+    for (const pattern of patterns) {
+      const re = new RegExp(pattern.source, 'g');
+      let match;
+      while ((match = re.exec(text)) !== null) {
+        const declared = Number(match[1]);
+        if (declared !== total) drifts.push(`${file}: 写「${declared}」实际「${total}」`);
+      }
+    }
+  }
+  if (drifts.length > 0) {
+    console.error('\n⚠ 文档漂移（测试数字不一致，请同步 README）：');
+    drifts.forEach((d) => console.error(`  ${d}`));
+    process.exitCode = 1;
+  } else {
+    console.log(`\nDocs consistency: ✅ README 测试数字与实测一致（${total}）`);
+  }
 }
 
 main().catch((e) => { console.error('Test error:', e); process.exit(1); });

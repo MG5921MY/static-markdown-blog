@@ -105,6 +105,17 @@ module.exports = function staticCopyPlugin(buildResult) {
     // HTML 文件注入 meta 标签
     if (f.dest.endsWith('.html')) {
       let html = fs.readFileSync(srcPath, 'utf8');
+      // 首屏注入站点名：消除「加载中...」闪烁——title 与导航站点名在 JS 就绪前
+      // 即显示真实名称（页面级标题/语言切换仍由运行时更新）
+      const siteName = config?.site?.name;
+      if (siteName) {
+        const escapedName = String(siteName)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapedName}</title>`);
+        html = html.replace(/(<span id="nav-site-name"[^>]*>)[^<]*(<\/span>)/, `$1${escapedName}$2`);
+      }
       // robots meta
       if (!html.includes('name="robots"')) {
         html = html.replace('</head>', `  <meta name="robots" content="${robotsContent}" />\n</head>`);
