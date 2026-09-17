@@ -1975,37 +1975,157 @@ body.code-wrap .hljs-ln {
   text-overflow: ellipsis;
 }
 
+/* 视频卡片：首帧缩略（preload=metadata）+ 播放角标 */
+.gallery-item video {
+  width: 100%;
+  height: auto;
+  max-height: 1200px;
+  min-height: 40px;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+.gallery-item-badge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.gallery-item-badge span {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* 音频卡片：类型图标占位（内联 SVG，不依赖字体字形） */
+.gallery-item-icon {
+  width: 52px;
+  height: 52px;
+  margin: 44px 0;
+  color: var(--text-muted);
+}
+
 .lightbox {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.94);
   z-index: 100;
   display: none;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .lightbox.active {
   display: flex;
 }
 
-.lightbox-content {
+/* 舞台：媒体显示区域（弹性撑满；底部信息栏独立成行，不再遮挡内容） */
+.lightbox-stage {
   position: relative;
-  width: min(96vw, 1280px);
-  height: min(92vh, 880px);
-  display: grid;
-  place-items: center;
+  flex: 1;
+  min-height: 0;
 }
 
-.lightbox-content img {
+/* 媒体容器：fit 模式（默认）完整内适显示 */
+.lightbox-media {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 72px 96px;
+}
+
+.lightbox-media > img,
+.lightbox-media > video {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
   border-radius: 12px;
 }
 
+.lightbox-media > video {
+  background: #000;
+}
+
+.lightbox-media > audio {
+  width: min(100%, 560px);
+}
+
+/* 原始尺寸模式：1:1 显示，溢出滚动（safe center 保证大图从顶部完整滚动） */
+.lightbox-media.actual-size {
+  overflow: auto;
+  place-items: safe center;
+}
+
+.lightbox-media.actual-size > img {
+  max-width: none;
+  max-height: none;
+}
+
+/* 信息栏：独立文档流（不遮挡媒体舞台） */
+.lightbox-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 20px 16px;
+  color: #fff;
+  text-align: center;
+}
+
+.lightbox-filename {
+  font-size: 14px;
+  max-width: min(60vw, 560px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lightbox-counter {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.66);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 灯箱内播放失败兜底 */
+.lightbox-fallback {
+  display: grid;
+  gap: 16px;
+  place-items: center;
+  color: #fff;
+  text-align: center;
+  padding: 32px;
+}
+
+.lightbox-fallback p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.lightbox-fallback a {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.lightbox-fallback a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .lightbox-close,
-.lightbox-nav {
+.lightbox-nav,
+.lightbox-zoom {
   position: absolute;
   width: 46px;
   height: 46px;
@@ -2023,10 +2143,14 @@ body.code-wrap .hljs-ln {
 
 .lightbox-nav.prev {
   left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .lightbox-nav.next {
   right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .lightbox-nav:disabled {
@@ -2034,17 +2158,49 @@ body.code-wrap .hljs-ln {
   cursor: not-allowed;
 }
 
-.lightbox-info {
-  position: absolute;
+.lightbox-zoom {
+  right: 20px;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  padding: 10px 18px;
-  border-radius: 12px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  font-weight: 600;
 }
+
+.lightbox-zoom[hidden] {
+  display: none;
+}
+
+.lightbox-zoom.active {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+@media (max-width: 720px) {
+  .lightbox-media {
+    padding: 64px 60px 72px;
+  }
+
+  .lightbox-nav.prev {
+    left: 8px;
+  }
+
+  .lightbox-nav.next {
+    right: 8px;
+  }
+
+  .lightbox-close {
+    top: 12px;
+    right: 12px;
+  }
+
+  .lightbox-zoom {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .lightbox-filename {
+    max-width: 70vw;
+  }
+}
+
 
 .error-page {
   width: min(100%, 840px);

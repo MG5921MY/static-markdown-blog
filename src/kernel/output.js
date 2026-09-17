@@ -221,12 +221,82 @@ function resolveNav(navItems, pagesMap) {
   }).filter(Boolean);
 }
 
-function scanGalleryDir(dirPath, formats, maxDepth, currentDepth, basePath) {
+// ═══════════════════════════════════════════════════════════
+// 媒体库扫描（图库升级：image / video / audio / file 四类）
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * 媒体可播放性映射（单一来源）。
+ *
+ * 语义为「尝试内嵌播放」的保守判定：
+ * 编码差异（如 mkv/mov 内部码流）无法静态确定，前端在 <video>/<audio>
+ * 的 error 事件中兜底降级为下载提示；未列入的扩展名一律仅供下载。
+ *
+ * 依据：本机 Chromium canPlayType 实测（mp4/webm/m4v 稳定；
+ * mkv/mov/ogv 视编码与浏览器而异 → 尝试；avi/wmv/flv 不可播）。
+ */
+const PLAYABLE_MEDIA = {
+  video: new Set(['mp4', 'webm', 'm4v', 'mkv', 'mov', 'ogv']),
+  audio: new Set(['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'opus']),
+};
+
+/**
+ * 归一化 gallery 配置的 formats 字段（兼容两种写法）。
+ *
+ *   formats: [jpg, png]                       → { image: [jpg, png], video: [], ... }
+ *     （旧配置：平铺数组视为图片列表，升级后行为不变）
+ *   formats: { image: [...], video: [...] }   → 按类型保留（新配置）
+ *
+ * @param {string[]|object|undefined} rawFormats - gallery.yml 的 settings.formats
+ * @returns {{ image: string[], video: string[], audio: string[], file: string[] }} 各类型扩展名（小写、无点）
+ */
+function normalizeGalleryFormats(rawFormats) {
+  const DEFAULTS = {
+    image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+    video: [],
+    audio: [],
+    file: [],
+  };
+  if (Array.isArray(rawFormats)) {
+    return { ...DEFAULTS, image: rawFormats.map((f) => String(f).toLowerCase()) };
+  }
+  if (rawFormats && typeof rawFormats === 'object') {
+    const pick = (key) =>
+      Array.isArray(rawFormats[key])
+        ? rawFormats[key].map((f) => String(f).toLowerCase())
+        : DEFAULTS[key];
+    return { image: pick('image'), video: pick('video'), audio: pick('audio'), file: pick('file') };
+  }
+  return DEFAULTS;
+}
+
+/**
+ * 扫描媒体目录（按类型分流，返回同构树）。
+ *
+ * 返回结构：`{ [type]: { items: MediaItem[], subfolders: { [name]: 同结构 } } }`
+ * —— 各类型键名与 formats 键一致（路径单一：前端按 type 取同构数据）。
+ *
+ * 确定性：目录项按名称自然序排序（与内容扫描口径一致，构建可复现）。
+ * 归属规则：单文件只归入首个匹配的类型（formats 各类型应互斥；避免重复展示）。
+ *
+ * @param {string} dirPath - 绝对目录路径
+ * @param {{ [type: string]: string[] }} formatsByType - 归一化格式表
+ * @param {string[]} types - 本组扫描的媒体类型（如 ['image','video']）
+ * @param {number} maxDepth - 最大递归深度
+ * @param {number} currentDepth - 当前深度（0 起）
+ * @param {string} basePath - 站点相对基础路径（用于生成引用路径）
+ * @returns {{ [type: string]: { items: object[], subfolders: object } } | null}
+ */
+function scanMediaDir(dirPath, formatsByType, types, maxDepth, currentDepth, basePath) {
   if (currentDepth > maxDepth) return null;
   if (!fs.existsSync(dirPath)) return null;
 
-  const result = { images: [], subfolders: {} };
-  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  const result = {};
+  for (const type of types) result[type] = { items: [], subfolders: {} };
+
+  const entries = fs
+    .readdirSync(dirPath, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
@@ -234,12 +304,23 @@ function scanGalleryDir(dirPath, formats, maxDepth, currentDepth, basePath) {
     const relativePath = basePath ? `${basePath}/${entry.name}` : entry.name;
     if (entry.isFile()) {
       const ext = path.extname(entry.name).toLowerCase().replace('.', '');
-      if (formats.includes(ext)) {
-        result.images.push(relativePath);
+      for (const type of types) {
+        if (!formatsByType[type]?.includes(ext)) continue;
+        result[type].items.push({
+          path: relativePath,
+          name: entry.name,
+          type,
+          ext,
+          // 图片可直接内嵌；音视频按保守映射标记；file 仅下载
+          playable: type === 'image' ? true : Boolean(PLAYABLE_MEDIA[type]?.has(ext)),
+        });
+        break;
       }
     } else if (entry.isDirectory() && currentDepth < maxDepth) {
-      const sub = scanGalleryDir(fullPath, formats, maxDepth, currentDepth + 1, relativePath);
-      if (sub) result.subfolders[entry.name] = sub;
+      const sub = scanMediaDir(fullPath, formatsByType, types, maxDepth, currentDepth + 1, relativePath);
+      if (sub) {
+        for (const type of types) result[type].subfolders[entry.name] = sub[type];
+      }
     }
   }
   return result;
@@ -265,16 +346,19 @@ function buildFeatures(config, siteRoot) {
   if (feats.gallery?.enabled) {
     const data = feats.gallery.source ? read(path.join(siteRoot, feats.gallery.source), 'gallery') : null;
     const galleryData = { enabled: true, ...feats.gallery, ...(data || { groups: [], settings: {} }) };
-    // Scan gallery directories to build images map
-    const formats = (galleryData.settings?.formats || ['jpg', 'png', 'svg']).map(f => f.toLowerCase());
-    const images = {};
+    // 媒体库扫描：formats 按类型归一化（兼容旧平铺数组），
+    // 每组按 types 分流扫描（省略 types 时仅 image——保持旧站点行为）
+    const formatsByType = normalizeGalleryFormats(galleryData.settings?.formats);
+    const groups = [];
     for (const group of (galleryData.groups || [])) {
-      const groupDir = path.join(siteRoot, group.path);
+      const types = Array.isArray(group.types) && group.types.length > 0 ? group.types : ['image'];
       const maxDepth = group.maxDepth || galleryData.settings?.maxDepth || 2;
-      const scanned = scanGalleryDir(groupDir, formats, maxDepth, 0, group.path);
-      if (scanned) images[group.id] = scanned;
+      const groupDir = path.join(siteRoot, group.path);
+      const media = scanMediaDir(groupDir, formatsByType, types, maxDepth, 0, group.path);
+      groups.push({ ...group, types, media });
     }
-    galleryData.images = images;
+    galleryData.groups = groups;
+    delete galleryData.images; // 旧产物键（结构升级为 group.media），避免双份数据
     features.gallery = galleryData;
   }
   return features;

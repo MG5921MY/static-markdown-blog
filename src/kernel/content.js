@@ -249,11 +249,20 @@ function scanContent(config, options) {
     }
   }
   allPosts.sort(comparator);
+  // prev/next 方向自适应：上一篇始终 = 「主排序键值更小」的一侧。
+  // 主排序 asc（值小在前）→ 上一篇 = 数组前一个（i-1）；
+  // 主排序 desc（值大在前）→ 上一篇 = 数组后一个（i+1）。
+  // （此前实现硬编码 i+1/i-1，隐含假设"数组是时间倒序"，
+  //   自定义排序下会把上一篇/下一篇指向错误的文章）
+  const primaryOrder = normalizeSortConfig(config.sort).rules[0].order;
+  const backIndex = primaryOrder === 'asc' ? -1 : 1;
   for (let i = 0; i < allPosts.length; i++) {
     const entry = pathMap[allPosts[i].id];
     if (!entry) continue;
-    entry.prev = i < allPosts.length - 1 ? { id: allPosts[i + 1].id, title: allPosts[i + 1].title } : null;
-    entry.next = i > 0 ? { id: allPosts[i - 1].id, title: allPosts[i - 1].title } : null;
+    const prevPost = allPosts[i + backIndex] || null;
+    const nextPost = allPosts[i - backIndex] || null;
+    entry.prev = prevPost ? { id: prevPost.id, title: prevPost.title } : null;
+    entry.next = nextPost ? { id: nextPost.id, title: nextPost.title } : null;
   }
 
   // 相关文章：构建期预计算（打分规则见 scoreRelatedPosts），写入 pathMap.related，
@@ -316,10 +325,12 @@ function scoreRelatedPosts(post, allPosts, max = 4) {
       if (days <= SAME_WINDOW_DAYS) proximity = 1;
     }
     const score = sharedTags * 3 + sameCategory * 2 + proximity;
-    if (score > 0) scored.push({ id: other.id, title: other.title, score });
+    if (score > 0) scored.push({ id: other.id, title: other.title, file: other.file || '', score });
   }
 
-  scored.sort((a, b) => b.score - a.score || String(a.id).localeCompare(String(b.id)));
+  // 同分按文件路径升序打平局（可读、跨平台确定；与全站排序口径一致）
+  scored.sort((a, b) => b.score - a.score
+    || String(a.file).localeCompare(String(b.file), undefined, { numeric: true }));
   return scored.slice(0, max).map(({ id, title }) => ({ id, title }));
 }
 

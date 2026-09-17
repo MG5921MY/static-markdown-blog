@@ -171,7 +171,7 @@ nav:
     url: ./moments.html
   - name: 参考
     url: ./links.html
-  - name: 图库
+  - name: 资源
     url: ./gallery.html
 
 # 导航栏右侧图标按钮
@@ -195,9 +195,9 @@ features:
     description: "收藏的参考资源与工具。"  # 页面描述
   gallery:
     enabled: true
-    source: content/data/gallery.yml     # 图库数据文件
-    description: "浏览图片资源。"         # 页面描述
-    sectionCopy: "图片资源按分组展示。"    # 图库区块描述
+    source: content/data/gallery.yml     # 资源数据文件
+    description: "浏览图片、视频与音频资源。"   # 页面描述
+    sectionCopy: "图片、视频与音频资源按分组展示。"  # 资源区块描述
   relatedPosts:
     enabled: true                        # 文章页显示相关文章（构建期预计算）
     max: 4                               # 最大显示数量（1-8，同分按 id 升序确定）

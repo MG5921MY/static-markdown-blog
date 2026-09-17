@@ -46,9 +46,9 @@ The **Skills**, **Portfolio**, and **Toolbox** pages in the navigation bar demon
 |----------|-------------|
 | **Build** | Markdown → HTML at build time, RSS, Sitemap, search index (CJK tokenization), SSG, incremental build, draft system |
 | **Themes** | 7 built-in themes, 45+ CSS tokens, layout tokens, 3-state dark mode, bundled web fonts (OFL), theme.js, template overrides, auto-discovery |
-| **Content** | Blog posts, custom pages (HTML/CSS/JS standalone/embedded), moments, links, gallery, math (KaTeX), diagrams (Mermaid) |
+| **Content** | Blog posts, custom pages (HTML/CSS/JS standalone/embedded), moments, links, resources, math (KaTeX), diagrams (Mermaid) |
 | **Code** | Syntax highlighting (highlight.js), line numbers, copy button |
-| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 287 automated tests |
+| **Dev** | Zero dependencies, hot-reload (SSE), CLI (i18n), incremental build, 296 automated tests |
 | **Deploy** | GitHub Pages, Docker, any static hosting, sub-path auto-detection |
 | **Extend** | Plugin architecture, custom themes, custom pages (standalone/embedded), comments (Giscus), language switching (auto-discovery) |
 
@@ -99,7 +99,7 @@ AI doesn't just write articles — it can build a complete knowledge showcase:
 | **Articles** | Structured knowledge, debugging experience, architectural decisions |
 | **Moments** | Daily memory index, thinking log, "dream" journal |
 | **Links** | Knowledge graph nodes, learning resources, reference tools |
-| **Gallery** | Mind maps, architecture diagrams, visual memory |
+| **Resources** | Mind maps, architecture diagrams, visual memory |
 | **Custom pages** | Skill matrix, experience timeline, interactive dashboards |
 | **Design themes** | AI can create CSS themes with tokens, choosing visual languages for different knowledge domains |
 
@@ -269,7 +269,7 @@ node build.js --include-drafts   # Include drafts
 ## Tests
 
 ```bash
-node test.js                     # Run 287 automated tests
+node test.js                     # Run 296 automated tests
 ```
 
 ## Documentation

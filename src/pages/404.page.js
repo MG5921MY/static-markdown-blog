@@ -10,7 +10,18 @@
       Blog.setPageTitle('404');
       Blog.setNavSiteName();
 
-      const posts = Blog.getAllPosts().slice(0, 4);
+      // 「最近的文章」：语义为时间最近，与全局排序配置解耦——
+      // getAllPosts 返回的是 content.sort 配置顺序（可能是文件序/标题序），
+      // 这里显式按日期降序取前 4 篇，保证区块语义始终是"最近更新"。
+      // 同日期按标题升序打平局（前端产物不含源文件名——加密边界要求；
+      // 与归档页同口径，结果可复现）
+      const posts = [...Blog.getAllPosts()]
+        .sort((a, b) => {
+          const byDate = String(b.date || '').localeCompare(String(a.date || ''), undefined, { numeric: true });
+          if (byDate !== 0) return byDate;
+          return String(a.title || '').localeCompare(String(b.title || ''), undefined, { numeric: true });
+        })
+        .slice(0, 4);
       if (posts.length > 0) {
         postsListEl.innerHTML = posts.map((post) => Blog.renderPostCard(post)).join('');
         recentPostsEl.style.display = 'block';

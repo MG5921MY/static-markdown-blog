@@ -1,6 +1,9 @@
 settings:
   maxDepth: 2
-  formats: [jpg, jpeg, png, gif, webp, svg]
+  formats:
+    image: [jpg, jpeg, png, gif, webp, svg]
+    video: [mp4, webm, m4v, mkv, mov, ogv, avi, wmv, flv]
+    audio: [mp3, wav, ogg, m4a, aac, flac, opus, wma]
 
 groups:
   - id: identity
@@ -12,4 +15,10 @@ groups:
     name: 视觉基线
     icon: "DS"
     path: assets/gallery/posters
+    maxDepth: 1
+  - id: demos
+    name: 媒体演示
+    icon: "MD"
+    path: assets/gallery/demos
+    types: [video, audio, image]
     maxDepth: 1

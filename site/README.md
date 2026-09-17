@@ -23,7 +23,7 @@ site/
 │   └── data/               数据文件
 │       ├── moments.yml     瞬间（短记录）
 │       ├── links.yml       友链
-│       ├── gallery.yml     图库
+│       ├── gallery.yml     资源
 │       └── projects.yml    项目
 ├── assets/                 资源文件（图片、图标等）
 └── themes/                 自定义主题
@@ -93,7 +93,7 @@ moments:
   - date: 2026-06-20
     mood: "Note"
     content: |
-      图库功能上线，支持目录扫描、文件夹导航和灯箱查看器。
+      资源功能上线，支持目录扫描、文件夹导航和灯箱查看器。
     tags: [gallery, feature]
 ```
 
@@ -148,7 +148,7 @@ links:                          # 链接列表
 | `label` | string | ❌ | 标签文字 |
 | `group` | string | ❌ | 所属分组 ID（对应 `groups` 中的 `id`） |
 
-### 2.3 gallery.yml — 图库
+### 2.3 gallery.yml — 资源
 
 图片资源管理，支持目录扫描和分组。
 
@@ -381,7 +381,7 @@ content:
   data:
     moments: content/data/moments.yml    # 瞬间数据
     links: content/data/links.yml        # 友链数据
-    gallery: content/data/gallery.yml    # 图库数据
+    gallery: content/data/gallery.yml    # 资源数据
 ```
 
 ### 3.9 nav — 导航栏
@@ -439,7 +439,7 @@ features:
     enabled: true
     source: content/data/gallery.yml
     description: "浏览图片资源。"
-    sectionCopy: "图片资源按分组展示。"  # 图库区块描述
+    sectionCopy: "图片、视频与音频资源按分组展示。"  # 资源区块描述
 ```
 
 ### 3.12 beian — 备案信息
@@ -1012,7 +1012,7 @@ nav:
     url: ./moments.html          # 直接指定 URL（功能页面）
   - name: 参考
     url: ./links.html
-  - name: 图库
+  - name: 资源
     url: ./gallery.html
 ```
 
@@ -1039,7 +1039,7 @@ navActions:
 
 ## 7. 功能开关
 
-三个功能模块（瞬间、友链、图库）可通过 `features` 配置独立启用/禁用：
+三个功能模块（瞬间、友链、资源）可通过 `features` 配置独立启用/禁用：
 
 ```yaml
 features:
@@ -1063,7 +1063,7 @@ features:
 ```yaml
 features:
   gallery:
-    enabled: false               # 禁用图库
+    enabled: false               # 禁用资源
 ```
 
 禁用后仍保留数据文件，重新启用只需改回 `true`。

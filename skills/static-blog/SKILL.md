@@ -105,7 +105,7 @@ site/                       ← 用户工作区（AI 操作这个目录）
 │   └── data/               数据文件
 │       ├── moments.yml     瞬间
 │       ├── links.yml       友链
-│       ├── gallery.yml     图库
+│       ├── gallery.yml     资源
 │       └── projects.yml    项目
 ├── assets/                 资源文件（图片、图标等）
 └── themes/                 自定义主题
@@ -226,7 +226,7 @@ nav:
     page: index
   - name: 关于
     page: about
-  - name: 图库
+  - name: 资源
     url: ./gallery.html
 ```
 
@@ -985,7 +985,7 @@ AI 创建主题时，以此模板为基础修改。这是覆盖所有组件的�
   /* color: var(--accent); */
 }
 
-/* ── 图库 ──────────────────────────────────────────── */
+/* ── 资源 ──────────────────────────────────────────── */
 .gallery-item {
   /* border: 1px solid var(--border); */
 }

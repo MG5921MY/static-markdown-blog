@@ -25,17 +25,17 @@ function assert(condition, name) {
   else { failed++; failures.push(name); console.log(`  ❌ ${name}`); }
 }
 
-function httpGet(urlPath) {
-  return new Promise((resolve) => {
-    const req = http.get(`http://127.0.0.1:${PORT}${urlPath}`, (res) => {
-      let body = '';
-      res.on('data', (c) => { body += c; });
-      res.on('end', () => resolve({ status: res.statusCode, body }));
+  function httpGet(urlPath, headers) {
+    return new Promise((resolve) => {
+      const req = http.get(`http://127.0.0.1:${PORT}${urlPath}`, { headers: headers || {} }, (res) => {
+        let body = '';
+        res.on('data', (c) => { body += c; });
+        res.on('end', () => resolve({ status: res.statusCode, body, headers: res.headers }));
+      });
+      req.on('error', () => resolve({ status: 0, body: '', headers: {} }));
+      req.setTimeout(5000, () => { req.destroy(); resolve({ status: 0, body: '', headers: {} }); });
     });
-    req.on('error', () => resolve({ status: 0, body: '' }));
-    req.setTimeout(5000, () => { req.destroy(); resolve({ status: 0, body: '' }); });
-  });
-}
+  }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -389,6 +389,38 @@ async function testHttp() {
   }
 }
 
+// ── Test: HTTP Range（媒体流式播放基础）────────────────────
+// 覆盖 serve.js 的 Range 语义：206/Content-Range/闭区间/开区间/尾段/416/非法回落。
+function testRangeRequests() {
+  return (async () => {
+    console.log('\n[Range Requests]');
+    const target = '/site-config.json';
+    const full = await httpGet(target);
+    const fullBytes = Buffer.from(full.body, 'utf8');
+    const total = fullBytes.length;
+    assert(full.headers['accept-ranges'] === 'bytes', 'no Range → Accept-Ranges: bytes');
+
+    const r1 = await httpGet(target, { Range: 'bytes=0-99' });
+    assert(r1.status === 206, 'bytes=0-99 → 206');
+    assert(r1.headers['content-range'] === `bytes 0-99/${total}`, 'content-range 0-99/total');
+    const r1Bytes = Buffer.from(r1.body, 'utf8');
+    assert(r1Bytes.length === 100, 'range body is 100 bytes');
+    assert(r1Bytes.equals(fullBytes.subarray(0, 100)), 'range body matches full content');
+
+    const r2 = await httpGet(target, { Range: 'bytes=100-' });
+    assert(r2.status === 206 && r2.headers['content-range'] === `bytes 100-${total - 1}/${total}`, 'open-ended range → rest of file');
+
+    const r3 = await httpGet(target, { Range: 'bytes=-50' });
+    assert(r3.status === 206 && r3.headers['content-range'] === `bytes ${total - 50}-${total - 1}/${total}`, 'suffix range → last 50 bytes');
+
+    const r4 = await httpGet(target, { Range: 'bytes=999999999-' });
+    assert(r4.status === 416 && r4.headers['content-range'] === `bytes */${total}`, 'out-of-range → 416');
+
+    const r5 = await httpGet(target, { Range: 'bytes=abc' });
+    assert(r5.status === 200, 'invalid Range syntax → 200 fallback');
+  })();
+}
+
 // ── Test: Nav config completeness ────────────────────────
 async function testNavCompleteness() {
   console.log('\n[Nav Config]');
@@ -618,8 +650,9 @@ async function main() {
       serverProc = spawn('node', ['serve.js', String(PORT), '--no-live'], { cwd: ROOT, stdio: 'pipe' });
       await sleep(3000);
 
-      await testHttp();
-      await testNavCompleteness();
+  await testHttp();
+  await testRangeRequests();
+  await testNavCompleteness();
 
       testAuthEncryption();
       testAuthRssGating();

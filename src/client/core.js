@@ -163,17 +163,40 @@ window.BlogCore = {
     }
   },
 
+  /**
+   * 获取全站文章列表（跨分类）。
+   *
+   * 顺序契约：**严格使用构建期 content-index 的 allPosts 顺序**——
+   * 该顺序在构建时由 content.sort 配置生成（与归档页、上一篇/下一篇、
+   * 相关文章共用同一比较器），前端不得再次排序，
+   * 否则用户的自定义排序配置会被静默覆盖（历史 bug：曾硬编码日期降序重排，
+   * 导致首页/分类页在 file 等自定义排序下顺序错误）。
+   *
+   * 兼容：极旧构建产物若无 allPosts 字段，回退到按分类收集（保持构建顺序，
+   * 仍不排序）。
+   *
+   * @returns {Array<object>} 文章对象数组（字段含 id/title/date/tags/summary/
+   *   category/categoryName/categoryIcon/groupPath/draft）
+   */
   getAllPosts() {
-    const posts = [];
-    if (!this.index?.categories) return posts;
-    for (const [categoryId, categoryData] of Object.entries(this.index.categories)) {
-      if (!this.isValidId(categoryId)) continue;
-      for (const post of categoryData.posts || []) {
-        if (!this.isValidId(post.id)) continue;
-        posts.push({ ...post, category: categoryId, categoryName: categoryData.name, categoryIcon: categoryData.icon });
+    let posts;
+    if (Array.isArray(this.index?.allPosts)) {
+      posts = this.index.allPosts.filter((post) => this.isValidId(post.id));
+    } else {
+      posts = [];
+      for (const [categoryId, categoryData] of Object.entries(this.index?.categories || {})) {
+        if (!this.isValidId(categoryId)) continue;
+        for (const post of categoryData.posts || []) {
+          if (!this.isValidId(post.id)) continue;
+          posts.push({
+            ...post,
+            category: categoryId,
+            categoryName: categoryData.name,
+            categoryIcon: categoryData.icon
+          });
+        }
       }
     }
-    posts.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
     this.posts = posts;
     return posts;
   },

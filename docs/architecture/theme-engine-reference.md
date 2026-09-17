@@ -296,9 +296,9 @@ workspace/site/themes/<theme-id>/
 | `.page-btn` | 分页按钮 |
 | `.page-btn.active` | 当前页码按钮 |
 | `.load-more` | 加载更多按钮 |
-| `.group-btn` | 分组按钮（图库） |
+| `.group-btn` | 分组按钮（资源） |
 
-### 3.8 瞬间、链接与图库
+### 3.8 瞬间、链接与资源
 
 | 选择器 | 说明 |
 |--------|------|
@@ -314,9 +314,9 @@ workspace/site/themes/<theme-id>/
 | `.link-desc` | 链接描述 |
 | `.link-pill` | 链接标签胶囊 |
 | `.links-group` | 链接分组容器 |
-| `.gallery-item` | 图库项目 |
-| `.gallery-item-overlay` | 图库项目悬浮层 |
-| `.gallery-grid` | 图库网格 |
+| `.gallery-item` | 资源项目 |
+| `.gallery-item-overlay` | 资源项目悬浮层 |
+| `.gallery-grid` | 资源网格 |
 | `.folder-card` | 文件夹卡片 |
 
 ### 3.9 目录与导航

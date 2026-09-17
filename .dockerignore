@@ -19,3 +19,6 @@ dist/
 # 隐私与本地素材（不上传）
 # 认证密钥（运行时生成，不入镜像）
 site/.auth-key
+
+# 测试媒体（媒体库演示用，不入镜像）
+site/assets/gallery/demos/

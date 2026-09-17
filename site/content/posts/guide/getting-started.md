@@ -145,7 +145,7 @@ pages:
 |------|----------|
 | 瞬间（短内容） | `site/content/data/moments.yml` |
 | 友链 | `site/content/data/links.yml` |
-| 图库 | `site/content/data/gallery.yml` |
+| 资源 | `site/content/data/gallery.yml` |
 | 自定义页面 | `site/content/pages/` + `site/config.yml` |
 | 评论 | `site/config.yml` 的 `comments` |
 | 备案信息 | `site/config.yml` 的 `beian` |

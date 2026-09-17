@@ -22,23 +22,113 @@ const ROOT = process.cwd();
 const DIST_DIR = path.join(ROOT, 'dist');
 
 const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.ico': 'image/x-icon',
-  '.md': 'text/markdown; charset=utf-8'
-};
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.ico': 'image/x-icon',
+    '.md': 'text/markdown; charset=utf-8',
+    // 媒体库（视频/音频）——Range 流式播放所需
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.m4v': 'video/x-m4v',
+    '.ogv': 'video/ogg',
+    '.mkv': 'video/x-matroska',
+    '.mov': 'video/quicktime',
+    '.avi': 'video/x-msvideo',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.m4a': 'audio/mp4',
+    '.aac': 'audio/aac',
+    '.flac': 'audio/flac',
+    '.opus': 'audio/ogg',
+    '.wma': 'audio/x-ms-wma'
+  };
 
-// ── Base Path ─────────────────────────────────────────────────────────────
-function normalizeBasePath(input) {
-  const text = String(input || '/').trim();
-  if (!text || text === '/') return '/';
+  // ── Range 流式文件服务 ────────────────────────────────────────────────────
+  /**
+   * 带 HTTP Range 支持的静态文件响应（只读语义：Range 属于 GET，不违反只允许 GET 的约束）。
+   *
+   * 行为：
+   * - 无 Range         → 200 + Accept-Ranges: bytes（流式，不整读进内存）
+   * - 单区间 Range     → 206 + Content-Range + 片段流式
+   * - 语法合法但越界   → 416 + Content-Range: bytes 星号/总长
+   * - 语法非法         → 忽略并按 200 处理（与主流服务器一致，RFC 7233 允许）
+   *
+   * 仅实现单区间：浏览器媒体播放器只发单区间请求，multipart/byteranges（多区间）
+   * 无实际需求且显著增加复杂度（教学取舍，语义明确）。
+   *
+   * @param {http.IncomingMessage} req
+   * @param {http.ServerResponse} res
+   * @param {string} filePath - 绝对路径（调用方已校验在 dist 内）
+   * @param {fs.Stats} stat - 文件状态（调用方已获取，避免重复 IO）
+   * @param {string} contentType - MIME 类型
+   * @param {object} baseHeaders - 基础响应头（如 Cache-Control）
+   */
+  function serveFileWithRange(req, res, filePath, stat, contentType, baseHeaders) {
+    const total = stat.size;
+    const headers = { ...baseHeaders, 'Accept-Ranges': 'bytes' };
+
+    const sendFull = () => {
+      res.writeHead(200, { ...headers, 'Content-Type': contentType, 'Content-Length': total });
+      fs.createReadStream(filePath).pipe(res);
+    };
+
+    const rangeHeader = req.headers.range;
+    if (!rangeHeader) {
+      sendFull();
+      return;
+    }
+
+    // 仅匹配单区间：bytes=start-end / bytes=start- / bytes=-suffixLength
+    const match = /^bytes=(\d*)-(\d*)$/.exec(String(rangeHeader).trim());
+    if (!match || (match[1] === '' && match[2] === '')) {
+      sendFull(); // 语法非法：忽略 Range（RFC 7233 允许）
+      return;
+    }
+
+    let start;
+    let end;
+    if (match[1] === '') {
+      // 尾段请求：bytes=-N（末尾 N 字节）
+      const suffixLength = parseInt(match[2], 10);
+      if (!Number.isFinite(suffixLength) || suffixLength <= 0) {
+        sendFull();
+        return;
+      }
+      start = Math.max(0, total - suffixLength);
+      end = total - 1;
+    } else {
+      start = parseInt(match[1], 10);
+      end = match[2] === '' ? total - 1 : Math.min(parseInt(match[2], 10), total - 1);
+    }
+
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || start >= total) {
+      res.writeHead(416, { ...headers, 'Content-Range': `bytes */${total}` });
+      res.end();
+      return;
+    }
+
+    res.writeHead(206, {
+      ...headers,
+      'Content-Type': contentType,
+      'Content-Range': `bytes ${start}-${end}/${total}`,
+      'Content-Length': end - start + 1,
+    });
+    fs.createReadStream(filePath, { start, end }).pipe(res);
+  }
+
+
+  // ── Base Path ─────────────────────────────────────────────────────────────
+  function normalizeBasePath(input) {
+    const text = String(input || '/').trim();
+    if (!text || text === '/') return '/';
   const withLeadingSlash = text.startsWith('/') ? text : `/${text}`;
   return withLeadingSlash.endsWith('/') ? withLeadingSlash : `${withLeadingSlash}/`;
 }
@@ -337,37 +427,45 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  fs.readFile(filePath, (error, data) => {
-    if (error) {
+  fs.stat(filePath, (statError, stat) => {
+    if (statError || !stat.isFile()) {
       const fallback404 = path.join(DIST_DIR, '404.html');
-      if (error.code === 'ENOENT' && fs.existsSync(fallback404)) {
+      if (statError && statError.code === 'ENOENT' && fs.existsSync(fallback404)) {
         res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(fs.readFileSync(fallback404));
         return;
       }
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end(error.code === 'ENOENT' ? 'Not Found' : 'Server Error');
+      const code = statError && statError.code === 'ENOENT' ? 404 : 500;
+      res.writeHead(code);
+      res.end(code === 404 ? 'Not Found' : 'Server Error');
       return;
     }
 
     const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    const baseHeaders = { 'Cache-Control': 'no-cache' };
 
-    // HTML 文件注入热重载客户端脚本
+    // HTML：需要注入热重载客户端脚本，读取全文处理（保持原路径）
     if (LIVE_RELOAD && ext === '.html') {
-      const html = data.toString('utf8');
-      const inject = '<script src="./__reload.js"></script>';
-      if (html.includes('</body>')) {
-        data = Buffer.from(html.replace('</body>', `${inject}\n</body>`));
-      } else {
-        data = Buffer.from(html + '\n' + inject);
-      }
+      fs.readFile(filePath, (error, data) => {
+        if (error) {
+          res.writeHead(500);
+          res.end('Server Error');
+          return;
+        }
+        const html = data.toString('utf8');
+        const inject = '<script src="./__reload.js"></script>';
+        const output = html.includes('</body>')
+          ? html.replace('</body>', `${inject}\n</body>`)
+          : `${html}\n${inject}`;
+        res.writeHead(200, { ...baseHeaders, 'Content-Type': contentType });
+        res.end(output);
+      });
+      return;
     }
 
-    res.writeHead(200, {
-      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-      'Cache-Control': 'no-cache'
-    });
-    res.end(data);
+    // 其余文件（含视频/音频）：Range 流式服务（支持 seek，且大文件不整读进内存）
+    serveFileWithRange(req, res, filePath, stat, contentType, baseHeaders);
   });
 });
 
